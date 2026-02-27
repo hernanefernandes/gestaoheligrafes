@@ -1,0 +1,492 @@
+﻿<!DOCTYPE html>
+<html lang="pt-AO">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heligrafes V28 - Pré-visualização & Otimizado</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
+
+    <style>
+        :root { --primary: #2b579a; --accent: #185abd; --bg: #f3f2f1; --white: #ffffff; --success: #107c10; --warning: #d83b01; }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-top: 5px solid var(--primary);
+        }
+
+        header { text-align: center; margin-bottom: 30px; border-bottom: 1px solid #edebe9; padding-bottom: 20px; }
+        h1 { color: var(--primary); margin: 0; font-size: 26px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 25px; }
+        .stat-card { background: #fff; border: 1px solid #e1dfdd; padding: 5px; border-radius: 4px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .stat-num { font-size: 18px; font-weight: bold; color: var(--primary); }
+        .stat-label { font-size: 10px; color: #605e5c; text-transform: uppercase; }
+
+        .step-box { background: #fff; border: 1px solid #e1dfdd; border-radius: 4px; padding: 25px; margin-bottom: 25px; position: relative; }
+        .step-badge { position: absolute; top: -12px; left: 20px; background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-weight: 600; font-size: 13px; }
+
+        .config-grid-row { display: grid; grid-template-columns: 2.5fr 1.5fr 1fr 1fr; gap: 15px; margin-top: 15px; align-items: end; }
+        .config-grid-format { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px; }
+        .cover-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-top: 15px; align-items: end; }
+
+        label { display: block; font-size: 11px; font-weight: 600; color: #323130; margin-bottom: 5px; }
+
+        input, select, textarea {
+            width: 100%; padding: 10px;
+            border: 1px solid #8a8886; border-radius: 2px;
+            font-size: 13px; box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        button { padding: 12px; border: none; border-radius: 4px; font-weight: 600; cursor: pointer; color: white; text-transform: uppercase; font-size: 13px; transition: 0.2s; }
+        button:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-prompt { background: var(--primary); width: 100%; font-size: 16px; padding: 20px; }
+        .btn-auto { background: #605e5c; width: 100%; margin-bottom: 10px; }
+        .btn-preview { background: var(--accent); width: 100%; margin-top: 20px; font-size: 14px; }
+        .btn-save { background: var(--success); width: 100%; margin-top: 20px; font-size: 15px; }
+
+        #preview-container { display: none; margin-top: 30px; border: 2px solid var(--primary); border-radius: 8px; background: #fbfbfb; padding: 20px; }
+        .preview-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #edebe9; padding-bottom: 15px; margin-bottom: 25px; }
+        .page-count-badge { background: var(--accent); color: white; padding: 6px 16px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+
+        #word-preview { background: #e1dfdd; padding: 40px 20px; max-height: 700px; overflow-y: auto; border: 1px solid #ccc; border-radius: 4px; margin: 0 auto; }
+
+        .a4-page {
+            background: white; width: 21cm; min-height: 29.7cm; padding: 3cm 2cm 2cm 3cm; 
+            margin: 0 auto 40px auto; box-shadow: 0 5px 15px rgba(0,0,0,0.2); box-sizing: border-box; position: relative;
+        }
+
+        .index-line { display: flex; justify-content: space-between; font-size: 12pt; margin-bottom: 8pt; position: relative; }
+        .index-line::after {
+            content: " .................................................................................................................................................................................................................................................................";
+            position: absolute; left: 0; right: 30px; overflow: hidden; white-space: nowrap; z-index: 1; color: #a19f9d;
+        }
+        .index-title { background: white; padding-right: 10px; z-index: 2; position: relative; font-weight: bold; }
+        .index-page { background: white; padding-left: 10px; z-index: 2; position: relative; font-weight: bold; }
+
+        /* Estilo Exclusivo para gerar PDF perfeito através do navegador */
+        @media print {
+            body * { visibility: hidden; }
+            #word-preview, #word-preview * { visibility: visible; }
+            #word-preview { position: absolute; left: 0; top: 0; width: 100%; border: none; padding: 0; background: white; max-height: none; overflow: visible; }
+            .a4-page { page-break-after: always; box-shadow: none; border: none; padding: 2cm 2cm 2cm 3cm; margin: 0; width: 100%; height: auto; }
+            .container { box-shadow: none; border: none; padding: 0; background: white; }
+            #preview-container { border: none; }
+            .index-line::after { color: black; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>HELIGRAFES V28 • PRO</h1>
+        <p style="color:#605e5c; margin-top:5px;">Gerador Académico com Pré-visualização</p>
+    </header>
+
+    <div class="dashboard-grid">
+        <div class="stat-card"><div class="stat-num" id="stat-today">0</div><div class="stat-label">Hoje</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-week">0</div><div class="stat-label">Semana</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-month">130</div><div class="stat-label">Mês</div></div>
+        <div class="stat-card"><div class="stat-num" id="stat-total">130</div><div class="stat-label">Total</div></div>
+    </div>
+
+    <div class="step-box">
+        <div class="step-badge">1. Configuração do Trabalho</div>
+        <div class="config-grid-row">
+            <div>
+                <label>Tipo de Trabalho:</label>
+                <select id="workType" onchange="updatePrompt()">
+                    <option value="normal" selected>Trabalho Académico Completo</option>
+                    <option value="fundamentacao" style="color:var(--primary); font-weight:bold;">Apenas Fundamentação Teórica (Cap. 2)</option>
+                </select>
+            </div>
+            <div>
+                <label>Tema do Trabalho:</label>
+                <input type="text" id="topic" placeholder="Insira o tema...">
+            </div>
+            <div>
+                <label>Nível Académico:</label>
+                <select id="academicLevel" onchange="updatePrompt()">
+                    <option value="Ensino de Base">Ensino de Base</option>
+                    <option value="Ensino Médio" selected>Ensino Médio</option>
+                    <option value="Ensino Superior">Ensino Superior</option>
+                </select>
+            </div>
+            <div>
+                <label>Normas:</label>
+                <select id="norms" onchange="updatePrompt()">
+                    <option value="ABNT" selected>ABNT</option>
+                    <option value="APA">APA</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="step-box">
+        <div class="step-badge">2. Dados da Capa</div>
+        <div class="cover-grid">
+            <div style="grid-column: span 6;">
+                <label>Instituição (Apenas Luanda):</label>
+                <select id="instName">
+                    <option value="Universidade Agostinho Neto (UAN)">Universidade Agostinho Neto (UAN)</option>
+                    <option value="Universidade Católica de Angola (UCAN)">Universidade Católica de Angola (UCAN)</option>
+                    <option value="Universidade Metodista de Angola (UMA)">Universidade Metodista de Angola (UMA)</option>
+                    <option value="Universidade Privada de Angola (UPRA)">Universidade Privada de Angola (UPRA)</option>
+                    <option value="Universidade Óscar Ribas (UÓR)">Universidade Óscar Ribas (UÓR)</option>
+                    <option value="Universidade Lusíada de Angola (ULA)">Universidade Lusíada de Angola (ULA)</option>
+                    <option value="Universidade Gregório Semedo (UGS)">Universidade Gregório Semedo (UGS)</option>
+                    <option value="Universidade Jean Piaget de Angola (UNIPIAGET)">Universidade Jean Piaget de Angola (UNIPIAGET)</option>
+                    <option value="Universidade Técnica de Angola (UTANGA)">Universidade Técnica de Angola (UTANGA)</option>
+                    <option value="Universidade Independente de Angola (UNIA)">Universidade Independente de Angola (UNIA)</option>
+                    <option value="Instituto Superior Politécnico de Tecnologias e Ciências (ISPTEC)">Instituto Superior Politécnico de Tecnologias e Ciências (ISPTEC)</option>
+                    <option value="Instituto Superior Politécnico Metropolitano de Angola (IMETRO)">Instituto Superior Politécnico Metropolitano de Angola (IMETRO)</option>
+                    <option value="Instituto Superior Politécnico Alvorecer da Juventude (ISPAJ)">Instituto Superior Politécnico Alvorecer da Juventude (ISPAJ)</option>
+                    <option value="Instituto Superior de Ciências Sociais e Relações Internacionais (CIS)">Instituto Superior de Ciências Sociais e Relações Internacionais (CIS)</option>
+                    <option value="Escola Secundária (Geral)">Escola Secundária (Geral)</option>
+                    <option value="Colégio Privado (Geral)">Colégio Privado (Geral)</option>
+                </select>
+            </div>
+            <div style="grid-column: span 2;"><label>Disciplina:</label><input type="text" id="discipline" placeholder="Ex: Informática"></div>
+            <div style="grid-column: span 2;"><label>Docente:</label><input type="text" id="teacher" placeholder="Ex: Prof. João"></div>
+            
+            <div style="grid-column: span 2;">
+                <label>Classe/Turma/Nível:</label>
+                <select id="studentClass">
+                    <option value="5ª Classe">5ª Classe</option>
+                    <option value="6ª Classe">6ª Classe</option>
+                    <option value="7ª Classe">7ª Classe</option>
+                    <option value="8ª Classe">8ª Classe</option>
+                    <option value="9ª Classe">9ª Classe</option>
+                    <option value="10ª Classe">10ª Classe</option>
+                    <option value="11ª Classe">11ª Classe</option>
+                    <option value="12ª Classe">12ª Classe</option>
+                    <option value="13ª Classe">13ª Classe</option>
+                    <option value="Universidade / Ensino Superior" selected>Universidade / Ensino Superior</option>
+                </select>
+            </div>
+            
+            <div style="grid-column: span 3;"><label>Local:</label><input type="text" id="location" value="LUANDA, ANGOLA"></div>
+            <div style="grid-column: span 3;"><label>Ano Académico:</label><input type="text" id="year" value="2025-2026"></div>
+            <div style="grid-column: span 6; margin-top:10px;">
+                <label>Nome do(s) Estudante(s):</label>
+                <textarea id="groupMembers" style="height: 60px;" placeholder="Insira o nome (um por linha)..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <div class="step-box" style="text-align: center;">
+        <div class="step-badge">3. Comando para IA</div>
+        <textarea id="prompt-area" style="display:none;"></textarea>
+        <button class="btn-prompt" onclick="copyPrompt()">📋 COPIAR COMANDO PARA IA</button>
+        <p style="font-size: 11px; color: #666; margin-top: 10px;">O comando será copiado automaticamente, pronto para colar no ChatGPT ou Gemini.</p>
+    </div>
+
+    <div class="step-box">
+        <div class="step-badge">4. Gerar Trabalho</div>
+        <button class="btn-auto" onclick="autoGenerateWork()">🤖 GERAR TRABALHO AUTOMÁTICO (TESTE)</button>
+        <textarea id="ai-response" style="height: 150px;" placeholder="Cole o texto gerado pela sua IA aqui..."></textarea>
+        
+        <div class="config-grid-format">
+             <div><label>Espaçamento:</label><select id="lineSpacing"><option value="1.5">1.5 (ABNT)</option></select></div>
+             <div><label>Fonte:</label><select id="fontType"><option value="'Times New Roman'">Times New Roman</option></select></div>
+             <div><label>Títulos:</label><select id="titleAlign"><option value="center">Centralizado</option></select></div>
+        </div>
+        <button class="btn-preview" onclick="processAndPreview()">👁️ 1. Gerar Pré-visualização</button>
+    </div>
+
+    <div id="preview-container">
+        <div class="preview-header">
+            <h3>📄 Pré-visualização A4</h3>
+            <div id="page-counter" class="page-count-badge">Folhas Geradas: 0</div>
+        </div>
+        <div id="word-preview"></div>
+        <button class="btn-save" onclick="exportToWord()">💾 2. Confirmar e Baixar</button>
+    </div>
+</div>
+
+<script>
+    function loadStats() {
+        const history = JSON.parse(localStorage.getItem('heligrafes_works')) || [];
+        const today = new Date().toLocaleDateString();
+        
+        document.getElementById('stat-today').innerText = history.filter(w => w.date === today).length;
+        document.getElementById('stat-week').innerText = history.filter(w => w.date === today).length;
+        
+        const baseNumber = 130;
+        document.getElementById('stat-month').innerText = baseNumber + history.length;
+        document.getElementById('stat-total').innerText = baseNumber + history.length;
+    }
+    loadStats();
+
+    function updateStats() {
+        const history = JSON.parse(localStorage.getItem('heligrafes_works')) || [];
+        history.push({ date: new Date().toLocaleDateString() });
+        localStorage.setItem('heligrafes_works', JSON.stringify(history));
+        loadStats();
+    }
+
+    function updatePrompt() {
+        const topic = document.getElementById('topic').value || "[INSERIR TEMA]";
+        const level = document.getElementById('academicLevel').value;
+        const norm = document.getElementById('norms').value || "ABNT";
+        const type = document.getElementById('workType').value;
+        
+        let prompt = "";
+
+        if (type === "fundamentacao") {
+            prompt = `Actue como especialista académico, com ampla experiência na elaboração de trabalhos do Ensino de Base, Ensino Médio e Ensino Superior.
+Redija o texto exclusivamente em português de Angola, utilizando linguagem académica formal, clara, coerente e bem estruturada, respeitando rigorosamente as normas da ${norm} para citações, referências e organização textual.
+TEMA DO TRABALHO: "${topic}"
+Desenvolva apenas o Capítulo 2 – FUNDAMENTAÇÃO TEÓRICA, obedecendo obrigatoriamente às seguintes regras:
+
+2. FUNDAMENTAÇÃO TEÓRICA
+Criar entre 10 e 12 títulos e subtítulos, numerados de forma sequencial e lógica, utilizando a seguinte hierarquia obrigatória:
+2.1, 2.2, 2.3… (títulos principais)
+2.1.1, 2.1.2… (subtítulos dos títulos principais)
+
+A organização deve seguir a lógica científica:
+conceitos gerais do tema
+definições segundo autores
+evolução histórica
+teorias relacionadas
+principais autores
+factores associados
+implicações do tema
+síntese teórica final
+
+Cada título e subtítulo deve conter no mínimo 300 palavras, com aprofundamento real, evitando superficialidade, repetições e generalizações.
+Utilizar citações directas e indirectas de autores clássicos e contemporâneos, correctamente referenciadas segundo as normas da ${norm}.
+Manter coerência total entre os subtítulos, garantindo progressão lógica do pensamento e ligação directa com o tema central.
+Não incluir introdução geral do trabalho, objectivos, metodologia ou conclusão. Desenvolver exclusivamente a FUNDAMENTAÇÃO TEÓRICA.
+O texto deve ser redigido como um professor experiente explicando o conteúdo de forma clara, segura e académica, sem jargões desnecessários e sem tom mecânico.
+
+Utilizar apenas HTML, respeitando rigorosamente:
+<h2> para títulos e subtítulos
+<p> para parágrafos
+
+Não utilizar Markdown (*, #, —).
+Todos os títulos devem estar escritos em MAIÚSCULAS.
+Gerar o conteúdo completo de forma contínua, organizada e académica, pronto para ser inserido directamente num trabalho escolar ou académico.`;
+
+        } else {
+            let estrutura = level === "Ensino Superior" 
+                ? "1. INTRODUÇÃO\n2. OBJECTIVOS\n3. DESENVOLVIMENTO (Subdividido em subtítulos 3.1, 3.2...)\n4. CONCLUSÃO\n5. BIBLIOGRAFIA"
+                : "1. INTRODUÇÃO\n2. DESENVOLVIMENTO (Subdividido em subtítulos 2.1, 2.2...)\n3. CONCLUSÃO\n4. BIBLIOGRAFIA";
+
+            prompt = `Actue como especialista académico. Redija exclusivamente em português de Angola, linguagem formal, seguindo ${norm}.
+TEMA: "${topic}"
+NÍVEL: ${level}
+
+REGRAS DE FORMATAÇÃO E ESTRUTURA:
+Use numeração académica sequencial:
+${estrutura}
+
+O trabalho completo deve conter entre 4000 e 5000 palavras.
+Entregue apenas em HTML, usando EXCLUSIVAMENTE a tag <h2> para os títulos e a tag <p> para os textos. 
+Todos os títulos em MAIÚSCULAS. Não utilize marcações Markdown.`;
+        }
+
+        document.getElementById('prompt-area').value = prompt;
+    }
+
+    document.getElementById('topic').addEventListener('input', updatePrompt);
+    document.getElementById('academicLevel').addEventListener('change', updatePrompt);
+    document.getElementById('workType').addEventListener('change', updatePrompt);
+
+    function copyPrompt() {
+        const textToCopy = document.getElementById('prompt-area').value;
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert("Comando copiado para a área de transferência! Vá à sua IA e cole o texto.");
+        }).catch(err => {
+            alert("Erro ao copiar. O seu navegador pode ter bloqueado a ação.");
+        });
+    }
+
+    function cleanAndConvertSmart() {
+        let text = document.getElementById('ai-response').value;
+        if(!text) return;
+        text = text.replace(/^(Claro|Aqui está|Espero que|Certamente|Seguem).+?(\n|$)/gim, '');
+        text = text.replace(/```html|```markdown|```/gi, '');
+        
+        if (!text.includes('<p>') && !text.includes('<h2>')) {
+            text = marked.parse(text);
+            text = text.replace(/<h1(.*?)>/g, '<h2$1>').replace(/<\/h1>/g, '</h2>');
+        } else {
+            text = text.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+        }
+        document.getElementById('ai-response').value = text.trim();
+    }
+
+    function processAndPreview() {
+        cleanAndConvertSmart(); 
+        const rawText = document.getElementById('ai-response').value;
+        if(!rawText) return alert("Cole o texto gerado pela IA primeiro!");
+
+        const inst = document.getElementById('instName').value;
+        const topic = document.getElementById('topic').value || "TEMA DO TRABALHO";
+        const discipline = document.getElementById('discipline').value;
+        const teacher = document.getElementById('teacher').value;
+        const classe = document.getElementById('studentClass').value;
+        const loc = document.getElementById('location').value;
+        const year = document.getElementById('year').value;
+        const members = document.getElementById('groupMembers').value.replace(/\n/g, '<br>');
+
+        // ALTERAÇÃO DE LAYOUT DA CAPA: Instituição centralizada no topo, Disciplina/Docente à direita
+        let html = `
+        <div class="a4-page cover-page">
+            <div style="text-align:center; margin-bottom: 40pt;">
+                <p style="font-size:14pt; font-weight:bold; text-transform:uppercase; margin:0;">${inst}</p>
+            </div>
+            
+            <div style="text-align:right; margin-bottom: 70pt;">
+                <p style="font-size:12pt; font-weight:bold; text-transform:uppercase; margin:0 0 5pt 0;">DISCIPLINA: ${discipline}</p>
+                <p style="font-size:12pt; margin:0;"><strong>DOCENTE:</strong> ${teacher}</p>
+            </div>
+            
+            <div style="text-align:center; margin-bottom: 80pt;">
+                <h1 style="font-size:16pt; font-weight:bold; text-transform:uppercase;">${topic}</h1>
+            </div>
+            
+            <div style="text-align:right; margin-bottom: 80pt;">
+                <p style="font-size:12pt; margin:0;">
+                    <strong>CLASSE/NÍVEL:</strong> ${classe}<br><br>
+                    <strong>NOME(S):</strong><br>${members}
+                </p>
+            </div>
+            
+            <div style="text-align:center; position: absolute; bottom: 3cm; width: calc(100% - 5cm);">
+                <p style="font-size:12pt; font-weight:bold; text-transform:uppercase; margin:0;">${loc}<br>${year}</p>
+            </div>
+        </div>`;
+
+        // 2. PROCESSAR CONTEÚDO PARA PÁGINAS (Quebrando apenas em números inteiros)
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = rawText;
+        
+        const elements = Array.from(tempDiv.children);
+        let pagesHtml = "";
+        let currentPageContent = "";
+        let indexEntries = [];
+        let pageNum = 1;
+
+        elements.forEach((el) => {
+            const text = el.innerText.trim();
+            
+            // Regra: É título principal se for H2/H3 E (não tiver ponto OR começar com número sem ponto seguido de espaço OR for texto puro)
+            const isMainTitle = (el.tagName === 'H2' || el.tagName === 'H3') && 
+                                (!text.includes('.') || /^\d+\s/.test(text) || /^\d+\.$/.test(text) || text.match(/^[A-Z\sÀ-Ú]+$/));
+            
+            // Regra: É subtítulo se tiver ponto decimal (ex: 1.1, 2.3)
+            const isSubtitle = (el.tagName === 'H2' || el.tagName === 'H3') && 
+                               (text.includes('.') && /\d+\.\d+/.test(text));
+
+            if (isMainTitle && currentPageContent !== "") {
+                pagesHtml += `<div class="a4-page">${currentPageContent}</div>`;
+                currentPageContent = "";
+                pageNum++;
+            }
+
+            if (isMainTitle || isSubtitle) {
+                indexEntries.push({ title: text, page: pageNum, isSub: isSubtitle });
+                el.outerHTML = `<${isMainTitle ? 'h2' : 'h3'}>${el.innerHTML}</${isMainTitle ? 'h2' : 'h3'}>`;
+            }
+
+            currentPageContent += el.outerHTML;
+        });
+        if(currentPageContent !== "") {
+            pagesHtml += `<div class="a4-page">${currentPageContent}</div>`;
+        }
+
+        // 3. ÍNDICE
+        let indexHtml = `<div class="a4-page"><h2 style="text-align:center;">ÍNDICE</h2><br><div style="width:90%; margin:0 auto;">`;
+        indexEntries.forEach(item => {
+            indexHtml += `<div class="index-line" style="${item.isSub ? 'margin-left:20px; font-weight:normal;' : ''}">
+                <span class="index-title">${item.title}</span>
+                <span class="index-page">${item.page}</span>
+            </div>`;
+        });
+        indexHtml += `</div></div>`;
+
+        const previewDiv = document.getElementById('word-preview');
+        previewDiv.innerHTML = html + indexHtml + pagesHtml;
+
+        const font = document.getElementById('fontType').value;
+        const spacing = document.getElementById('lineSpacing').value;
+        previewDiv.style.fontFamily = font;
+        
+        previewDiv.querySelectorAll('p').forEach(p => {
+            p.style.lineHeight = spacing === "1.5" ? "150%" : "100%";
+            p.style.textAlign = "justify";
+            p.style.textIndent = "1.25cm";
+            p.style.fontSize = "12pt";
+        });
+        previewDiv.querySelectorAll('h2').forEach(h => {
+            if(!h.innerHTML.includes('ÍNDICE')) h.style.textAlign = "left";
+            h.style.fontSize = "14pt"; h.style.fontWeight = "bold"; h.style.marginTop = "0";
+        });
+        previewDiv.querySelectorAll('h3').forEach(h => {
+            h.style.textAlign = "left"; h.style.fontSize = "12pt"; h.style.fontWeight = "bold"; h.style.marginTop = "15pt";
+        });
+
+        document.getElementById('preview-container').style.display = 'block';
+        document.getElementById('page-counter').innerText = `Folhas Geradas: ${document.querySelectorAll('.a4-page').length}`;
+    }
+
+    function exportToWord() {
+        const choice = prompt("Deseja baixar o documento em formato 'WORD' ou 'PDF'?\n\nDigite WORD ou PDF:", "WORD");
+        if (!choice) return;
+
+        if (choice.toUpperCase().trim() === 'PDF') {
+            window.print();
+            return;
+        } else if (choice.toUpperCase().trim() === 'WORD') {
+            const filename = document.getElementById('topic').value || "Trabalho";
+            const content = document.getElementById("word-preview").innerHTML;
+            
+            const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='[http://www.w3.org/TR/REC-html40](http://www.w3.org/TR/REC-html40)'><head><meta charset='utf-8'><style>
+                @page { size: 21cm 29.7cm; margin: 3cm 2cm 2cm 3cm; }
+                .a4-page { page-break-after: always; }
+                h2 { page-break-before: always; font-size: 14pt; font-weight: bold; }
+                h3 { page-break-before: avoid; font-size: 12pt; font-weight: bold; margin-top: 15pt; }
+                p { text-align: justify; text-indent: 1.25cm; line-height: 1.5; font-size: 12pt; }
+                .index-line { display: flex; justify-content: space-between; font-size: 12pt; margin-bottom: 8pt; }
+            </style></head><body>`;
+            
+            const blob = new Blob(['\ufeff', header + content + "</body></html>"], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `Heligrafes_${filename.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.doc`;
+            link.click();
+            updateStats();
+        } else {
+            alert("Opção inválida. Escreva apenas WORD ou PDF.");
+        }
+    }
+
+    function autoGenerateWork() {
+        document.getElementById('ai-response').value = `<h2>1. INTRODUÇÃO</h2>\n<p>Este é um texto de exemplo gerado automaticamente para demonstrar a formatação.</p>\n\n<h2>2. FUNDAMENTAÇÃO TEÓRICA</h2>\n<p>Aqui inicia o capítulo principal e deve quebrar página.</p>\n\n<h3>2.1 Conceitos Gerais</h3>\n<p>Este é um subtítulo com decimal, logo permanecerá na mesma página que o título 2.</p>\n\n<h2>3. CONCLUSÃO</h2>\n<p>A conclusão encerra o trabalho.</p>`;
+        alert("Conteúdo de teste inserido! Clique em '1. Gerar Pré-visualização'.");
+    }
+
+    window.onload = updatePrompt;
+</script>
+</body>
+</html>
