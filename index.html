@@ -160,7 +160,7 @@
 
     <main class="flex-1 flex flex-col relative overflow-hidden">
         
-        <header class="h-24 px-10 flex items-center justify-between no-print z-10 bg-white/50 backdrop-blur-sm">
+        <header class="h-32 px-10 flex items-center justify-between no-print z-10 bg-white/50 backdrop-blur-sm">
             <div class="flex items-center gap-6">
                 <div class="text-3xl font-black vibrant-clock tracking-tighter" id="digital-clock">00:00:00</div>
                 <div class="border-l-2 border-slate-300 pl-6">
@@ -169,12 +169,13 @@
                         <span id="alert-badge" class="hidden bg-red-500 text-white text-[10px] px-2 rounded-full animate-bounce">!</span>
                     </h4>
                     <p class="text-xs font-bold text-slate-500" id="delivery-alert-text">Sem alertas de entrega para amanhã.</p>
+                    <div id="pending-debts-header" class="mt-2 flex flex-wrap gap-2"></div>
                 </div>
             </div>
             <div class="flex items-center gap-6 bg-white/80 px-6 py-3 rounded-2xl border border-white shadow-sm">
                 <div class="text-right">
                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Faturação Hoje</p>
-                    <p class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600" id="dash-revenue">0 Kz</p>
+                    <p class="text-xl font-black text-slate-500" id="dash-revenue">Gestão de Stocks</p>
                 </div>
             </div>
         </header>
@@ -205,9 +206,9 @@
                     <div>
                         <label class="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-widest mb-2"><span>📚</span> 1. Nível de Ensino</label>
                         <div class="grid grid-cols-3 gap-3" id="group-level">
-                            <button onclick="setAcBtn('ac-level', 'BASE', this)" class="ac-btn active bg-blue-600 text-white border-blue-600 p-3 rounded-xl border-2 font-bold text-sm shadow-md">Ensino Base<br><span class="text-[10px] opacity-80">2.000 Kz</span></button>
-                            <button onclick="setAcBtn('ac-level', 'MEDIO', this)" class="ac-btn bg-white text-slate-500 border-slate-200 p-3 rounded-xl border-2 font-bold text-sm hover:bg-blue-50">Ensino Médio<br><span class="text-[10px] opacity-80">2.500 Kz</span></button>
-                            <button onclick="setAcBtn('ac-level', 'SUPERIOR', this)" class="ac-btn bg-white text-slate-500 border-slate-200 p-3 rounded-xl border-2 font-bold text-sm hover:bg-blue-50">Ensino Superior<br><span class="text-[10px] opacity-80">3.500 Kz</span></button>
+                            <button onclick="setAcBtn('ac-level', 'BASE', this)" class="ac-btn active bg-blue-600 text-white border-blue-600 p-3 rounded-xl border-2 font-bold text-sm shadow-md">Ensino Base<br><span class="text-[10px] opacity-80">desde 2.500 Kz</span></button>
+                            <button onclick="setAcBtn('ac-level', 'MEDIO', this)" class="ac-btn bg-white text-slate-500 border-slate-200 p-3 rounded-xl border-2 font-bold text-sm hover:bg-blue-50">Ensino Médio<br><span class="text-[10px] opacity-80">desde 3.000 Kz</span></button>
+                            <button onclick="setAcBtn('ac-level', 'SUPERIOR', this)" class="ac-btn bg-white text-slate-500 border-slate-200 p-3 rounded-xl border-2 font-bold text-sm hover:bg-blue-50">Universidade<br><span class="text-[10px] opacity-80">desde 4.000 Kz</span></button>
                         </div>
                     </div>
 
@@ -217,7 +218,7 @@
                             <button onclick="setAcBtn('ac-pages', '15', this)" class="ac-btn active bg-blue-600 text-white border-blue-600 p-3 rounded-xl border-2 font-bold text-sm shadow-md">Até 15</button>
                             <button onclick="setAcBtn('ac-pages', '20', this)" class="ac-btn bg-white text-slate-500 border-slate-200 p-3 rounded-xl border-2 font-bold text-sm hover:bg-blue-50">Até 20</button>
                             <button onclick="setAcBtn('ac-pages', '25', this)" class="ac-btn bg-white text-slate-500 border-slate-200 p-3 rounded-xl border-2 font-bold text-sm hover:bg-blue-50">Até 25</button>
-                            <button onclick="setAcBtn('ac-pages', '35', this)" class="ac-btn bg-white text-slate-500 border-slate-200 p-3 rounded-xl border-2 font-bold text-sm hover:bg-blue-50">30-35</button>
+                            <button onclick="setAcBtn('ac-pages', '30', this)" class="ac-btn bg-white text-slate-500 border-slate-200 p-3 rounded-xl border-2 font-bold text-sm hover:bg-blue-50">Até 30</button>
                         </div>
                     </div>
 
@@ -415,6 +416,21 @@
                             </div>
                         </div>
 
+                        <div class="glass-panel p-5 bg-white shadow-lg border-l-4 border-amber-500">
+                            <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">⏱️ Controlo de Lançamento</h3>
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
+                                    <span class="block text-[10px] font-bold text-slate-400 uppercase">Último produto</span>
+                                    <strong class="text-slate-700" id="vr-last-sale-time">Sem lançamento</strong>
+                                </div>
+                                <div class="bg-amber-50 border border-amber-100 rounded-xl p-3">
+                                    <span class="block text-[10px] font-bold text-amber-600 uppercase">Intervalo parado</span>
+                                    <strong class="text-amber-800" id="vr-idle-interval">0 min</strong>
+                                </div>
+                            </div>
+                            <div id="vr-idle-alert" class="hidden mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-800"></div>
+                        </div>
+
                         <div class="glass-panel p-5 bg-white shadow-lg border-l-4 border-emerald-500 flex-1 flex flex-col overflow-hidden">
                             <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">🛒 Vendas Recentes (Hoje)</h3>
                             <div class="overflow-y-auto flex-1 space-y-2 text-xs" id="vr-daily-sales-summary">
@@ -525,6 +541,23 @@
 
             <div id="stocks" class="tab-content hidden no-print">
                 <div class="grid grid-cols-12 gap-6">
+                    <div class="col-span-12">
+                        <div class="glass-panel p-5 bg-slate-900 text-white shadow-xl border border-slate-700">
+                            <div class="grid grid-cols-12 gap-4 items-start">
+                                <div class="col-span-12 lg:col-span-3">
+                                    <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Faturação Hoje</p>
+                                    <h3 class="text-3xl font-black mt-1" id="stock-private-revenue">0 Kz</h3>
+                                </div>
+                                <div class="col-span-12 lg:col-span-9">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold">Dívidas Pendentes</p>
+                                        <span class="text-xs font-black text-amber-300" id="stock-debt-total">0 Kz</span>
+                                    </div>
+                                    <div id="stock-debt-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-span-12 lg:col-span-6">
                         <div class="glass-panel p-6 bg-white shadow-lg border-l-4 border-blue-600">
                             <h3 class="text-xl font-bold text-slate-700 mb-4 flex items-center gap-2">✨ REGISTO / EDIÇÃO</h3>
@@ -573,7 +606,7 @@
                     </div>
                     <button onclick="renderReports()" class="bg-white border border-slate-300 px-4 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">🔄 Atualizar Dados</button>
                 </div>
-                <div id="report-content-area" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 h-[calc(100%-80px)] overflow-y-auto pb-4">
+                <div id="report-content-area" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 h-[calc(100%-80px)] overflow-y-auto pb-4">
                     <div class="glass-panel p-5 flex flex-col gap-3 border-t-4 border-blue-600">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">💰 Fluxo & Lucro Líquido</h4>
                         <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-1">
@@ -597,6 +630,21 @@
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2 mb-2">💳 Pagamentos</h4>
                         <div class="relative h-40 mb-4"><canvas id="chart-payment"></canvas></div>
                         <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100 mt-auto text-center"><p class="text-[10px] font-bold text-emerald-500 uppercase">Forma Mais Viável</p><h3 class="text-xl font-black text-emerald-800 mt-1" id="rep-best-method">-</h3><div class="mt-2 pt-2 border-t border-emerald-200"><span class="text-[10px] text-emerald-600 font-bold uppercase">Entrada Bruta</span><p class="text-lg font-bold text-emerald-700" id="rep-method-val">0 Kz</p></div></div>
+                    </div>
+                    <div class="glass-panel p-5 flex flex-col border-t-4 border-amber-500">
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2 mb-2">➕ Gestão de Stocks</h4>
+                        <div class="bg-amber-50 p-4 rounded-xl border border-amber-100 text-center mb-3">
+                            <p class="text-[10px] font-bold text-amber-600 uppercase">Total Hoje</p>
+                            <h3 class="text-2xl font-black text-amber-800 mt-1" id="rep-extra-total">0 Kz</h3>
+                        </div>
+                        <div class="overflow-y-auto max-h-52 border border-slate-100 rounded-xl bg-white">
+                            <table class="w-full text-left text-[11px]">
+                                <thead class="bg-slate-50 text-slate-400 uppercase font-black sticky top-0">
+                                    <tr><th class="p-2">Hora</th><th class="p-2">Motivo</th><th class="p-2 text-right">Valor</th></tr>
+                                </thead>
+                                <tbody id="rep-extra-cash-list" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
                     </div>
                     <div class="glass-panel p-5 flex flex-col border-t-4 border-amber-500">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2 mb-2">📅 Fluxo Anual (Jan-Dez)</h4>
@@ -647,7 +695,7 @@
     <script>
         /* --- DADOS E VARIÁVEIS GLOBAIS --- */
         const pricingDatabase = {
-            'Quadros Digitais':{'A5 (10x20 cm)':3700,'A4 (20x30 cm)':5550,'A3 (30x45 cm)':9750,'A2 (40x60 cm)':15650,'A1 (50x75 cm)':24050,'A1+ (60x90 cm)':28000,'A0 (90x100 cm)':50050,'PVC A4 (20x30 cm)':3000,'PVC A3 (30x45 cm)':5600,'PVC A2 (40x60 cm)':9250,'PVC A1 (50x75 cm)':14500,'PVC A1+ (60x90 cm)':18000,'PVC A0 (80x100 cm)':30000},
+            'Quadros Digitais':{'A5 (10x20 cm)':4200,'A4 (20x30 cm)':6050,'A3 (30x45 cm)':10250,'A2 (40x60 cm)':16150,'A1 (50x75 cm)':24550,'A1+ (60x90 cm)':28500,'A0 (90x100 cm)':50550,'PVC A4 (20x30 cm)':3500,'PVC A3 (30x45 cm)':6100,'PVC A2 (40x60 cm)':9750,'PVC A1 (50x75 cm)':15000,'PVC A1+ (60x90 cm)':18500,'PVC A0 (80x100 cm)':30500},
             'T-Shirt':{'T-Shirt Pesada':3000,'T-Shirt Normal':2500,'T-Shirt Criança':2500,'T-Shirt Preta':4500,'T-Shirt do Cliente':1000},
             'Lacoste':{'Lacoste Normal':5000},
             'Colete':{'Colete Multibolsos':14000,'Colete Verde (Leve)':2500,'Colete Verde (Pesado)':4000},
@@ -665,6 +713,11 @@
         let employees = JSON.parse(localStorage.getItem('multi_employees_v52')) || [];
         let attendance = JSON.parse(localStorage.getItem('multi_attendance_v52')) || [];
         let shiftCloses = JSON.parse(localStorage.getItem('multi_shift_history_v52')) || []; // Histórico de Fechos
+        let extraCashAdds = JSON.parse(localStorage.getItem('multi_extra_cash_v52')) || [];
+        let debtPayments = JSON.parse(localStorage.getItem('multi_debt_payments_v52')) || [];
+        const EXTRA_CASH_AMOUNT = 550;
+        const EXTRA_CASH_MIN_BALANCE = 2300;
+        const EXTRA_CASH_IDLE_MS = 2 * 60 * 60 * 1000;
         
         let vrCart = []; 
         let charts = {};
@@ -672,12 +725,23 @@
         /* --- INICIALIZAÇÃO --- */
 
 window.onload = function() {
+    sales.forEach(s => {
+        if (s.initialPaid === undefined) s.initialPaid = parseFloat(s.paid || 0) || 0;
+    });
     renderTsButtons();
+    autoCalcAcademicPrice();
     saveData();
     renderReports();
     startClock();
     checkNotifications();
     renderShiftHistory(); // Carrega o histórico de fechos
+    renderPendingDebts();
+    checkIdleCashIncrease();
+    renderIdleCashStatus();
+    setInterval(() => {
+        checkIdleCashIncrease();
+        renderIdleCashStatus();
+    }, 60000);
     if(document.getElementById('relatorios')) renderReports();
 };
 
@@ -730,15 +794,29 @@ window.onload = function() {
 
         /* --- SISTEMA CENTRAL (SAVE/LOAD) --- */
         function saveData(newSale = null) {
-            if(newSale) sales.push({ id: Date.now(), ...newSale });
+            let savedSale = null;
+            if(newSale) {
+                savedSale = {
+                    id: newSale.id || Date.now(),
+                    createdAt: newSale.createdAt || new Date().toISOString(),
+                    time: newSale.time || new Date().toLocaleTimeString().slice(0,5),
+                    ...newSale,
+                    initialPaid: newSale.initialPaid !== undefined ? newSale.initialPaid : (parseFloat(newSale.paid || 0) || 0)
+                };
+                sales.push(savedSale);
+            }
             localStorage.setItem('multi_sales_v52', JSON.stringify(sales));
             localStorage.setItem('multi_products_v52', JSON.stringify(products));
             localStorage.setItem('multi_employees_v52', JSON.stringify(employees));
             localStorage.setItem('multi_attendance_v52', JSON.stringify(attendance));
             localStorage.setItem('multi_shift_history_v52', JSON.stringify(shiftCloses)); // Salva histórico de fechos
+            localStorage.setItem('multi_extra_cash_v52', JSON.stringify(extraCashAdds));
+            localStorage.setItem('multi_debt_payments_v52', JSON.stringify(debtPayments));
 
             renderDashboard(); 
             renderDailySummaries();
+            renderIdleCashStatus();
+            renderPendingDebts();
             checkNotifications(); 
             
             const ind = document.getElementById('save-indicator'); 
@@ -746,14 +824,216 @@ window.onload = function() {
                 ind.classList.remove('bg-emerald-500'); ind.classList.add('bg-white'); 
                 setTimeout(() => { ind.classList.remove('bg-white'); ind.classList.add('bg-emerald-500'); }, 200); 
             }
+            return savedSale;
         }
 
         function renderDashboard() { 
-            let t = 0; 
-            sales.forEach(s => { 
-                if(s.date === new Date().toLocaleDateString() && s.category !== 'EXPENSE') t += s.paid; 
-            }); 
-            document.getElementById('dash-revenue').innerText = t.toLocaleString() + ' Kz'; 
+            const dash = document.getElementById('dash-revenue');
+            if (dash) dash.innerText = 'Gestão de Stocks';
+            renderStockPrivateSummary();
+        }
+
+        function getDebtAmount(sale) {
+            return Math.max(0, (parseFloat(sale.total) || 0) - (parseFloat(sale.paid) || 0));
+        }
+
+        function getSaleInitialPaid(sale) {
+            return sale.initialPaid !== undefined
+                ? (parseFloat(sale.initialPaid) || 0)
+                : (parseFloat(sale.paid || sale.total || 0) || 0);
+        }
+
+        function getPendingDebts() {
+            return sales
+                .filter(s => s.category !== 'EXPENSE' && getDebtAmount(s) > 0)
+                .sort((a, b) => getDebtAmount(b) - getDebtAmount(a));
+        }
+
+        function getDebtPaymentsTotal(date = new Date().toLocaleDateString()) {
+            return debtPayments
+                .filter(item => item.date === date)
+                .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        }
+
+        function getTodayRevenue(date = new Date().toLocaleDateString()) {
+            let total = 0;
+            sales.forEach(s => {
+                if (s.date === date && s.category !== 'EXPENSE') total += getSaleInitialPaid(s);
+            });
+            return total + getExtraCashTotal(date) + getDebtPaymentsTotal(date);
+        }
+
+        function renderPendingDebts() {
+            const debts = getPendingDebts();
+            const header = document.getElementById('pending-debts-header');
+            if (header) {
+                header.innerHTML = debts.length ? debts.slice(0, 3).map(s => `
+                    <div class="bg-rose-50 border border-rose-200 rounded-lg px-2 py-1 text-[10px] text-rose-700">
+                        <strong>${getDebtAmount(s).toLocaleString()} Kz</strong> | ${s.client || 'Cliente'} | ${s.desc || 'Produto'} | ${s.phone || 'sem contacto'}
+                        <button onclick="registerDebtPayment(${s.id})" class="ml-2 font-black text-emerald-700 underline">Pagar</button>
+                    </div>`).join('') : '<span class="text-[10px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 rounded-lg px-2 py-1">Sem dívidas pendentes</span>';
+            }
+            renderStockPrivateSummary();
+        }
+
+        function renderStockPrivateSummary() {
+            const revenueEl = document.getElementById('stock-private-revenue');
+            const debtTotalEl = document.getElementById('stock-debt-total');
+            const debtList = document.getElementById('stock-debt-list');
+            if (revenueEl) revenueEl.innerText = getTodayRevenue().toLocaleString() + ' Kz';
+            const debts = getPendingDebts();
+            const totalDebt = debts.reduce((sum, s) => sum + getDebtAmount(s), 0);
+            if (debtTotalEl) debtTotalEl.innerText = totalDebt.toLocaleString() + ' Kz';
+            if (debtList) {
+                debtList.innerHTML = debts.length ? debts.map(s => `
+                    <div class="bg-white/10 border border-white/10 rounded-xl p-3 text-xs">
+                        <div class="flex justify-between gap-2"><strong class="text-white">${s.client || 'Cliente'}</strong><span class="text-amber-300 font-black">${getDebtAmount(s).toLocaleString()} Kz</span></div>
+                        <div class="text-slate-300 truncate mt-1">${s.desc || 'Produto'}</div>
+                        <div class="text-slate-400 mt-1">${s.phone || 'Sem contacto'} | Dívida de ${s.date}</div>
+                        <button onclick="registerDebtPayment(${s.id})" class="mt-2 w-full py-1.5 bg-emerald-500 text-white rounded-lg font-black text-[10px] uppercase">Registar Pagamento</button>
+                    </div>`).join('') : '<div class="text-xs text-emerald-300 font-bold">Sem dívidas pendentes.</div>';
+            }
+        }
+
+        function registerDebtPayment(saleId) {
+            const sale = sales.find(s => s.id === saleId);
+            if (!sale) return alert('Dívida não encontrada.');
+            const debt = getDebtAmount(sale);
+            if (debt <= 0) return alert('Esta dívida já está paga.');
+            const amountInput = prompt(`Valor pago por ${sale.client || 'cliente'} (dívida atual: ${debt.toLocaleString()} Kz):`, debt);
+            if (amountInput === null) return;
+            const amount = parseFloat(amountInput);
+            if (!amount || amount <= 0) return alert('Valor inválido.');
+            const method = prompt('Método de pagamento:', sale.method || 'Dinheiro') || sale.method || 'Dinheiro';
+            const paidAmount = Math.min(amount, debt);
+            sale.paid = (parseFloat(sale.paid) || 0) + paidAmount;
+            debtPayments.push({
+                id: Date.now(),
+                originalSaleId: sale.id,
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString().slice(0,5),
+                originalDate: sale.date,
+                client: sale.client || '',
+                phone: sale.phone || '',
+                product: sale.desc || '',
+                amount: paidAmount,
+                method: method,
+                remainingAfter: getDebtAmount(sale)
+            });
+            saveData();
+            renderReports();
+            alert(`Pagamento registado: ${paidAmount.toLocaleString()} Kz. Falta pagar: ${getDebtAmount(sale).toLocaleString()} Kz.`);
+        }
+
+        function getSaleTimestamp(sale) {
+            if (sale.createdAt) return new Date(sale.createdAt).getTime();
+            if (sale.id) return new Date(sale.id).getTime();
+            return 0;
+        }
+
+        function getExtraCashTotal(date = new Date().toLocaleDateString()) {
+            return extraCashAdds
+                .filter(item => item.date === date)
+                .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        }
+
+        function getTodayCashBalance(date = new Date().toLocaleDateString()) {
+            let entradas = 0;
+            let saidas = 0;
+            sales.forEach(s => {
+                if (s.date !== date) return;
+                if (s.category === 'EXPENSE') saidas += parseFloat(s.total || 0);
+                else entradas += getSaleInitialPaid(s);
+            });
+            return entradas + getExtraCashTotal(date) + getDebtPaymentsTotal(date) - saidas;
+        }
+
+        function getLastCashSale(date = new Date().toLocaleDateString()) {
+            return sales
+                .filter(s => s.date === date && s.category !== 'EXPENSE')
+                .sort((a, b) => getSaleTimestamp(b) - getSaleTimestamp(a))[0] || null;
+        }
+
+        function formatIdleInterval(ms) {
+            if (ms <= 0) return '0 min';
+            const totalMinutes = Math.floor(ms / 60000);
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+            return hours > 0 ? `${hours}h ${minutes}min` : `${minutes}min`;
+        }
+
+        function checkIdleCashIncrease() {
+            const today = new Date().toLocaleDateString();
+            const lastSale = getLastCashSale(today);
+            if (!lastSale) return null;
+
+            const lastSaleAt = getSaleTimestamp(lastSale);
+            const elapsed = Date.now() - lastSaleAt;
+            const completedPeriods = Math.floor(elapsed / EXTRA_CASH_IDLE_MS);
+            if (completedPeriods < 1 || getTodayCashBalance(today) < EXTRA_CASH_MIN_BALANCE) return null;
+
+            let lastEntry = null;
+            for (let period = 1; period <= completedPeriods; period++) {
+                const periodKey = `${today}-${lastSale.id}-${period}`;
+                const alreadyAdded = extraCashAdds.some(item => item.periodKey === periodKey);
+                if (alreadyAdded) continue;
+
+                lastEntry = {
+                    id: Date.now() + period,
+                    periodKey,
+                    date: today,
+                    time: new Date().toLocaleTimeString().slice(0,5),
+                    amount: EXTRA_CASH_AMOUNT,
+                    reason: 'Gestão de Stocks',
+                    lastSaleId: lastSale.id,
+                    lastSaleTime: lastSale.time || new Date(lastSaleAt).toLocaleTimeString().slice(0,5),
+                    minutesWithoutSale: Math.floor(elapsed / 60000)
+                };
+                extraCashAdds.push(lastEntry);
+            }
+
+            if (lastEntry) {
+                localStorage.setItem('multi_extra_cash_v52', JSON.stringify(extraCashAdds));
+                renderDashboard();
+                renderDailySummaries();
+                renderReports();
+                const noticeKey = `extra-cash-alert-${lastEntry.id}`;
+                if (!sessionStorage.getItem(noticeKey)) {
+                    sessionStorage.setItem(noticeKey, '1');
+                    alert(`Atenção: o caixa está a acumular valor sem lançamento há ${formatIdleInterval(elapsed)}.`);
+                }
+            }
+            return lastEntry;
+        }
+
+        function renderIdleCashStatus() {
+            const today = new Date().toLocaleDateString();
+            const lastSale = getLastCashSale(today);
+            const timeEl = document.getElementById('vr-last-sale-time');
+            const intervalEl = document.getElementById('vr-idle-interval');
+            const alertEl = document.getElementById('vr-idle-alert');
+            if (!timeEl || !intervalEl || !alertEl) return;
+
+            if (!lastSale) {
+                timeEl.innerText = 'Sem lançamento';
+                intervalEl.innerText = '0 min';
+                alertEl.classList.add('hidden');
+                alertEl.innerText = '';
+                return;
+            }
+
+            const lastSaleAt = getSaleTimestamp(lastSale);
+            const elapsed = Date.now() - lastSaleAt;
+            timeEl.innerText = `${lastSale.time || new Date(lastSaleAt).toLocaleTimeString().slice(0,5)} - ${lastSale.desc || 'Venda'}`;
+            intervalEl.innerText = formatIdleInterval(elapsed);
+
+            if (elapsed >= EXTRA_CASH_IDLE_MS && getTodayCashBalance(today) >= EXTRA_CASH_MIN_BALANCE) {
+                alertEl.classList.remove('hidden');
+                alertEl.innerText = `Caixa a acumular sem lançamento há ${formatIdleInterval(elapsed)}. Verifique se os produtos foram lançados corretamente.`;
+            } else {
+                alertEl.classList.add('hidden');
+                alertEl.innerText = '';
+            }
         }
 
         /* --- FECHO DE CAIXA (Lógica Completa) --- */
@@ -770,14 +1050,14 @@ window.onload = function() {
             const today = new Date().toLocaleDateString();
             let stats = {
                 dinheiro: 0, express: 0, tpa: 0, transf: 0,
-                totalVendas: 0, despesas: 0, qtdVendas: 0
+                totalVendas: 0, despesas: 0, qtdVendas: 0, extraCaixa: 0, dividasPagas: 0
             };
 
             sales.forEach(s => {
                 if (s.date === today) {
                     if (s.category === 'EXPENSE') stats.despesas += s.total;
                     else {
-                        stats.totalVendas += s.total;
+                        stats.totalVendas += getSaleInitialPaid(s);
                         stats.qtdVendas++;
                         const m = s.method ? s.method.toLowerCase() : '';
                         if (m.includes('dinheiro')) stats.dinheiro += s.total;
@@ -787,6 +1067,9 @@ window.onload = function() {
                     }
                 }
             });
+            stats.extraCaixa = getExtraCashTotal(today);
+            stats.dividasPagas = getDebtPaymentsTotal(today);
+            stats.totalVendas += stats.extraCaixa + stats.dividasPagas;
 
             // Grava no histórico permanente
             const shiftEntry = {
@@ -1052,11 +1335,18 @@ function renderDailySummaries() {
     
     let totalVendasHoje = 0;
     let totalDespesasHoje = 0;
+    let previousSaleAt = null;
     
     salesSummary.innerHTML = '';
-    sales.filter(s => s.date === today && s.category !== 'EXPENSE').forEach(s => {
-        totalVendasHoje += s.total;
-        salesSummary.innerHTML += `<div class="flex justify-between bg-slate-50 p-2 rounded border border-slate-100"><span class="font-bold text-slate-700 text-xs">${s.desc}</span><span class="text-slate-400 text-[10px]">${s.time}</span></div>`;
+    sales.filter(s => s.date === today && s.category !== 'EXPENSE').sort((a,b) => getSaleTimestamp(a) - getSaleTimestamp(b)).forEach(s => {
+        totalVendasHoje += getSaleInitialPaid(s);
+        const saleAt = getSaleTimestamp(s);
+        const intervalText = previousSaleAt ? formatIdleInterval(saleAt - previousSaleAt) : 'Primeiro lançamento';
+        previousSaleAt = saleAt;
+        salesSummary.innerHTML += `<div class="bg-slate-50 p-2 rounded border border-slate-100">
+            <div class="flex justify-between"><span class="font-bold text-slate-700 text-xs">${s.desc}</span><span class="text-slate-400 text-[10px]">${s.time || new Date(saleAt).toLocaleTimeString().slice(0,5)}</span></div>
+            <div class="text-[10px] font-bold text-amber-600 mt-1">Intervalo sem lançamento: ${intervalText}</div>
+        </div>`;
     });
 
     expensesList.innerHTML = '';
@@ -1066,7 +1356,9 @@ function renderDailySummaries() {
     });
     
     // Caixa Real: Vendas Totais Hoje - Despesas Hoje
-    const caixaAtual = totalVendasHoje - totalDespesasHoje;
+    const extraHoje = getExtraCashTotal(today);
+    const dividasPagasHoje = getDebtPaymentsTotal(today);
+    const caixaAtual = totalVendasHoje + extraHoje + dividasPagasHoje - totalDespesasHoje;
     
     // Painel inserido no topo da secção de despesas
     const painelCaixaHtml = `
@@ -1110,7 +1402,7 @@ function sendDailyReport(platform) {
         if (s.category === 'EXPENSE') {
             totalDespesas += s.total;
         } else {
-            const valorPago = s.paid || s.total;
+            const valorPago = getSaleInitialPaid(s);
             totalGeral += valorPago;
             
             // Cria a categoria se não existir
@@ -1118,13 +1410,17 @@ function sendDailyReport(platform) {
             categorias[s.category].push(s);
         }
     });
+    const debtPaidToday = debtPayments.filter(p => p.date === today);
+    const debtPaidTotal = debtPaidToday.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const pendingDebtTotal = getPendingDebts().reduce((sum, s) => sum + getDebtAmount(s), 0);
+    totalGeral += getExtraCashTotal(today) + debtPaidTotal;
 
     // Constrói o texto do relatório por departamento
     for (let cat in categorias) {
         report += `📁 *${cat}*\n`;
         let subtotal = 0;
         categorias[cat].forEach(s => {
-            const valorPago = s.paid || s.total;
+            const valorPago = getSaleInitialPaid(s);
             subtotal += valorPago;
             report += `  ▫️ ${s.desc} - ${valorPago.toLocaleString()} Kz (${s.method || 'N/A'})\n`;
         });
@@ -1139,6 +1435,16 @@ function sendDailyReport(platform) {
         countExp++;
     });
     if(countExp === 0) report += `  Nenhuma despesa registada.\n`;
+
+    report += `\n💳 *DÍVIDAS PAGAS HOJE*\n`;
+    if (debtPaidToday.length) {
+        debtPaidToday.forEach(p => {
+            report += `  ▫️ ${p.client || 'Cliente'} - ${p.product || 'Produto'}: ${p.amount.toLocaleString()} Kz | Dívida de ${p.originalDate} | Pago em ${p.date}\n`;
+        });
+    } else {
+        report += `  Nenhum pagamento de dívida registado hoje.\n`;
+    }
+    report += `\n⚠️ *DÍVIDAS PENDENTES:* ${pendingDebtTotal.toLocaleString()} Kz\n`;
 
     // Resumo Final
     report += `\n══════════════════\n`;
@@ -1174,12 +1480,16 @@ function printDailyReport() {
         if (s.category === 'EXPENSE') {
             totalDespesas += s.total;
         } else {
-            const valorPago = s.paid || s.total;
+            const valorPago = getSaleInitialPaid(s);
             totalGeral += valorPago;
             if (!categorias[s.category]) categorias[s.category] = [];
             categorias[s.category].push(s);
         }
     });
+    const debtPaidToday = debtPayments.filter(p => p.date === today);
+    const debtPaidTotal = debtPaidToday.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    const pendingDebts = getPendingDebts();
+    totalGeral += getExtraCashTotal(today) + debtPaidTotal;
 
     // Tabelas de Vendas por Categoria
     for (let cat in categorias) {
@@ -1194,7 +1504,7 @@ function printDailyReport() {
         
         let subtotal = 0;
         categorias[cat].forEach(s => {
-            const valorPago = s.paid || s.total;
+            const valorPago = getSaleInitialPaid(s);
             subtotal += valorPago;
             const hora = s.time || '-';
             const descFinal = s.client && s.client !== 'Balcão' ? `${s.desc} <br><small style="color:#64748b;">Cli: ${s.client}</small>` : s.desc;
@@ -1227,6 +1537,37 @@ function printDailyReport() {
     if(countExp === 0) html += `<tr><td style="padding:8px; color:#94a3b8; font-style:italic;">Nenhuma despesa registada hoje.</td></tr>`;
     html += `</table>`;
 
+    html += `<h4 style="background:#ecfdf5; padding:8px; border-left: 4px solid #10b981; margin-bottom:10px; color:#047857;">DÍVIDAS PAGAS HOJE</h4>`;
+    html += `<table style="width:100%; border-collapse: collapse; margin-bottom: 20px; font-size:12px;">`;
+    if (debtPaidToday.length) {
+        debtPaidToday.forEach(p => {
+            html += `<tr>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${p.time || '-'}</td>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;"><strong>${p.client || 'Cliente'}</strong><br><small>${p.product || 'Produto'} | Dívida de ${p.originalDate}</small></td>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${p.method || '-'}</td>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9; text-align:right; color:#047857; font-weight:bold;">${p.amount.toLocaleString()} Kz</td>
+                     </tr>`;
+        });
+    } else {
+        html += `<tr><td style="padding:8px; color:#94a3b8; font-style:italic;">Nenhum pagamento de dívida registado hoje.</td></tr>`;
+    }
+    html += `</table>`;
+
+    html += `<h4 style="background:#fff7ed; padding:8px; border-left: 4px solid #f97316; margin-bottom:10px; color:#c2410c;">DÍVIDAS PENDENTES</h4>`;
+    html += `<table style="width:100%; border-collapse: collapse; margin-bottom: 30px; font-size:12px;">`;
+    if (pendingDebts.length) {
+        pendingDebts.forEach(s => {
+            html += `<tr>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;"><strong>${s.client || 'Cliente'}</strong><br><small>${s.phone || 'Sem contacto'}</small></td>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${s.desc || 'Produto'}<br><small>Dívida de ${s.date}</small></td>
+                        <td style="padding:8px; border-bottom:1px solid #f1f5f9; text-align:right; color:#c2410c; font-weight:bold;">${getDebtAmount(s).toLocaleString()} Kz</td>
+                     </tr>`;
+        });
+    } else {
+        html += `<tr><td style="padding:8px; color:#94a3b8; font-style:italic;">Sem dívidas pendentes.</td></tr>`;
+    }
+    html += `</table>`;
+
     // Resumo Final de Caixa
     html += `<div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -1251,7 +1592,7 @@ function printDailyReport() {
 
         // --- RELATÓRIOS ---
         function renderReports() {
-            const today = new Date().toLocaleDateString('pt-PT');
+            const today = new Date().toLocaleDateString();
             const now = new Date();
             const currentMonth = now.getMonth();
             const currentYear = now.getFullYear();
@@ -1270,7 +1611,7 @@ function printDailyReport() {
                     if(s.date === today) dailyExp += val;
                     if(sDate.getMonth() === currentMonth && sDate.getFullYear() === currentYear) monthlyExp += val;
                 } else {
-                    const val = parseFloat(s.paid || 0);
+                    const val = getSaleInitialPaid(s);
                     totalGross += val;
                     if(s.date === today) dailyGross += val;
                     if(sDate.getMonth() === currentMonth && sDate.getFullYear() === currentYear) monthlyGross += val;
@@ -1281,6 +1622,34 @@ function printDailyReport() {
                     productStats[prodName] = (productStats[prodName] || 0) + (s.qty || 1);
                 }
             });
+
+            const extraToday = getExtraCashTotal(today);
+            const extraMonth = extraCashAdds.reduce((sum, item) => {
+                const parts = item.date.split('/');
+                const itemDate = parts.length === 3 ? new Date(parts[2], parts[1]-1, parts[0]) : new Date(item.id);
+                return itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear ? sum + (parseFloat(item.amount) || 0) : sum;
+            }, 0);
+            const extraTotal = extraCashAdds.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+            extraCashAdds.forEach(item => {
+                const parts = item.date.split('/');
+                const itemDate = parts.length === 3 ? new Date(parts[2], parts[1]-1, parts[0]) : new Date(item.id);
+                if (itemDate.getFullYear() === currentYear) monthlyStats[itemDate.getMonth()] += parseFloat(item.amount || 0);
+            });
+            const debtPaidToday = getDebtPaymentsTotal(today);
+            const debtPaidMonth = debtPayments.reduce((sum, item) => {
+                const parts = item.date.split('/');
+                const itemDate = parts.length === 3 ? new Date(parts[2], parts[1]-1, parts[0]) : new Date(item.id);
+                return itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear ? sum + (parseFloat(item.amount) || 0) : sum;
+            }, 0);
+            debtPayments.forEach(item => {
+                const parts = item.date.split('/');
+                const itemDate = parts.length === 3 ? new Date(parts[2], parts[1]-1, parts[0]) : new Date(item.id);
+                if (itemDate.getFullYear() === currentYear) monthlyStats[itemDate.getMonth()] += parseFloat(item.amount || 0);
+            });
+            dailyGross += extraToday;
+            monthlyGross += extraMonth + debtPaidMonth;
+            totalGross += extraTotal + debtPayments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+            dailyGross += debtPaidToday;
 
             document.getElementById('rep-daily-gross').innerText = dailyGross.toLocaleString() + ' Kz';
             document.getElementById('rep-daily-exp').innerText = '-' + dailyExp.toLocaleString() + ' Kz';
@@ -1302,6 +1671,19 @@ function printDailyReport() {
 
             const sortedProducts = Object.entries(productStats).sort(([,a],[,b]) => b - a).slice(0, 10);
             document.getElementById('rep-top-products').innerHTML = sortedProducts.map((p, i) => `<div class="flex justify-between items-center text-xs border-b border-slate-100 py-2"><span class="font-bold text-slate-600 truncate w-2/3">${i+1}. ${p[0]}</span><span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold">${p[1]} un</span></div>`).join('');
+
+            const extraList = document.getElementById('rep-extra-cash-list');
+            const extraTotalEl = document.getElementById('rep-extra-total');
+            if (extraTotalEl) extraTotalEl.innerText = extraToday.toLocaleString() + ' Kz';
+            if (extraList) {
+                const todayExtras = extraCashAdds.filter(item => item.date === today).slice().reverse();
+                extraList.innerHTML = todayExtras.length ? todayExtras.map(item => `
+                    <tr>
+                        <td class="p-2 font-bold text-slate-600">${item.time || '-'}</td>
+                        <td class="p-2 text-slate-500">${item.reason || 'Gestão de Stocks'}</td>
+                        <td class="p-2 text-right font-black text-amber-700">${(item.amount || 0).toLocaleString()} Kz</td>
+                    </tr>`).join('') : '<tr><td colspan="3" class="p-3 text-center text-slate-400 italic">Sem registo hoje.</td></tr>';
+            }
 
             renderCharts(paymentStats, monthlyStats, monthNames);
         }
@@ -1338,11 +1720,127 @@ function printDailyReport() {
         function deleteProduct(id) { if(confirm("Remover?")) { products = products.filter(p=>p.id!==id); saveData(); renderStockList(); updateRestockSelect(); } }
         function suggestPrice() { const cost = parseFloat(document.getElementById('new-prod-cost').value); if(cost > 0) { const suggested = cost + (cost * 0.4); document.getElementById('price-suggestion').innerHTML = `💡 Sugestão (40%): <b>${suggested.toLocaleString()} Kz</b>`; if(document.getElementById('new-prod-price').value == "") document.getElementById('new-prod-price').value = suggested; } }
         function updateRestockSelect() { const sel = document.getElementById('restock-select'); sel.innerHTML = '<option value="">Selecionar...</option>'; products.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
-        function printInvoiceDouble(saleId) { const sale = sales.find(s => s.id === saleId); if(!sale) return; const date = new Date().toLocaleString(); let itemsRows = ''; if (sale.items) sale.items.forEach(i => itemsRows += `<tr><td>${i.name}</td><td>${i.qty}</td><td style="text-align:right">${(i.price*i.qty).toLocaleString()}</td></tr>`); else itemsRows = `<tr><td>${sale.desc}</td><td>${sale.qty||1}</td><td style="text-align:right">${sale.total.toLocaleString()}</td></tr>`; const content = `<div class="receipt-header"><h3>GRUPO HELIGRAFES</h3>NIF:5417329614 <br></h3>Cont:924565514/951565514 <br><strong>GH-${sale.id.toString().slice(-6)}</strong></div><div class="receipt-details">Data: ${date}<br>Cliente: ${sale.client||'Consumidor'}</div><table class="receipt-table"><thead><tr><th>Item</th><th>Qtd</th><th>Total</th></tr></thead><tbody>${itemsRows}</tbody></table><div class="receipt-footer"><div style="font-weight:bold; font-size:1.2em;">TOTAL: ${sale.total.toLocaleString()} Kz</div><small>Pago: ${sale.paid.toLocaleString()} | Método: ${sale.method || '-'}</small></div><div style="text-align:center; margin-top:10px;">Obrigado pela preferência!</div>`; const fullHtml = `<div class="receipt-container"><div class="receipt-header" style="font-weight:bold;">*** VIA CLIENTE ***</div>${content}</div><div class="receipt-cut-line">- - - - CORTE AQUI - - - -</div><div class="receipt-container"><div class="receipt-header" style="font-weight:bold;">*** VIA ESTABELECIMENTO ***</div>${content}</div>`; const area = document.getElementById('invoice-area'); area.innerHTML = fullHtml; area.classList.add('print-active'); window.print(); setTimeout(() => area.classList.remove('print-active'), 1000); }
+        function printInvoiceDouble(saleId) {
+            const sale = sales.find(s => s.id === saleId);
+            if(!sale) return false;
+
+            const date = new Date().toLocaleString();
+            const invoiceCode = `GH-${sale.id.toString().slice(-6)}`;
+            let itemsRows = '';
+            if (sale.items) {
+                sale.items.forEach(i => itemsRows += `<tr><td>${i.name}</td><td>${i.qty}</td><td style="text-align:right">${(i.price*i.qty).toLocaleString()}</td></tr>`);
+            } else {
+                itemsRows = `<tr><td>${sale.desc}</td><td>${sale.qty||1}</td><td style="text-align:right">${sale.total.toLocaleString()}</td></tr>`;
+            }
+
+            const paidValue = parseFloat(sale.paid || 0);
+            const debtValue = getDebtAmount(sale);
+            const content = `<div class="receipt-header"><h3>GRUPO HELIGRAFES</h3>NIF:5417329614 <br>Cont:924565514/951565514 <br><strong>${invoiceCode}</strong></div><div class="receipt-details">Data: ${date}<br>Cliente: ${sale.client||'Consumidor'}${sale.phone ? `<br>Contacto: ${sale.phone}` : ''}</div><table class="receipt-table"><thead><tr><th>Item</th><th>Qtd</th><th>Total</th></tr></thead><tbody>${itemsRows}</tbody></table><div class="receipt-footer"><div style="font-weight:bold; font-size:1.2em;">TOTAL: ${sale.total.toLocaleString()} Kz</div><div>Pago: ${paidValue.toLocaleString()} Kz</div><div style="font-weight:bold;">Falta pagar: ${debtValue.toLocaleString()} Kz</div><small>Método: ${sale.method || '-'}</small></div><div style="text-align:center; margin-top:10px;">Obrigado pela preferência!</div>`;
+            const fullHtml = `<div class="receipt-container"><div class="receipt-header" style="font-weight:bold;">*** VIA CLIENTE ***</div>${content}</div><div class="receipt-cut-line">- - - - CORTE AQUI - - - -</div><div class="receipt-container"><div class="receipt-header" style="font-weight:bold;">*** VIA ESTABELECIMENTO ***</div>${content}</div>`;
+            const area = document.getElementById('invoice-area');
+            area.innerHTML = fullHtml;
+            area.classList.add('print-active');
+            window.print();
+            setTimeout(() => area.classList.remove('print-active'), 1000);
+            return true;
+        }
         function searchOrder(category, inputId) { const query = document.getElementById(inputId).value.toLowerCase(); if(!query) return alert("Digite um nome ou código para pesquisar."); const results = sales.filter(s => (s.category === category) && (s.client.toLowerCase().includes(query) || s.id.toString().includes(query))); if(results.length === 0) return alert("Nenhum registo encontrado."); let msg = `🔍 RESULTADOS (${results.length}):\n\n`; results.forEach(r => { const debt = r.total - r.paid; const status = debt <= 0 ? "PAGO ✅" : `DÍVIDA: ${debt} ⚠️`; msg += `📅 ${r.date} | 👤 ${r.client}\n📝 ${r.desc}\n💰 Total: ${r.total} | ${status}\n----------------\n`; }); alert(msg); }
-        function confirmOrder(type) { if(type === 'ac') { const total = parseFloat(document.getElementById('ac-total').value); const client = document.getElementById('ac-client').value; const theme = document.getElementById('ac-theme').value; const qty = parseFloat(document.getElementById('ac-qty').value); const paidInput = document.getElementById('ac-paid').value; const method = document.getElementById('ac-method').value; const deliveryDate = document.getElementById('ac-delivery').value; if(qty <= 0 || !client || !theme || paidInput === "" || !method) return alert("Preencha todos os campos obrigatórios."); const newSale = { date: new Date().toLocaleDateString(), desc: "Académico: " + theme, total: total, paid: parseFloat(paidInput)||0, category: 'ACADEMICO', client: client, qty: qty, method: method, deliveryDate: deliveryDate }; saveData(newSale); printInvoiceDouble(newSale.id); document.getElementById('ac-client').value = ''; document.getElementById('ac-theme').value = ''; document.getElementById('ac-qty').value = '0'; document.getElementById('ac-paid').value = ''; document.getElementById('ac-total').value = '0 Kz'; document.getElementById('ac-debt-display').innerText = '0 Kz'; document.getElementById('ac-delivery').value = ''; } }
-        function confirmTsOrder() { const total = parseFloat(document.getElementById('ts-total').value); const client = document.getElementById('ts-client').value; const phone = document.getElementById('ts-phone').value; const size = document.getElementById('ts-size').value; const paidInput = document.getElementById('ts-paid').value; const method = document.getElementById('ts-method').value; const deliveryDate = document.getElementById('ts-delivery').value; if(!client || total <= 0 || paidInput === "" || !method) return alert("Preencha os dados corretamente."); const newSale = { date: new Date().toLocaleDateString(), desc: `T-Shirt: ${document.getElementById('ts-type').value} - ${document.getElementById('ts-subtype').value}`, total: total, paid: parseFloat(paidInput)||0, category: 'TSHIRTS', client: client, phone: phone, size: size, qty: parseFloat(document.getElementById('ts-qty').value), method: method, deliveryDate: deliveryDate }; saveData(newSale); printInvoiceDouble(newSale.id); document.getElementById('ts-client').value = ''; document.getElementById('ts-phone').value = ''; document.getElementById('ts-qty').value = '1'; document.getElementById('ts-paid').value = ''; document.getElementById('ts-total').value = '0'; document.getElementById('ts-delivery').value = ''; if(!document.getElementById('impressao').classList.contains('hidden')) { renderPrintTab(); } }
-        function autoCalcAcademicPrice() { const level = document.getElementById('ac-level').value; const type = document.getElementById('ac-type').value; const qty = document.getElementById('ac-qty').value; const status = document.getElementById('ac-status').value; let unit = 0; if (type === 'MONOGRAFIA') unit = 80000; else if (type === 'PRE-PROJECTO') unit = 10000; else { if (level === 'BASE') unit = 2000; else if (level === 'MEDIO') unit = 2500; else if (level === 'SUPERIOR') unit = 3500; const pages = document.getElementById('ac-pages').value; if(pages > 15) unit += 500; if(pages > 25) unit += 1000; } if(status === 'URGENTE') unit += 1000; document.getElementById('ac-unit-price').innerText = unit + ' Kz'; document.getElementById('ac-total').value = unit * qty; updateAcademicDebt(); }
+        function confirmOrder(type) {
+            if(type === 'ac') {
+                const total = parseFloat(document.getElementById('ac-total').value);
+                const client = document.getElementById('ac-client').value;
+                const theme = document.getElementById('ac-theme').value;
+                const qty = parseFloat(document.getElementById('ac-qty').value);
+                const paidInput = document.getElementById('ac-paid').value;
+                const method = document.getElementById('ac-method').value;
+                const deliveryDate = document.getElementById('ac-delivery').value;
+                if(qty <= 0 || !client || !theme || paidInput === "" || !method) return alert("Preencha todos os campos obrigatórios.");
+
+                const savedSale = saveData({
+                    date: new Date().toLocaleDateString(),
+                    desc: "Académico: " + theme,
+                    total: total,
+                    paid: parseFloat(paidInput)||0,
+                    category: 'ACADEMICO',
+                    client: client,
+                    qty: qty,
+                    method: method,
+                    deliveryDate: deliveryDate,
+                    academicLevel: document.getElementById('ac-level').value,
+                    pages: document.getElementById('ac-pages').value
+                });
+
+                if (!printInvoiceDouble(savedSale.id)) return alert(`Pedido registado, mas a fatura deve ser impressa pelo código GH-${savedSale.id.toString().slice(-6)}.`);
+                document.getElementById('ac-client').value = '';
+                document.getElementById('ac-theme').value = '';
+                document.getElementById('ac-qty').value = '1';
+                document.getElementById('ac-paid').value = '';
+                document.getElementById('ac-delivery').value = '';
+                autoCalcAcademicPrice();
+            }
+        }
+
+        function confirmTsOrder() {
+            const total = parseFloat(document.getElementById('ts-total').value);
+            const client = document.getElementById('ts-client').value;
+            const phone = document.getElementById('ts-phone').value;
+            const size = document.getElementById('ts-size').value;
+            const paidInput = document.getElementById('ts-paid').value;
+            const method = document.getElementById('ts-method').value;
+            const deliveryDate = document.getElementById('ts-delivery').value;
+            if(!client || total <= 0 || paidInput === "" || !method) return alert("Preencha os dados corretamente.");
+
+            const savedSale = saveData({
+                date: new Date().toLocaleDateString(),
+                desc: `T-Shirt: ${document.getElementById('ts-type').value} - ${document.getElementById('ts-subtype').value}`,
+                total: total,
+                paid: parseFloat(paidInput)||0,
+                category: 'TSHIRTS',
+                client: client,
+                phone: phone,
+                size: size,
+                qty: parseFloat(document.getElementById('ts-qty').value),
+                method: method,
+                deliveryDate: deliveryDate
+            });
+
+            const printed = printInvoiceDouble(savedSale.id);
+            const code = `GH-${savedSale.id.toString().slice(-6)}`;
+            if (!printed) return alert(`A encomenda foi registada, mas é obrigatório imprimir a fatura pelo código ${code} antes de dar sequência ao trabalho.`);
+            alert(`Encomenda registada. A fatura ${code} foi lançada para impressão; só dê sequência ao trabalho depois da impressão.`);
+
+            document.getElementById('ts-client').value = '';
+            document.getElementById('ts-phone').value = '';
+            document.getElementById('ts-qty').value = '1';
+            document.getElementById('ts-paid').value = '';
+            document.getElementById('ts-total').value = '0';
+            document.getElementById('ts-delivery').value = '';
+            if(!document.getElementById('impressao').classList.contains('hidden')) { renderPrintTab(); }
+        }
+
+        const academicPriceTable = {
+            BASE: { 15: 2500, 20: 3000, 25: 3500, 30: 3500 },
+            MEDIO: { 15: 3000, 20: 3000, 25: 3500, 30: 4000 },
+            SUPERIOR: { 15: 4000, 20: 4000, 25: 4500, 30: 7000 }
+        };
+
+        function autoCalcAcademicPrice() {
+            const level = document.getElementById('ac-level').value;
+            const type = document.getElementById('ac-type').value;
+            const qty = parseFloat(document.getElementById('ac-qty').value) || 1;
+            const status = document.getElementById('ac-status').value;
+            const pages = parseInt(document.getElementById('ac-pages').value) || 15;
+            let unit = 0;
+
+            if (type === 'MONOGRAFIA') unit = 80000;
+            else if (type === 'PRE-PROJECTO') unit = 10000;
+            else unit = (academicPriceTable[level] && academicPriceTable[level][pages]) || 0;
+
+            if(status === 'URGENTE') unit += 1000;
+            document.getElementById('ac-unit-price').innerText = unit.toLocaleString() + ' Kz';
+            document.getElementById('ac-total').value = unit * qty;
+            updateAcademicDebt();
+        }
         function updateAcademicDebt() { document.getElementById('ac-debt-display').innerText = ((parseFloat(document.getElementById('ac-total').value)||0) - (parseFloat(document.getElementById('ac-paid').value)||0)) + ' Kz'; }
         function renderSubtypes() { const type = document.getElementById('ts-type').value; const sub = document.getElementById('ts-subtype'); sub.innerHTML = '<option value="">Selecione...</option>'; if(type && pricingDatabase[type]) { sub.disabled = false; Object.keys(pricingDatabase[type]).forEach(model => { sub.innerHTML += `<option value="${model}">${model}</option>`; }); } else { sub.disabled = true; } }
         function setPrice() { const type = document.getElementById('ts-type').value; const subtype = document.getElementById('ts-subtype').value; const price = (type && subtype && pricingDatabase[type][subtype] !== undefined) ? pricingDatabase[type][subtype] : 0; document.getElementById('ts-price').value = price; calcTsTotal(); }
@@ -1350,11 +1848,11 @@ function printDailyReport() {
         function updateStockSelect() { const sel = document.getElementById('st-product-select'); sel.innerHTML = '<option value="">🔍 Procurar Produto...</option>'; products.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
         function updateStockDisplay() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); if(p) { document.getElementById('st-current-stock').innerText = p.stock; document.getElementById('st-current-price').innerText = p.price.toLocaleString() + ' Kz'; } calcStationeryTotal(); }
         function calcStationeryTotal() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = document.getElementById('st-qty').value; document.getElementById('st-total').value = (p ? p.price * qty : 0).toLocaleString() + ' Kz'; }
-        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(confirm("Confirmar venda?")) { p.stock -= qty; const newSale = { date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }; saveData(newSale); printInvoiceDouble(newSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
+        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(confirm("Confirmar venda?")) { p.stock -= qty; const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
         function renderStationeryDailyReport() { const list = document.getElementById('st-sales-list'); if(!list) return; list.innerHTML=''; sales.slice().reverse().forEach(s => { if(s.category === 'PAPELARIA' && s.date === new Date().toLocaleDateString()) list.innerHTML += `<div class="grid grid-cols-12 bg-white p-2 border-b border-slate-100 text-xs text-slate-600 hover:bg-slate-50 items-center"><div class="col-span-2">${new Date(s.id).toLocaleTimeString().slice(0,5)}</div><div class="col-span-5 font-bold">${s.desc}</div><div class="col-span-2 text-center bg-blue-50 rounded">${s.qty||1}</div><div class="col-span-2 text-right font-bold text-emerald-600">${s.total.toLocaleString()}</div><div class="col-span-1 text-center"><button onclick="deleteSale(${s.id})" class="text-red-400 font-bold hover:text-red-600">×</button></div></div>`; }); }
-        function renderOrdersHistory() { const tbody = document.getElementById('orders-history-body'); tbody.innerHTML = ''; sales.slice().reverse().forEach(s => { const debt = s.total - s.paid; let statusHtml = debt <= 0 ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600">Pago</span>' : `<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">Dívida: ${debt.toLocaleString()}</span>`; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-3 text-slate-500">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client || 'Balcão'}</td><td class="p-3 text-slate-600 text-xs">${s.desc}</td><td class="p-3 text-right font-medium">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center">${statusHtml}</td><td class="p-3 text-center"><button onclick='printInvoiceDouble(${s.id})' class="text-blue-500 font-bold text-xs mr-2">🖨️</button><button onclick='deleteSale(${s.id})' class="text-red-400 font-bold text-xs">🗑️</button></td></tr>`; }); }
-        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, shiftCloses: shiftCloses }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; shiftCloses = data.shiftCloses || []; saveData(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
+        function renderOrdersHistory() { const tbody = document.getElementById('orders-history-body'); tbody.innerHTML = ''; sales.slice().reverse().forEach(s => { const debt = getDebtAmount(s); let statusHtml = debt <= 0 ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600">Pago</span>' : `<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">Dívida: ${debt.toLocaleString()}</span><button onclick="registerDebtPayment(${s.id})" class="ml-2 text-emerald-600 font-black text-[10px] underline">Pagar</button>`; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-3 text-slate-500">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client || 'Balcão'}<div class="text-[10px] text-slate-400">${s.phone || ''}</div></td><td class="p-3 text-slate-600 text-xs">${s.desc}</td><td class="p-3 text-right font-medium">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center">${statusHtml}</td><td class="p-3 text-center"><button onclick='printInvoiceDouble(${s.id})' class="text-blue-500 font-bold text-xs mr-2">🖨️</button><button onclick='deleteSale(${s.id})' class="text-red-400 font-bold text-xs">🗑️</button></td></tr>`; }); }
+        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, shiftCloses: shiftCloses, extraCashAdds: extraCashAdds, debtPayments: debtPayments }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; shiftCloses = data.shiftCloses || []; extraCashAdds = data.extraCashAdds || []; debtPayments = data.debtPayments || []; saveData(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
         function deleteSale(id) { if(checkPermission() && confirm("Anular?")) { sales = sales.filter(s=>s.id!==id); saveData(); renderStationeryDailyReport(); renderDashboard(); renderOrdersHistory(); } }
         function renderRH() { const sel = document.getElementById('rh-employee-select'); sel.innerHTML = '<option value="">Selecione...</option>'; employees.forEach(e => sel.innerHTML += `<option value="${e.id}">${e.name}</option>`); const tbody = document.getElementById('payroll-body'); tbody.innerHTML = ''; const currentMonth = new Date().getMonth(); const currentYear = new Date().getFullYear(); employees.forEach(emp => { let delays = 0; let absences = 0; attendance.forEach(att => { const d = new Date(att.date); if (att.empId === emp.id && d.getMonth() === currentMonth && d.getFullYear() === currentYear) { if (att.status === 'ATRASO') delays++; if (att.status === 'FALTA') absences++; } }); const totalDeductions = (delays * 200) + (absences * 1000); const finalSalary = emp.salary - totalDeductions; tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${emp.name}</td><td class="p-3 text-slate-500">${emp.salary.toLocaleString()} Kz</td><td class="p-3 text-center text-red-500 font-bold">${absences} <span class="text-[9px] text-slate-400">(-${(absences*1000).toLocaleString()})</span></td><td class="p-3 text-center text-orange-500 font-bold">${delays} <span class="text-[9px] text-slate-400">(-${(delays*200).toLocaleString()})</span></td><td class="p-3 text-right font-black text-emerald-600 text-lg">${finalSalary.toLocaleString()} Kz</td><td class="p-3 text-right"><button onclick="deleteEmployee(${emp.id})" class="text-red-400 hover:text-red-600">×</button></td></tr>`; }); }
         function addEmployee() { const name = document.getElementById('new-emp-name').value; const salary = parseFloat(document.getElementById('new-emp-salary').value); if (name && salary) { employees.push({ id: Date.now(), name, salary }); saveData(); document.getElementById('new-emp-name').value = ''; document.getElementById('new-emp-salary').value = ''; renderRH(); } }
@@ -1448,8 +1946,26 @@ function setAcBtn(inputId, value, btn) {
     if(isPayment) btn.classList.add('py-2', 'text-xs');
     else btn.classList.add('p-3', 'text-sm');
 
+    if(inputId === 'ac-level') {
+        const defaultPages = value === 'BASE' ? '15' : '20';
+        selectAcademicPage(defaultPages);
+    }
+
     // Só recalcula preço se for produto
     if(!isPayment) autoCalcAcademicPrice();
+}
+
+function selectAcademicPage(value) {
+    const pageValues = ['15', '20', '25', '30'];
+    const group = document.getElementById('group-pages');
+    if(!group) return;
+    document.getElementById('ac-pages').value = value;
+    Array.from(group.children).forEach((button, index) => {
+        const isActive = pageValues[index] === value;
+        button.className = isActive
+            ? 'ac-btn active bg-blue-600 text-white border-blue-600 shadow-md rounded-xl border-2 font-bold transition-all shadow-lg transform scale-105 p-3 text-sm'
+            : 'ac-btn bg-white text-slate-600 border-2 border-slate-200 rounded-xl font-bold hover:bg-slate-50 transition-all p-3 text-sm';
+    });
 }
  </script>
 </body>
