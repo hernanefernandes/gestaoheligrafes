@@ -143,6 +143,7 @@
             <div onclick="showTab('impressao')" class="sidebar-link" id="btn-impressao"><span class="text-xl mr-3 opacity-90">🖨️</span> <span>Área de Impressão</span></div>
             <div onclick="showTab('rh')" class="sidebar-link" id="btn-rh"><span class="text-xl mr-3 opacity-90">👥</span> <span>RH & Salários</span></div>
             <div onclick="verificarAdmin('stocks')" class="sidebar-link" id="btn-stocks"><span class="text-xl mr-3 opacity-90">🏭</span> <span>Gestão de Stocks</span></div>
+            <div onclick="showTab('chat')" class="sidebar-link" id="btn-chat"><span class="text-xl mr-3 opacity-90">💬</span> <span>Chat Interno</span></div>
             <div onclick="verificarAdmin('relatorios')" class="sidebar-link" id="btn-relatorios"><span class="text-xl mr-3 opacity-90">📈</span> <span>Relatórios & Análise</span></div>
             <div onclick="verificarAdmin('historico')" class="sidebar-link" id="btn-historico"><span class="text-xl mr-3 opacity-90">📊</span> <span>Histórico & Backup</span></div>
         </nav>
@@ -602,26 +603,26 @@
                 <div class="flex justify-between items-center mb-6 no-print">
                     <div>
                         <h2 class="text-2xl font-black text-slate-800">Relatórios de Gestão</h2>
-                        <p class="text-sm text-slate-500">Análise Financeira Líquida (Vendas - Despesas)</p>
+                        <p class="text-sm text-slate-500">Análise de entradas, despesas registadas e dívidas pendentes</p>
                     </div>
                     <button onclick="renderReports()" class="bg-white border border-slate-300 px-4 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">🔄 Atualizar Dados</button>
                 </div>
                 <div id="report-content-area" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 h-[calc(100%-80px)] overflow-y-auto pb-4">
                     <div class="glass-panel p-5 flex flex-col gap-3 border-t-4 border-blue-600">
-                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">💰 Fluxo & Lucro Líquido</h4>
+                        <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">💰 Fluxo & Saldo de Caixa</h4>
                         <div class="bg-blue-50 p-3 rounded-xl border border-blue-100 space-y-1">
                             <div class="flex justify-between text-xs text-slate-500"><span>Vendas Hoje</span><span class="font-bold text-blue-600" id="rep-daily-gross">0 Kz</span></div>
                             <div class="flex justify-between text-xs text-slate-500"><span>Despesas Hoje</span><span class="font-bold text-red-500" id="rep-daily-exp">0 Kz</span></div>
-                            <div class="flex justify-between pt-1 border-t border-blue-200 mt-1"><span class="text-xs font-black text-blue-800 uppercase">Lucro Hoje</span><span class="text-sm font-black text-emerald-600" id="rep-daily-net">0 Kz</span></div>
+                            <div class="flex justify-between pt-1 border-t border-blue-200 mt-1"><span class="text-xs font-black text-blue-800 uppercase">Saldo Hoje</span><span class="text-sm font-black text-emerald-600" id="rep-daily-net">0 Kz</span></div>
                         </div>
                         <div class="bg-purple-50 p-3 rounded-xl border border-purple-100 space-y-1">
                             <div class="flex justify-between text-xs text-slate-500"><span>Vendas Mês</span><span class="font-bold text-purple-600" id="rep-monthly-gross">0 Kz</span></div>
                             <div class="flex justify-between text-xs text-slate-500"><span>Despesas Mês</span><span class="font-bold text-red-500" id="rep-monthly-exp">0 Kz</span></div>
-                            <div class="flex justify-between pt-1 border-t border-purple-200 mt-1"><span class="text-xs font-black text-purple-800 uppercase">Lucro Mês</span><span class="text-sm font-black text-purple-700" id="rep-monthly-net">0 Kz</span></div>
+                            <div class="flex justify-between pt-1 border-t border-purple-200 mt-1"><span class="text-xs font-black text-purple-800 uppercase">Saldo Mês</span><span class="text-sm font-black text-purple-700" id="rep-monthly-net">0 Kz</span></div>
                         </div>
                         <div class="mt-auto bg-slate-800 text-white p-4 rounded-xl shadow-lg">
                             <div class="flex justify-between items-end">
-                                <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Saldo Geral (Liq)</p><h3 class="text-2xl font-black mt-1" id="rep-total-net">0 Kz</h3></div>
+                                <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Saldo Geral</p><h3 class="text-2xl font-black mt-1" id="rep-total-net">0 Kz</h3></div>
                                 <div class="text-right"><p class="text-[9px] text-red-400">Total Despesas</p><p class="text-xs font-bold text-red-300" id="rep-total-exp">0 Kz</p></div>
                             </div>
                         </div>
@@ -679,6 +680,70 @@
                     <div class="col-span-12 lg:col-span-6"><div class="glass-panel p-8 bg-orange-50 border border-orange-200"><h3 class="text-xl font-bold text-orange-900 mb-2">♻️ Restaurar</h3><label class="w-full py-3 bg-orange-500 text-white font-bold rounded-xl hover:bg-orange-600 cursor-pointer text-center block">⬆️ CARREGAR FICHEIRO<input type="file" id="backup-file" accept=".json" class="hidden" onchange="importData(this)"></label></div></div>
                 </div>
             </div>
+
+            <div id="chat" class="tab-content hidden no-print">
+                <div class="grid grid-cols-12 gap-6 h-full">
+                    <div class="col-span-12 lg:col-span-4">
+                        <div class="glass-panel p-6 bg-white shadow-lg border-l-4 border-indigo-600 h-full">
+                            <h3 class="text-xl font-bold text-slate-700 mb-4 flex items-center gap-2">💬 Chat Interno</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Seu nome / posto</label>
+                                    <input type="text" id="chat-user" class="big-input" placeholder="Ex: Balcão, Produção, Gerência" oninput="saveChatProfile()">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Sala</label>
+                                    <select id="chat-room" class="big-input" onchange="renderChatMessages()">
+                                        <option value="GERAL">Geral</option>
+                                        <option value="PRODUCAO">Produção</option>
+                                        <option value="STOCKS">Gestão de Stocks</option>
+                                        <option value="ENTREGAS">Entregas</option>
+                                    </select>
+                                </div>
+                                <div class="rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-xs text-indigo-900 font-bold">
+                                    Para conversar pelo site do GitHub, configure abaixo o repositório que vai guardar o ficheiro do chat.
+                                </div>
+                                <div class="rounded-xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                                    <h4 class="text-xs font-black text-slate-500 uppercase">Ligação GitHub</h4>
+                                    <input type="text" id="chat-github-repo" class="big-input" placeholder="utilizador/repositorio">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="text" id="chat-github-branch" class="big-input" placeholder="main">
+                                        <input type="text" id="chat-github-path" class="big-input" placeholder="chat/heligrafes-chat.json">
+                                    </div>
+                                    <input type="password" id="chat-github-token" class="big-input" placeholder="Token GitHub">
+                                    <div class="flex gap-2">
+                                        <button onclick="autoConfigureGitHubChat()" class="flex-1 py-2 rounded-xl border border-slate-300 text-slate-700 font-black text-xs">AUTO</button>
+                                        <button onclick="saveGitHubChatConfig()" class="flex-1 py-2 rounded-xl bg-indigo-600 text-white font-black text-xs">LIGAR</button>
+                                        <button onclick="syncChatFromGitHub(true)" class="flex-1 py-2 rounded-xl border border-indigo-200 text-indigo-700 font-black text-xs">ATUALIZAR</button>
+                                    </div>
+                                    <button onclick="openGitHubTokenPage()" class="w-full py-2 rounded-xl bg-slate-900 text-white font-black text-xs">CRIAR TOKEN GITHUB</button>
+                                    <p id="chat-github-status" class="text-[10px] font-bold text-slate-500">GitHub desligado.</p>
+                                </div>
+                                <button onclick="clearChatRoom()" class="w-full py-2 rounded-xl border border-rose-200 text-rose-600 font-bold text-xs hover:bg-rose-50">LIMPAR SALA ATUAL</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-12 lg:col-span-8">
+                        <div class="glass-panel bg-white shadow-xl h-full flex flex-col overflow-hidden">
+                            <div class="bg-slate-900 text-white p-4 flex justify-between items-center">
+                                <div>
+                                    <h3 class="font-black">Mensagens</h3>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase">Texto, ficheiros e comprovativos</p>
+                                </div>
+                                <span id="chat-count" class="text-xs bg-white/10 px-3 py-1 rounded-full">0 mensagens</span>
+                            </div>
+                            <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
+                            <div class="border-t border-slate-200 p-4 bg-white">
+                                <textarea id="chat-message" class="w-full h-20 p-3 border-2 border-slate-200 rounded-xl outline-none font-medium resize-none" placeholder="Escreva a mensagem..."></textarea>
+                                <div class="flex flex-wrap gap-3 items-center mt-3">
+                                    <input type="file" id="chat-file" class="text-xs flex-1">
+                                    <button onclick="sendChatMessage()" class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase shadow-lg">Enviar</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
             <div id="rh" class="tab-content hidden no-print">
                 <div class="grid grid-cols-12 gap-6">
@@ -715,6 +780,12 @@
         let shiftCloses = JSON.parse(localStorage.getItem('multi_shift_history_v52')) || []; // Histórico de Fechos
         let extraCashAdds = JSON.parse(localStorage.getItem('multi_extra_cash_v52')) || [];
         let debtPayments = JSON.parse(localStorage.getItem('multi_debt_payments_v52')) || [];
+        let chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
+        let chatChannel = null;
+        let githubChatConfig = JSON.parse(localStorage.getItem('multi_chat_github_config_v52')) || null;
+        let githubChatSha = localStorage.getItem('multi_chat_github_sha_v52') || '';
+        let githubChatSyncTimer = null;
+        let lastChatNotificationId = localStorage.getItem('multi_chat_last_notification_v52') || '';
         const EXTRA_CASH_AMOUNT = 550;
         const EXTRA_CASH_MIN_BALANCE = 2300;
         const EXTRA_CASH_IDLE_MS = 2 * 60 * 60 * 1000;
@@ -735,6 +806,7 @@ window.onload = function() {
     startClock();
     checkNotifications();
     renderShiftHistory(); // Carrega o histórico de fechos
+    initInternalChat();
     renderPendingDebts();
     checkIdleCashIncrease();
     renderIdleCashStatus();
@@ -773,6 +845,350 @@ window.onload = function() {
             }
         }
 
+        /* --- CHAT INTERNO --- */
+        function initInternalChat() {
+            const userInput = document.getElementById('chat-user');
+            if (userInput) userInput.value = localStorage.getItem('multi_chat_user_v52') || '';
+            loadGitHubChatConfig();
+            if ('BroadcastChannel' in window) {
+                chatChannel = new BroadcastChannel('heligrafes_chat_v52');
+                chatChannel.onmessage = function(event) {
+                    if (event.data && event.data.type === 'CHAT_SYNC') {
+                        chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
+                        renderChatMessages();
+                    }
+                };
+            }
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+            startGitHubChatSync();
+            renderChatMessages();
+        }
+
+        function saveChatProfile() {
+            localStorage.setItem('multi_chat_user_v52', document.getElementById('chat-user').value || '');
+        }
+
+        function saveChatMessages() {
+            localStorage.setItem('multi_chat_messages_v52', JSON.stringify(chatMessages));
+            if (chatChannel) chatChannel.postMessage({ type: 'CHAT_SYNC' });
+            syncChatToGitHub();
+        }
+
+        function renderChatMessages() {
+            const list = document.getElementById('chat-messages');
+            const counter = document.getElementById('chat-count');
+            const room = document.getElementById('chat-room') ? document.getElementById('chat-room').value : 'GERAL';
+            if (!list) return;
+            const roomMessages = chatMessages.filter(msg => msg.room === room).slice(-200);
+            list.innerHTML = roomMessages.length ? roomMessages.map(msg => {
+                const fileHtml = renderChatFilePreview(msg);
+                return `<div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                    <div class="flex justify-between gap-3 text-[10px] font-bold text-slate-400 uppercase">
+                        <span>${msg.user || 'Sistema'}</span><span>${msg.date || ''} ${msg.time || ''}</span>
+                    </div>
+                    <p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">${escapeChatHtml(msg.text || '')}</p>
+                    ${fileHtml}
+                </div>`;
+            }).join('') : '<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
+            if (counter) counter.innerText = `${roomMessages.length} mensagem(ns)`;
+            list.scrollTop = list.scrollHeight;
+        }
+
+        function escapeChatHtml(text) {
+            return text.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+        }
+
+        function sendChatMessage() {
+            const user = (document.getElementById('chat-user').value || '').trim();
+            const room = document.getElementById('chat-room').value;
+            const text = (document.getElementById('chat-message').value || '').trim();
+            const file = document.getElementById('chat-file').files[0];
+            if (!user) return alert('Informe o seu nome ou posto antes de enviar.');
+            if (!text && !file) return alert('Escreva uma mensagem ou selecione um ficheiro.');
+            if (file && file.size > 750000) return alert('O ficheiro é grande para guardar no GitHub. Use ficheiros até 750 KB.');
+
+            const finishSend = (filePayload = {}) => {
+                const now = new Date();
+                chatMessages.push({
+                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                    room,
+                    user,
+                    text,
+                    date: now.toLocaleDateString(),
+                    time: now.toLocaleTimeString().slice(0,5),
+                    ...filePayload
+                });
+                document.getElementById('chat-message').value = '';
+                document.getElementById('chat-file').value = '';
+                saveChatProfile();
+                saveChatMessages();
+                renderChatMessages();
+            };
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    finishSend({ fileName: file.name, fileType: file.type || 'application/octet-stream', fileData: event.target.result });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                finishSend();
+            }
+        }
+
+        function clearChatRoom() {
+            if (!checkPermission()) return;
+            const room = document.getElementById('chat-room').value;
+            if (!confirm('Limpar todas as mensagens desta sala?')) return;
+            chatMessages = chatMessages.filter(msg => msg.room !== room);
+            saveChatMessages();
+            renderChatMessages();
+        }
+
+        function renderChatFilePreview(msg) {
+            if (!msg.fileName || !msg.fileData) return '';
+            const safeName = escapeChatHtml(msg.fileName);
+            const type = msg.fileType || '';
+            let preview = '';
+            if (type.startsWith('image/')) {
+                preview = `<img src="${msg.fileData}" alt="${safeName}" class="mt-3 max-h-48 rounded-xl border border-slate-200 object-contain bg-slate-50">`;
+            } else if (type.startsWith('video/')) {
+                preview = `<video src="${msg.fileData}" controls class="mt-3 max-h-56 w-full rounded-xl border border-slate-200"></video>`;
+            } else if (type.startsWith('audio/')) {
+                preview = `<audio src="${msg.fileData}" controls class="mt-3 w-full"></audio>`;
+            } else if (type === 'application/pdf') {
+                preview = `<iframe src="${msg.fileData}" class="mt-3 h-56 w-full rounded-xl border border-slate-200"></iframe>`;
+            } else {
+                preview = `<div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs font-bold text-slate-500">Ficheiro anexado: ${safeName}</div>`;
+            }
+            return `${preview}<button onclick="downloadChatFile('${msg.id}')" class="inline-block mt-2 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-black text-[10px] border border-indigo-100">📎 Baixar ${safeName}</button>`;
+        }
+
+        function downloadChatFile(id) {
+            const msg = chatMessages.find(item => item.id == id);
+            if (!msg || !msg.fileData) return alert('Ficheiro não encontrado.');
+            if (!confirm(`Pode baixar o ficheiro "${msg.fileName}"?`)) return;
+            const a = document.createElement('a');
+            a.href = msg.fileData;
+            a.download = msg.fileName || 'ficheiro';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function loadGitHubChatConfig() {
+            const repo = document.getElementById('chat-github-repo');
+            const branch = document.getElementById('chat-github-branch');
+            const path = document.getElementById('chat-github-path');
+            const token = document.getElementById('chat-github-token');
+            if (!repo || !branch || !path || !token) return;
+            if (githubChatConfig) {
+                repo.value = githubChatConfig.repo || '';
+                branch.value = githubChatConfig.branch || 'main';
+                path.value = githubChatConfig.path || 'chat/heligrafes-chat.json';
+                token.value = githubChatConfig.token || '';
+                setGitHubChatStatus(githubChatConfig.repo ? `Ligado a ${githubChatConfig.repo}` : 'GitHub desligado.');
+            } else {
+                branch.value = 'main';
+                path.value = 'chat/heligrafes-chat.json';
+                const inferredRepo = inferGitHubRepoFromUrl();
+                if (inferredRepo) {
+                    repo.value = inferredRepo;
+                    setGitHubChatStatus(`Repositório detetado: ${inferredRepo}. Cole o token e clique LIGAR.`);
+                }
+            }
+        }
+
+        function inferGitHubRepoFromUrl() {
+            const host = window.location.hostname || '';
+            const parts = window.location.pathname.split('/').filter(Boolean);
+            if (host.endsWith('.github.io')) {
+                const owner = host.replace('.github.io', '');
+                const repo = parts.length ? parts[0] : `${owner}.github.io`;
+                return `${owner}/${repo}`;
+            }
+            if (host === 'github.com' && parts.length >= 2) {
+                return `${parts[0]}/${parts[1]}`;
+            }
+            return '';
+        }
+
+        function autoConfigureGitHubChat() {
+            const repoInput = document.getElementById('chat-github-repo');
+            const branchInput = document.getElementById('chat-github-branch');
+            const pathInput = document.getElementById('chat-github-path');
+            const tokenInput = document.getElementById('chat-github-token');
+            const inferredRepo = inferGitHubRepoFromUrl();
+
+            if (inferredRepo) {
+                repoInput.value = inferredRepo;
+                setGitHubChatStatus(`Repositório detetado: ${inferredRepo}. Cole o token e clique LIGAR.`);
+            } else {
+                repoInput.value = repoInput.value || '';
+                setGitHubChatStatus('Abra a página publicada no GitHub Pages para detetar automaticamente o repositório. Neste ficheiro local, cole o repositório no formato utilizador/repositorio.');
+            }
+
+            branchInput.value = branchInput.value || 'main';
+            pathInput.value = pathInput.value || 'chat/heligrafes-chat.json';
+            if (!tokenInput.value) tokenInput.focus();
+        }
+
+        function openGitHubTokenPage() {
+            window.open('https://github.com/settings/tokens/new?description=Heligrafes%20Chat&scopes=repo', '_blank');
+        }
+
+        function saveGitHubChatConfig() {
+            const repo = (document.getElementById('chat-github-repo').value || '').trim();
+            const branch = (document.getElementById('chat-github-branch').value || 'main').trim();
+            const path = (document.getElementById('chat-github-path').value || 'chat/heligrafes-chat.json').trim();
+            const token = (document.getElementById('chat-github-token').value || '').trim();
+            if (!repo) {
+                autoConfigureGitHubChat();
+                return alert('Não consegui descobrir o repositório porque a página está aberta como ficheiro local. Cole o repositório no formato utilizador/repositorio, por exemplo: Hernane/heligrafes.');
+            }
+            if (!/^[^\/\s]+\/[^\/\s]+$/.test(repo)) return alert('Informe o repositório no formato utilizador/repositorio.');
+            if (!token) return alert('Informe um token GitHub com permissão de escrita no repositório.');
+            githubChatConfig = { repo, branch, path, token };
+            localStorage.setItem('multi_chat_github_config_v52', JSON.stringify(githubChatConfig));
+            setGitHubChatStatus(`Ligado a ${repo}. A sincronizar...`);
+            startGitHubChatSync();
+            syncChatFromGitHub(true);
+        }
+
+        function startGitHubChatSync() {
+            if (githubChatSyncTimer) clearInterval(githubChatSyncTimer);
+            if (!githubChatConfig || !githubChatConfig.repo || !githubChatConfig.token) return;
+            syncChatFromGitHub(false);
+            githubChatSyncTimer = setInterval(() => syncChatFromGitHub(false), 20000);
+        }
+
+        function setGitHubChatStatus(text) {
+            const status = document.getElementById('chat-github-status');
+            if (status) status.innerText = text;
+        }
+
+        function b64EncodeUnicode(value) {
+            return btoa(unescape(encodeURIComponent(value)));
+        }
+
+        function b64DecodeUnicode(value) {
+            return decodeURIComponent(escape(atob(value)));
+        }
+
+        async function syncChatFromGitHub(manual) {
+            if (!githubChatConfig || !githubChatConfig.repo || !githubChatConfig.token) {
+                if (manual) alert('Configure primeiro a ligação GitHub.');
+                return;
+            }
+            try {
+                const url = `https://api.github.com/repos/${githubChatConfig.repo}/contents/${encodeURIComponent(githubChatConfig.path).replace(/%2F/g, '/')}?ref=${encodeURIComponent(githubChatConfig.branch || 'main')}`;
+                const res = await fetch(url, {
+                    headers: {
+                        Authorization: `Bearer ${githubChatConfig.token}`,
+                        Accept: 'application/vnd.github+json'
+                    }
+                });
+                if (res.status === 404) {
+                    githubChatSha = '';
+                    localStorage.removeItem('multi_chat_github_sha_v52');
+                    if (manual) await syncChatToGitHub(true);
+                    return;
+                }
+                if (!res.ok) throw new Error(`GitHub respondeu ${res.status}`);
+                const data = await res.json();
+                githubChatSha = data.sha || '';
+                localStorage.setItem('multi_chat_github_sha_v52', githubChatSha);
+                const remotePayload = JSON.parse(b64DecodeUnicode((data.content || '').replace(/\n/g, '')) || '{"messages":[]}');
+                const beforeLatest = chatMessages[chatMessages.length - 1]?.id || '';
+                mergeChatMessages(remotePayload.messages || []);
+                localStorage.setItem('multi_chat_messages_v52', JSON.stringify(chatMessages));
+                renderChatMessages();
+                notifyNewChatMessages(beforeLatest);
+                setGitHubChatStatus(`Ligado a ${githubChatConfig.repo}. Atualizado ${new Date().toLocaleTimeString().slice(0,5)}.`);
+            } catch (err) {
+                setGitHubChatStatus(`Erro GitHub: ${err.message}`);
+                if (manual) alert(`Erro ao sincronizar GitHub: ${err.message}`);
+            }
+        }
+
+        async function syncChatToGitHub(forceCreate = false) {
+            if (!githubChatConfig || !githubChatConfig.repo || !githubChatConfig.token) return;
+            try {
+                if (!githubChatSha && !forceCreate) await syncChatFromGitHub(false);
+                const payload = {
+                    updatedAt: new Date().toISOString(),
+                    messages: chatMessages.slice(-300)
+                };
+                const body = {
+                    message: `Atualizar chat Heligrafes ${new Date().toLocaleString()}`,
+                    content: b64EncodeUnicode(JSON.stringify(payload, null, 2)),
+                    branch: githubChatConfig.branch || 'main'
+                };
+                if (githubChatSha) body.sha = githubChatSha;
+                const url = `https://api.github.com/repos/${githubChatConfig.repo}/contents/${encodeURIComponent(githubChatConfig.path).replace(/%2F/g, '/')}`;
+                const res = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        Authorization: `Bearer ${githubChatConfig.token}`,
+                        Accept: 'application/vnd.github+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                });
+                if (res.status === 409) {
+                    await syncChatFromGitHub(false);
+                    body.content = b64EncodeUnicode(JSON.stringify({ updatedAt: new Date().toISOString(), messages: chatMessages.slice(-300) }, null, 2));
+                    if (githubChatSha) body.sha = githubChatSha;
+                    const retry = await fetch(url, {
+                        method: 'PUT',
+                        headers: {
+                            Authorization: `Bearer ${githubChatConfig.token}`,
+                            Accept: 'application/vnd.github+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    });
+                    if (!retry.ok) throw new Error(`GitHub respondeu ${retry.status}`);
+                    const retryData = await retry.json();
+                    githubChatSha = retryData.content && retryData.content.sha ? retryData.content.sha : githubChatSha;
+                    localStorage.setItem('multi_chat_github_sha_v52', githubChatSha);
+                    setGitHubChatStatus(`Ligado a ${githubChatConfig.repo}. Enviado ${new Date().toLocaleTimeString().slice(0,5)}.`);
+                    return;
+                }
+                if (!res.ok) throw new Error(`GitHub respondeu ${res.status}`);
+                const data = await res.json();
+                githubChatSha = data.content && data.content.sha ? data.content.sha : githubChatSha;
+                localStorage.setItem('multi_chat_github_sha_v52', githubChatSha);
+                setGitHubChatStatus(`Ligado a ${githubChatConfig.repo}. Enviado ${new Date().toLocaleTimeString().slice(0,5)}.`);
+            } catch (err) {
+                setGitHubChatStatus(`Erro ao enviar: ${err.message}`);
+            }
+        }
+
+        function mergeChatMessages(remoteMessages) {
+            const map = new Map();
+            [...chatMessages, ...remoteMessages].forEach(msg => {
+                if (msg && msg.id) map.set(String(msg.id), msg);
+            });
+            chatMessages = Array.from(map.values()).sort((a, b) => String(a.id).localeCompare(String(b.id)));
+        }
+
+        function notifyNewChatMessages(previousLatestId) {
+            const currentUser = (document.getElementById('chat-user')?.value || '').trim();
+            const latest = chatMessages[chatMessages.length - 1];
+            if (!latest || latest.id === previousLatestId || latest.id === lastChatNotificationId || latest.user === currentUser) return;
+            lastChatNotificationId = latest.id;
+            localStorage.setItem('multi_chat_last_notification_v52', latest.id);
+            const text = `${latest.user || 'Utilizador'} enviou uma mensagem no chat.`;
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification('Chat Heligrafes', { body: text });
+            } else {
+                alert(text);
+            }
+        }
+
         /* --- NAVEGAÇÃO --- */
         function showTab(id) { 
             if(!document.getElementById('tabacaria').classList.contains('hidden') && vrCart.length > 0 && id !== 'tabacaria') return alert("Finalize a venda no carrinho!"); 
@@ -787,6 +1203,7 @@ window.onload = function() {
             if(id === 'relatorios') renderReports(); 
             if(id === 'historico') renderOrdersHistory(); 
             if(id === 'rh') renderRH();
+            if(id === 'chat') renderChatMessages();
             if(id === 'impressao') renderPrintTab();
         }
         
@@ -1057,13 +1474,14 @@ window.onload = function() {
                 if (s.date === today) {
                     if (s.category === 'EXPENSE') stats.despesas += s.total;
                     else {
-                        stats.totalVendas += getSaleInitialPaid(s);
+                        const valorPago = getSaleInitialPaid(s);
+                        stats.totalVendas += valorPago;
                         stats.qtdVendas++;
                         const m = s.method ? s.method.toLowerCase() : '';
-                        if (m.includes('dinheiro')) stats.dinheiro += s.total;
-                        else if (m.includes('express')) stats.express += s.total;
-                        else if (m.includes('tpa')) stats.tpa += s.total;
-                        else if (m.includes('transf')) stats.transf += s.total;
+                        if (m.includes('dinheiro')) stats.dinheiro += valorPago;
+                        else if (m.includes('express')) stats.express += valorPago;
+                        else if (m.includes('tpa')) stats.tpa += valorPago;
+                        else if (m.includes('transf')) stats.transf += valorPago;
                     }
                 }
             });
@@ -1076,7 +1494,7 @@ window.onload = function() {
                 id: Date.now(),
                 date: today,
                 stats: stats,
-                saldo: stats.totalVendas - stats.despesas
+                saldo: stats.totalVendas
             };
             
             // Evita duplicados do dia
@@ -1092,8 +1510,8 @@ window.onload = function() {
 
             // Opção 2: Enviar WhatsApp
             if (confirm("Deseja enviar o resumo financeiro para o WhatsApp da gerência?")) {
-                const saldoLiquido = stats.totalVendas - stats.despesas;
-                let msg = `*🔐 FECHO - ${today}*\nBruto: ${stats.totalVendas.toLocaleString()} Kz\nDespesas: ${stats.despesas.toLocaleString()} Kz\n*Líquido: ${saldoLiquido.toLocaleString()} Kz*`;
+                const saldoCaixa = stats.totalVendas;
+                let msg = `*🔐 FECHO - ${today}*\nEntradas: ${stats.totalVendas.toLocaleString()} Kz\nDespesas registadas: ${stats.despesas.toLocaleString()} Kz\n*Saldo de caixa: ${saldoCaixa.toLocaleString()} Kz*`;
                 const url = `https://wa.me/244924565514?text=${encodeURIComponent(msg)}`;
                 window.open(url, '_blank');
             }
@@ -1126,9 +1544,9 @@ window.onload = function() {
         function printShiftClose(stats) {
             const today = new Date().toLocaleDateString();
             const time = new Date().toLocaleTimeString();
-            const saldoLiquido = stats.totalVendas - stats.despesas;
+            const saldoCaixa = stats.totalVendas;
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<html><head><title>Fecho</title><style>body{font-family:'Courier New';width:80mm;font-size:12px;}.item{display:flex;justify-content:space-between;margin:5px 0;}</style></head><body><center><strong>RELATÓRIO DE FECHO</strong><br>${today} ${time}</center><hr><div class="item"><span>Vendas:</span><span>${stats.totalVendas} Kz</span></div><div class="item"><span>Despesas:</span><span>-${stats.despesas} Kz</span></div><hr><div class="item"><strong>LÍQUIDO:</strong><strong>${saldoLiquido} Kz</strong></div><script>window.print();window.close();<\/script></body></html>`);
+            printWindow.document.write(`<html><head><title>Fecho</title><style>body{font-family:'Courier New';width:80mm;font-size:12px;}.item{display:flex;justify-content:space-between;margin:5px 0;}</style></head><body><center><strong>RELATÓRIO DE FECHO</strong><br>${today} ${time}</center><hr><div class="item"><span>Entradas:</span><span>${stats.totalVendas} Kz</span></div><div class="item"><span>Despesas registadas:</span><span>${stats.despesas} Kz</span></div><hr><div class="item"><strong>SALDO DE CAIXA:</strong><strong>${saldoCaixa} Kz</strong></div><script>window.print();window.close();<\/script></body></html>`);
             printWindow.document.close();
         }
 
@@ -1412,7 +1830,8 @@ function sendDailyReport(platform) {
     });
     const debtPaidToday = debtPayments.filter(p => p.date === today);
     const debtPaidTotal = debtPaidToday.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
-    const pendingDebtTotal = getPendingDebts().reduce((sum, s) => sum + getDebtAmount(s), 0);
+    const pendingDebts = getPendingDebts();
+    const pendingDebtTotal = pendingDebts.reduce((sum, s) => sum + getDebtAmount(s), 0);
     totalGeral += getExtraCashTotal(today) + debtPaidTotal;
 
     // Constrói o texto do relatório por departamento
@@ -1445,13 +1864,20 @@ function sendDailyReport(platform) {
         report += `  Nenhum pagamento de dívida registado hoje.\n`;
     }
     report += `\n⚠️ *DÍVIDAS PENDENTES:* ${pendingDebtTotal.toLocaleString()} Kz\n`;
+    if (pendingDebts.length) {
+        pendingDebts.forEach(s => {
+            report += `  ▫️ ${s.client || 'Cliente'} | ${s.phone || 'Sem contacto'} | ${s.desc || 'Produto'} | Data: ${s.date} | Falta: ${getDebtAmount(s).toLocaleString()} Kz\n`;
+        });
+    } else {
+        report += `  Sem dívidas pendentes.\n`;
+    }
 
     // Resumo Final
     report += `\n══════════════════\n`;
     report += `💰 *RESUMO CAIXA DIÁRIO*\n`;
     report += `Entradas: ${totalGeral.toLocaleString()} Kz\n`;
-    report += `Saídas: -${totalDespesas.toLocaleString()} Kz\n`;
-    report += `*LÍQUIDO: ${(totalGeral - totalDespesas).toLocaleString()} Kz*\n`;
+    report += `Despesas registadas: ${totalDespesas.toLocaleString()} Kz\n`;
+    report += `*SALDO DE CAIXA: ${totalGeral.toLocaleString()} Kz*\n`;
 
     // Envio
     if (platform === 'whatsapp') { 
@@ -1575,12 +2001,12 @@ function printDailyReport() {
                 <span style="font-weight:bold; color:#10b981;">${totalGeral.toLocaleString()} Kz</span>
              </div>`;
     html += `<div style="display:flex; justify-content:space-between; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">
-                <span style="font-weight:bold; color:#64748b;">Total de Despesas:</span>
-                <span style="font-weight:bold; color:#e11d48;">-${totalDespesas.toLocaleString()} Kz</span>
+                <span style="font-weight:bold; color:#64748b;">Despesas registadas:</span>
+                <span style="font-weight:bold; color:#e11d48;">${totalDespesas.toLocaleString()} Kz</span>
              </div>`;
     html += `<div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:900; font-size:18px; color:#1e293b;">SALDO LÍQUIDO EM CAIXA:</span>
-                <span style="font-weight:900; font-size:22px; color:#1e293b;">${(totalGeral - totalDespesas).toLocaleString()} Kz</span>
+                <span style="font-weight:900; font-size:18px; color:#1e293b;">SALDO DE CAIXA:</span>
+                <span style="font-weight:900; font-size:22px; color:#1e293b;">${totalGeral.toLocaleString()} Kz</span>
              </div>`;
     html += `</div></div>`;
 
@@ -1653,12 +2079,12 @@ function printDailyReport() {
 
             document.getElementById('rep-daily-gross').innerText = dailyGross.toLocaleString() + ' Kz';
             document.getElementById('rep-daily-exp').innerText = '-' + dailyExp.toLocaleString() + ' Kz';
-            document.getElementById('rep-daily-net').innerText = (dailyGross - dailyExp).toLocaleString() + ' Kz';
+            document.getElementById('rep-daily-net').innerText = dailyGross.toLocaleString() + ' Kz';
             document.getElementById('rep-monthly-gross').innerText = monthlyGross.toLocaleString() + ' Kz';
             document.getElementById('rep-monthly-exp').innerText = '-' + monthlyExp.toLocaleString() + ' Kz';
-            document.getElementById('rep-monthly-net').innerText = (monthlyGross - monthlyExp).toLocaleString() + ' Kz';
+            document.getElementById('rep-monthly-net').innerText = monthlyGross.toLocaleString() + ' Kz';
             document.getElementById('rep-total-exp').innerText = '-' + totalExp.toLocaleString() + ' Kz';
-            document.getElementById('rep-total-net').innerText = (totalGross - totalExp).toLocaleString() + ' Kz';
+            document.getElementById('rep-total-net').innerText = totalGross.toLocaleString() + ' Kz';
 
             let bestMethod = Object.keys(paymentStats).reduce((a, b) => paymentStats[a] > paymentStats[b] ? a : b, '-');
             document.getElementById('rep-best-method').innerText = bestMethod;
@@ -1851,8 +2277,8 @@ function printDailyReport() {
         function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(confirm("Confirmar venda?")) { p.stock -= qty; const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
         function renderStationeryDailyReport() { const list = document.getElementById('st-sales-list'); if(!list) return; list.innerHTML=''; sales.slice().reverse().forEach(s => { if(s.category === 'PAPELARIA' && s.date === new Date().toLocaleDateString()) list.innerHTML += `<div class="grid grid-cols-12 bg-white p-2 border-b border-slate-100 text-xs text-slate-600 hover:bg-slate-50 items-center"><div class="col-span-2">${new Date(s.id).toLocaleTimeString().slice(0,5)}</div><div class="col-span-5 font-bold">${s.desc}</div><div class="col-span-2 text-center bg-blue-50 rounded">${s.qty||1}</div><div class="col-span-2 text-right font-bold text-emerald-600">${s.total.toLocaleString()}</div><div class="col-span-1 text-center"><button onclick="deleteSale(${s.id})" class="text-red-400 font-bold hover:text-red-600">×</button></div></div>`; }); }
         function renderOrdersHistory() { const tbody = document.getElementById('orders-history-body'); tbody.innerHTML = ''; sales.slice().reverse().forEach(s => { const debt = getDebtAmount(s); let statusHtml = debt <= 0 ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600">Pago</span>' : `<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">Dívida: ${debt.toLocaleString()}</span><button onclick="registerDebtPayment(${s.id})" class="ml-2 text-emerald-600 font-black text-[10px] underline">Pagar</button>`; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-3 text-slate-500">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client || 'Balcão'}<div class="text-[10px] text-slate-400">${s.phone || ''}</div></td><td class="p-3 text-slate-600 text-xs">${s.desc}</td><td class="p-3 text-right font-medium">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center">${statusHtml}</td><td class="p-3 text-center"><button onclick='printInvoiceDouble(${s.id})' class="text-blue-500 font-bold text-xs mr-2">🖨️</button><button onclick='deleteSale(${s.id})' class="text-red-400 font-bold text-xs">🗑️</button></td></tr>`; }); }
-        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, shiftCloses: shiftCloses, extraCashAdds: extraCashAdds, debtPayments: debtPayments }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; shiftCloses = data.shiftCloses || []; extraCashAdds = data.extraCashAdds || []; debtPayments = data.debtPayments || []; saveData(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
+        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, shiftCloses: shiftCloses, extraCashAdds: extraCashAdds, debtPayments: debtPayments, chatMessages: chatMessages }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; shiftCloses = data.shiftCloses || []; extraCashAdds = data.extraCashAdds || []; debtPayments = data.debtPayments || []; chatMessages = data.chatMessages || []; saveData(); saveChatMessages(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
         function deleteSale(id) { if(checkPermission() && confirm("Anular?")) { sales = sales.filter(s=>s.id!==id); saveData(); renderStationeryDailyReport(); renderDashboard(); renderOrdersHistory(); } }
         function renderRH() { const sel = document.getElementById('rh-employee-select'); sel.innerHTML = '<option value="">Selecione...</option>'; employees.forEach(e => sel.innerHTML += `<option value="${e.id}">${e.name}</option>`); const tbody = document.getElementById('payroll-body'); tbody.innerHTML = ''; const currentMonth = new Date().getMonth(); const currentYear = new Date().getFullYear(); employees.forEach(emp => { let delays = 0; let absences = 0; attendance.forEach(att => { const d = new Date(att.date); if (att.empId === emp.id && d.getMonth() === currentMonth && d.getFullYear() === currentYear) { if (att.status === 'ATRASO') delays++; if (att.status === 'FALTA') absences++; } }); const totalDeductions = (delays * 200) + (absences * 1000); const finalSalary = emp.salary - totalDeductions; tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${emp.name}</td><td class="p-3 text-slate-500">${emp.salary.toLocaleString()} Kz</td><td class="p-3 text-center text-red-500 font-bold">${absences} <span class="text-[9px] text-slate-400">(-${(absences*1000).toLocaleString()})</span></td><td class="p-3 text-center text-orange-500 font-bold">${delays} <span class="text-[9px] text-slate-400">(-${(delays*200).toLocaleString()})</span></td><td class="p-3 text-right font-black text-emerald-600 text-lg">${finalSalary.toLocaleString()} Kz</td><td class="p-3 text-right"><button onclick="deleteEmployee(${emp.id})" class="text-red-400 hover:text-red-600">×</button></td></tr>`; }); }
         function addEmployee() { const name = document.getElementById('new-emp-name').value; const salary = parseFloat(document.getElementById('new-emp-salary').value); if (name && salary) { employees.push({ id: Date.now(), name, salary }); saveData(); document.getElementById('new-emp-name').value = ''; document.getElementById('new-emp-salary').value = ''; renderRH(); } }
