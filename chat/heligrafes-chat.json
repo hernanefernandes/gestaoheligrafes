@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-03T22:41:02.007Z",
+  "updatedAt": "2026-06-03T22:42:11.693Z",
   "messages": [
     {
       "id": "1780525657880-qd9akq",
@@ -91,6 +91,14 @@
       "text": "ok",
       "date": "04/06/2026",
       "time": "00:41"
+    },
+    {
+      "id": "1780526531660-eoip7r",
+      "room": "GERAL",
+      "user": "Buuh",
+      "text": "Vamos em bbbb",
+      "date": "03/06/2026",
+      "time": "23:42"
     }
   ]
 }
