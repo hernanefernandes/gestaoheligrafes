@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-05T11:30:49.566Z",
+  "updatedAt": "2026-06-05T11:32:31.302Z",
   "messages": [
     {
       "id": "1780525657880-qd9akq",
@@ -133,12 +133,36 @@
       "time": "12:29"
     },
     {
+      "id": "1780658992344-m2jxfs",
+      "room": "GERAL",
+      "user": "Buuh",
+      "text": "Hhhhhh",
+      "date": "05/06/2026",
+      "time": "12:29"
+    },
+    {
+      "id": "1780659009105-l1siyk",
+      "room": "GERAL",
+      "user": "Buuh",
+      "text": "Hhhhh",
+      "date": "05/06/2026",
+      "time": "12:30"
+    },
+    {
       "id": "1780659049559-6g5mb5",
       "room": "GERAL",
       "user": "Ernesto",
       "text": "Oi",
       "date": "05/06/2026",
       "time": "12:30"
+    },
+    {
+      "id": "1780659151283-nv7ces",
+      "room": "GERAL",
+      "user": "Buuh",
+      "text": "Kkkkkkk",
+      "date": "05/06/2026",
+      "time": "12:32"
     }
   ]
 }
