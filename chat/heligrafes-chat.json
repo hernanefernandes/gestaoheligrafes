@@ -1,5 +1,17 @@
 {
-  "updatedAt": "2026-06-08T21:06:47.866Z",
+  "updatedAt": "2026-06-08T21:38:01.643Z",
+  "settings": {
+    "mode": "rapido",
+    "syncIntervalMs": 850,
+    "targetArrivalMs": 60000,
+    "filePath": "chat/heligrafes-chat.json"
+  },
+  "status": {
+    "onlineWindowMs": 90000,
+    "typingWindowMs": 2500,
+    "totalMessages": 22,
+    "totalDeleted": 0
+  },
   "messages": [
     {
       "id": "1780525657880-qd9akq",
@@ -180,5 +192,20 @@
       "date": "08/06/2026",
       "time": "23:06"
     }
-  ]
+  ],
+  "presence": {
+    "Buuh": {
+      "user": "Buuh",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1780954681640
+    }
+  },
+  "userColors": {
+    "Buuh": "#059669",
+    "Ernesto": "#4f46e5",
+    "hernane": "#0891b2"
+  },
+  "deletedIds": []
 }
