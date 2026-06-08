@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-08T21:45:23.519Z",
+  "updatedAt": "2026-06-08T21:46:13.285Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 26,
+    "totalMessages": 29,
     "totalDeleted": 0
   },
   "messages": [
@@ -219,6 +219,15 @@
       "time": "23:40"
     },
     {
+      "id": "1780954823281-c60qap",
+      "room": "GERAL",
+      "user": "Buuh",
+      "to": "TODOS",
+      "text": "E como",
+      "date": "08/06/2026",
+      "time": "22:40"
+    },
+    {
       "id": "1780954874420-i2x5r9",
       "room": "GERAL",
       "user": "hernane",
@@ -226,22 +235,40 @@
       "text": "E COMO",
       "date": "08/06/2026",
       "time": "23:41"
+    },
+    {
+      "id": "1780954885550-io37kr",
+      "room": "GERAL",
+      "user": "Buuh",
+      "to": "hernane",
+      "text": "Estou bem",
+      "date": "08/06/2026",
+      "time": "22:41"
+    },
+    {
+      "id": "1780955120150-mfm9pi",
+      "room": "GERAL",
+      "user": "Buuh",
+      "to": "hernane",
+      "text": "Kkkkkkk",
+      "date": "08/06/2026",
+      "time": "22:45"
     }
   ],
   "presence": {
+    "Buuh": {
+      "user": "Buuh",
+      "room": "GERAL",
+      "to": "hernane",
+      "typing": false,
+      "lastSeen": 1780955172185
+    },
     "hernane": {
       "user": "hernane",
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
       "lastSeen": 1780955119213
-    },
-    "Buuh": {
-      "user": "Buuh",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1780954741640
     }
   },
   "userColors": {
