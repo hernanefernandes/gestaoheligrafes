@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-08T21:56:58.656Z",
+  "updatedAt": "2026-06-08T21:57:03.364Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -268,9 +268,9 @@
     "hernane": {
       "user": "hernane",
       "room": "GERAL",
-      "to": "hernane",
-      "typing": false,
-      "lastSeen": 1780955814140
+      "to": "Buuh",
+      "typing": true,
+      "lastSeen": 1780955822854
     },
     "Buuh": {
       "user": "Buuh",
