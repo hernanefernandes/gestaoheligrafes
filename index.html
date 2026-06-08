@@ -700,6 +700,19 @@
                                         <option value="ENTREGAS">Entregas</option>
                                     </select>
                                 </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Falar com</label>
+                                    <select id="chat-recipient" class="big-input" onchange="renderChatMessages()">
+                                        <option value="TODOS">Todos</option>
+                                    </select>
+                                </div>
+                                <div class="rounded-xl border border-emerald-100 bg-emerald-50 p-3">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-[10px] font-black uppercase text-emerald-700">Online agora</span>
+                                        <span id="chat-online-count" class="text-[10px] font-black text-emerald-600">0</span>
+                                    </div>
+                                    <div id="chat-online-list" class="flex flex-wrap gap-2 text-xs"></div>
+                                </div>
                                 <div class="rounded-xl border border-indigo-100 bg-indigo-50 p-4 text-xs text-indigo-900 font-bold">
                                     Para conversar pelo site do GitHub, configure abaixo o repositório que vai guardar o ficheiro do chat.
                                 </div>
@@ -733,10 +746,14 @@
                                 <span id="chat-count" class="text-xs bg-white/10 px-3 py-1 rounded-full">0 mensagens</span>
                             </div>
                             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
+                            <div id="chat-typing-status" class="hidden px-4 py-2 bg-indigo-50 text-indigo-700 text-xs font-bold border-t border-indigo-100"></div>
                             <div class="border-t border-slate-200 p-4 bg-white">
-                                <textarea id="chat-message" class="w-full h-20 p-3 border-2 border-slate-200 rounded-xl outline-none font-medium resize-none" placeholder="Escreva a mensagem..."></textarea>
+                                <div id="chat-emoji-picker" class="hidden mb-3 flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
+                                <div id="chat-file-preview" class="hidden mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
+                                <textarea id="chat-message" class="w-full h-20 p-3 border-2 border-slate-200 rounded-xl outline-none font-medium resize-none" placeholder="Escreva a mensagem..." oninput="markChatTyping()"></textarea>
                                 <div class="flex flex-wrap gap-3 items-center mt-3">
-                                    <input type="file" id="chat-file" class="text-xs flex-1">
+                                    <button onclick="toggleEmojiPicker()" class="px-4 py-3 rounded-xl border border-slate-200 text-slate-600 font-black text-xs">EMOJI</button>
+                                    <input type="file" id="chat-file" class="text-xs flex-1" onchange="previewSelectedChatFile()">
                                     <button onclick="sendChatMessage()" class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase shadow-lg">Enviar</button>
                                 </div>
                             </div>
@@ -781,6 +798,8 @@
         let extraCashAdds = JSON.parse(localStorage.getItem('multi_extra_cash_v52')) || [];
         let debtPayments = JSON.parse(localStorage.getItem('multi_debt_payments_v52')) || [];
         let chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
+        let chatPresence = JSON.parse(localStorage.getItem('multi_chat_presence_v52')) || {};
+        let deletedChatIds = JSON.parse(localStorage.getItem('multi_chat_deleted_v52')) || [];
         let chatChannel = null;
         let githubChatConfig = JSON.parse(localStorage.getItem('multi_chat_github_config_v52')) || null;
         let githubChatSha = localStorage.getItem('multi_chat_github_sha_v52') || '';
@@ -789,7 +808,13 @@
         let isGitHubChatSyncing = false;
         let isGitHubChatSending = false;
         let pendingGitHubChatSend = false;
+        let chatTypingTimer = null;
+        let chatPresenceTimer = null;
+        let chatPresenceSyncTimer = null;
         const CHAT_FAST_SYNC_MS = 850;
+        const CHAT_ONLINE_MS = 90000;
+        const CHAT_TYPING_MS = 2500;
+        const CHAT_EMOJIS = ['😀','😂','😊','🙏','👍','👎','👌','💪','🔥','❤️','✅','⚠️','📌','📎','🧾','🖨️','💰','⏰','🎉','👏'];
         const EXTRA_CASH_AMOUNT = 550;
         const EXTRA_CASH_MIN_BALANCE = 2300;
         const EXTRA_CASH_IDLE_MS = 2 * 60 * 60 * 1000;
@@ -854,12 +879,16 @@ window.onload = function() {
             const userInput = document.getElementById('chat-user');
             if (userInput) userInput.value = localStorage.getItem('multi_chat_user_v52') || '';
             loadGitHubChatConfig();
+            renderEmojiPicker();
             if ('BroadcastChannel' in window) {
                 chatChannel = new BroadcastChannel('heligrafes_chat_v52');
                 chatChannel.onmessage = function(event) {
                     if (event.data && event.data.type === 'CHAT_SYNC') {
                         chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
+                        chatPresence = JSON.parse(localStorage.getItem('multi_chat_presence_v52')) || {};
+                        deletedChatIds = JSON.parse(localStorage.getItem('multi_chat_deleted_v52')) || [];
                         renderChatMessages();
+                        renderChatPeople();
                     }
                 };
             }
@@ -870,20 +899,34 @@ window.onload = function() {
                 if (event.key === 'multi_chat_messages_v52') {
                     const beforeLatest = chatMessages[chatMessages.length - 1]?.id || '';
                     chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
+                    chatPresence = JSON.parse(localStorage.getItem('multi_chat_presence_v52')) || {};
+                    deletedChatIds = JSON.parse(localStorage.getItem('multi_chat_deleted_v52')) || [];
                     renderChatMessages();
+                    renderChatPeople();
                     notifyNewChatMessages(beforeLatest);
                 }
             });
+            updateOwnChatPresence(false);
+            if (chatPresenceTimer) clearInterval(chatPresenceTimer);
+            chatPresenceTimer = setInterval(() => {
+                updateOwnChatPresence(false);
+                syncChatToGitHub();
+            }, 5000);
             startGitHubChatSync();
             renderChatMessages();
+            renderChatPeople();
         }
 
         function saveChatProfile() {
             localStorage.setItem('multi_chat_user_v52', document.getElementById('chat-user').value || '');
+            updateOwnChatPresence(false);
+            renderChatPeople();
         }
 
         function saveChatMessages() {
             localStorage.setItem('multi_chat_messages_v52', JSON.stringify(chatMessages));
+            localStorage.setItem('multi_chat_presence_v52', JSON.stringify(chatPresence));
+            localStorage.setItem('multi_chat_deleted_v52', JSON.stringify(deletedChatIds));
             if (chatChannel) chatChannel.postMessage({ type: 'CHAT_SYNC' });
             syncChatToGitHub();
         }
@@ -892,20 +935,35 @@ window.onload = function() {
             const list = document.getElementById('chat-messages');
             const counter = document.getElementById('chat-count');
             const room = document.getElementById('chat-room') ? document.getElementById('chat-room').value : 'GERAL';
+            const recipient = document.getElementById('chat-recipient') ? document.getElementById('chat-recipient').value : 'TODOS';
+            const currentUser = (document.getElementById('chat-user')?.value || '').trim();
             if (!list) return;
-            const roomMessages = chatMessages.filter(msg => msg.room === room).slice(-200);
+            const roomMessages = chatMessages
+                .filter(msg => msg.room === room && !deletedChatIds.includes(String(msg.id)))
+                .filter(msg => {
+                    if (recipient === 'TODOS') return !msg.to || msg.to === 'TODOS' || msg.user === currentUser || msg.to === currentUser;
+                    return msg.user === recipient || msg.to === recipient || msg.user === currentUser && msg.to === recipient;
+                })
+                .slice(-200);
             list.innerHTML = roomMessages.length ? roomMessages.map(msg => {
                 const fileHtml = renderChatFilePreview(msg);
-                return `<div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm">
+                const userColor = getChatUserColor(msg.user || 'Sistema');
+                const isMine = currentUser && msg.user === currentUser;
+                const toText = msg.to && msg.to !== 'TODOS' ? ` → ${escapeChatHtml(msg.to)}` : '';
+                return `<div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm ${isMine ? 'ml-10' : 'mr-10'}" style="border-left: 6px solid ${userColor};">
                     <div class="flex justify-between gap-3 text-[10px] font-bold text-slate-400 uppercase">
-                        <span>${msg.user || 'Sistema'}</span><span>${msg.date || ''} ${msg.time || ''}</span>
+                        <span style="color:${userColor};">${escapeChatHtml(msg.user || 'Sistema')}${toText}</span><span>${msg.date || ''} ${msg.time || ''}</span>
                     </div>
                     <p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">${escapeChatHtml(msg.text || '')}</p>
                     ${fileHtml}
+                    <div class="mt-2 flex justify-end">
+                        <button onclick="deleteChatMessage('${msg.id}')" class="text-[10px] font-black text-rose-500 hover:underline">Apagar</button>
+                    </div>
                 </div>`;
             }).join('') : '<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
             if (counter) counter.innerText = `${roomMessages.length} mensagem(ns)`;
             list.scrollTop = list.scrollHeight;
+            renderChatTypingStatus();
         }
 
         function escapeChatHtml(text) {
@@ -915,6 +973,7 @@ window.onload = function() {
         function sendChatMessage() {
             const user = (document.getElementById('chat-user').value || '').trim();
             const room = document.getElementById('chat-room').value;
+            const to = document.getElementById('chat-recipient') ? document.getElementById('chat-recipient').value : 'TODOS';
             const text = (document.getElementById('chat-message').value || '').trim();
             const file = document.getElementById('chat-file').files[0];
             if (!user) return alert('Informe o seu nome ou posto antes de enviar.');
@@ -927,6 +986,7 @@ window.onload = function() {
                     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
                     room,
                     user,
+                    to,
                     text,
                     date: now.toLocaleDateString(),
                     time: now.toLocaleTimeString().slice(0,5),
@@ -934,7 +994,9 @@ window.onload = function() {
                 });
                 document.getElementById('chat-message').value = '';
                 document.getElementById('chat-file').value = '';
+                clearSelectedChatFilePreview();
                 saveChatProfile();
+                updateOwnChatPresence(false);
                 saveChatMessages();
                 renderChatMessages();
             };
@@ -954,7 +1016,163 @@ window.onload = function() {
             if (!checkPermission()) return;
             const room = document.getElementById('chat-room').value;
             if (!confirm('Limpar todas as mensagens desta sala?')) return;
-            chatMessages = chatMessages.filter(msg => msg.room !== room);
+            chatMessages.filter(msg => msg.room === room).forEach(msg => {
+                if (!deletedChatIds.includes(String(msg.id))) deletedChatIds.push(String(msg.id));
+            });
+            saveChatMessages();
+            renderChatMessages();
+        }
+
+        function getChatUserColor(name) {
+            const colors = ['#2563eb','#7c3aed','#db2777','#ea580c','#059669','#0891b2','#4f46e5','#be123c','#16a34a','#ca8a04'];
+            let hash = 0;
+            String(name || 'Sistema').split('').forEach(char => hash = ((hash << 5) - hash) + char.charCodeAt(0));
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function getChatPeople() {
+            const names = new Set();
+            chatMessages.forEach(msg => {
+                if (msg.user) names.add(msg.user);
+                if (msg.to && msg.to !== 'TODOS') names.add(msg.to);
+            });
+            Object.keys(chatPresence).forEach(name => names.add(name));
+            return Array.from(names).sort((a, b) => a.localeCompare(b));
+        }
+
+        function renderChatPeople() {
+            const recipient = document.getElementById('chat-recipient');
+            const onlineList = document.getElementById('chat-online-list');
+            const onlineCount = document.getElementById('chat-online-count');
+            const currentRecipient = recipient ? recipient.value : 'TODOS';
+            const people = getChatPeople();
+            if (recipient) {
+                recipient.innerHTML = '<option value="TODOS">Todos</option>' + people.map(name => `<option value="${escapeChatHtml(name)}">${escapeChatHtml(name)}</option>`).join('');
+                recipient.value = people.includes(currentRecipient) ? currentRecipient : 'TODOS';
+            }
+            const now = Date.now();
+            const onlinePeople = people.filter(name => chatPresence[name] && now - (chatPresence[name].lastSeen || 0) < CHAT_ONLINE_MS);
+            if (onlineCount) onlineCount.innerText = `${onlinePeople.length} online`;
+            if (onlineList) {
+                onlineList.innerHTML = onlinePeople.length ? onlinePeople.map(name => `<button onclick="selectChatRecipientByEncoded('${encodeURIComponent(name)}')" class="px-2 py-1 rounded-full bg-white border border-emerald-200 font-bold text-emerald-700"><span style="color:${getChatUserColor(name)};">●</span> ${escapeChatHtml(name)}</button>`).join('') : '<span class="text-slate-400 font-bold">Ninguém online agora.</span>';
+            }
+        }
+
+        function selectChatRecipientByEncoded(value) {
+            selectChatRecipient(decodeURIComponent(value));
+        }
+
+        function selectChatRecipient(name) {
+            const recipient = document.getElementById('chat-recipient');
+            if (recipient) recipient.value = name;
+            updateOwnChatPresence(false);
+            renderChatMessages();
+        }
+
+        function updateOwnChatPresence(isTyping) {
+            const user = (document.getElementById('chat-user')?.value || '').trim();
+            if (!user) return;
+            const room = document.getElementById('chat-room') ? document.getElementById('chat-room').value : 'GERAL';
+            const to = document.getElementById('chat-recipient') ? document.getElementById('chat-recipient').value : 'TODOS';
+            chatPresence[user] = { user, room, to, typing: !!isTyping, lastSeen: Date.now() };
+            localStorage.setItem('multi_chat_presence_v52', JSON.stringify(chatPresence));
+            if (chatChannel) chatChannel.postMessage({ type: 'CHAT_SYNC' });
+            renderChatPeople();
+            renderChatTypingStatus();
+        }
+
+        function markChatTyping() {
+            updateOwnChatPresence(true);
+            if (chatTypingTimer) clearTimeout(chatTypingTimer);
+            chatTypingTimer = setTimeout(() => {
+                updateOwnChatPresence(false);
+                syncChatToGitHub();
+            }, CHAT_TYPING_MS);
+            if (!chatPresenceSyncTimer) {
+                chatPresenceSyncTimer = setTimeout(() => {
+                    chatPresenceSyncTimer = null;
+                    syncChatToGitHub();
+                }, 700);
+            }
+        }
+
+        function renderChatTypingStatus() {
+            const status = document.getElementById('chat-typing-status');
+            if (!status) return;
+            const currentUser = (document.getElementById('chat-user')?.value || '').trim();
+            const room = document.getElementById('chat-room') ? document.getElementById('chat-room').value : 'GERAL';
+            const recipient = document.getElementById('chat-recipient') ? document.getElementById('chat-recipient').value : 'TODOS';
+            const typingPeople = Object.values(chatPresence).filter(p => {
+                if (!p || !p.typing || p.user === currentUser) return false;
+                if (Date.now() - (p.lastSeen || 0) > CHAT_TYPING_MS + 1000) return false;
+                if (p.room !== room) return false;
+                return recipient === 'TODOS' || p.user === recipient || p.to === currentUser || p.to === 'TODOS';
+            }).map(p => p.user);
+            if (typingPeople.length) {
+                status.classList.remove('hidden');
+                status.innerText = `${typingPeople.join(', ')} está a escrever...`;
+            } else {
+                status.classList.add('hidden');
+                status.innerText = '';
+            }
+        }
+
+        function renderEmojiPicker() {
+            const picker = document.getElementById('chat-emoji-picker');
+            if (!picker) return;
+            picker.innerHTML = CHAT_EMOJIS.map(emoji => `<button onclick="insertChatEmoji('${emoji}')" class="w-9 h-9 rounded-lg bg-white border border-slate-200 text-lg hover:bg-indigo-50">${emoji}</button>`).join('');
+        }
+
+        function toggleEmojiPicker() {
+            const picker = document.getElementById('chat-emoji-picker');
+            if (picker) picker.classList.toggle('hidden');
+        }
+
+        function insertChatEmoji(emoji) {
+            const input = document.getElementById('chat-message');
+            input.value += emoji;
+            input.focus();
+            markChatTyping();
+        }
+
+        function previewSelectedChatFile() {
+            const file = document.getElementById('chat-file').files[0];
+            const preview = document.getElementById('chat-file-preview');
+            if (!preview) return;
+            if (!file) return clearSelectedChatFilePreview();
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                let html = `<div class="flex justify-between items-center mb-2"><strong class="text-xs text-slate-600">${escapeChatHtml(file.name)}</strong><button onclick="removeSelectedChatFile()" class="text-[10px] font-black text-rose-500">Remover</button></div>`;
+                if (file.type.startsWith('image/')) html += `<img src="${event.target.result}" class="max-h-40 rounded-lg border border-slate-200 object-contain bg-white">`;
+                else if (file.type.startsWith('video/')) html += `<video src="${event.target.result}" controls class="max-h-44 w-full rounded-lg border border-slate-200"></video>`;
+                else if (file.type.startsWith('audio/')) html += `<audio src="${event.target.result}" controls class="w-full"></audio>`;
+                else if (file.type === 'application/pdf') html += `<iframe src="${event.target.result}" class="h-44 w-full rounded-lg border border-slate-200"></iframe>`;
+                else html += `<div class="text-xs font-bold text-slate-500">Pré-visualização limitada para este tipo de ficheiro.</div>`;
+                preview.innerHTML = html;
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearSelectedChatFilePreview() {
+            const preview = document.getElementById('chat-file-preview');
+            if (preview) {
+                preview.innerHTML = '';
+                preview.classList.add('hidden');
+            }
+        }
+
+        function removeSelectedChatFile() {
+            const fileInput = document.getElementById('chat-file');
+            if (fileInput) fileInput.value = '';
+            clearSelectedChatFilePreview();
+        }
+
+        function deleteChatMessage(id) {
+            if (!confirm('Apagar esta mensagem ou ficheiro da conversa?')) return;
+            const stringId = String(id);
+            if (!deletedChatIds.includes(stringId)) deletedChatIds.push(stringId);
+            chatMessages = chatMessages.filter(msg => String(msg.id) !== stringId);
             saveChatMessages();
             renderChatMessages();
         }
@@ -1117,8 +1335,13 @@ window.onload = function() {
                 localStorage.setItem('multi_chat_github_sha_v52', githubChatSha);
                 const remotePayload = JSON.parse(b64DecodeUnicode((data.content || '').replace(/\n/g, '')) || '{"messages":[]}');
                 const beforeLatest = chatMessages[chatMessages.length - 1]?.id || '';
+                mergeChatDeletedIds(remotePayload.deletedIds || []);
+                mergeChatPresence(remotePayload.presence || {});
                 mergeChatMessages(remotePayload.messages || []);
                 localStorage.setItem('multi_chat_messages_v52', JSON.stringify(chatMessages));
+                localStorage.setItem('multi_chat_presence_v52', JSON.stringify(chatPresence));
+                localStorage.setItem('multi_chat_deleted_v52', JSON.stringify(deletedChatIds));
+                renderChatPeople();
                 renderChatMessages();
                 notifyNewChatMessages(beforeLatest);
                 setGitHubChatStatus(`Ligado a ${githubChatConfig.repo}. Atualizado ${new Date().toLocaleTimeString().slice(0,5)}.`);
@@ -1139,10 +1362,7 @@ window.onload = function() {
             isGitHubChatSending = true;
             try {
                 if (!githubChatSha && !forceCreate) await syncChatFromGitHub(false);
-                const payload = {
-                    updatedAt: new Date().toISOString(),
-                    messages: chatMessages.slice(-300)
-                };
+                const payload = buildGitHubChatPayload();
                 const body = {
                     message: `Atualizar chat Heligrafes ${new Date().toLocaleString()}`,
                     content: b64EncodeUnicode(JSON.stringify(payload, null, 2)),
@@ -1161,7 +1381,7 @@ window.onload = function() {
                 });
                 if (res.status === 409) {
                     await syncChatFromGitHub(false);
-                    body.content = b64EncodeUnicode(JSON.stringify({ updatedAt: new Date().toISOString(), messages: chatMessages.slice(-300) }, null, 2));
+                    body.content = b64EncodeUnicode(JSON.stringify(buildGitHubChatPayload(), null, 2));
                     if (githubChatSha) body.sha = githubChatSha;
                     const retry = await fetch(url, {
                         method: 'PUT',
@@ -1200,13 +1420,58 @@ window.onload = function() {
             [...chatMessages, ...remoteMessages].forEach(msg => {
                 if (msg && msg.id) map.set(String(msg.id), msg);
             });
-            chatMessages = Array.from(map.values()).sort((a, b) => String(a.id).localeCompare(String(b.id)));
+            chatMessages = Array.from(map.values())
+                .filter(msg => !deletedChatIds.includes(String(msg.id)))
+                .sort((a, b) => String(a.id).localeCompare(String(b.id)));
+        }
+
+        function mergeChatDeletedIds(remoteDeletedIds) {
+            const ids = new Set(deletedChatIds.map(id => String(id)));
+            (remoteDeletedIds || []).forEach(id => ids.add(String(id)));
+            deletedChatIds = Array.from(ids).slice(-500);
+        }
+
+        function mergeChatPresence(remotePresence) {
+            Object.entries(remotePresence || {}).forEach(([name, remote]) => {
+                if (!remote || !name) return;
+                const local = chatPresence[name];
+                if (!local || (remote.lastSeen || 0) >= (local.lastSeen || 0)) {
+                    chatPresence[name] = remote;
+                }
+            });
+        }
+
+        function buildGitHubChatPayload() {
+            const userColors = {};
+            getChatPeople().forEach(name => {
+                userColors[name] = getChatUserColor(name);
+            });
+            return {
+                updatedAt: new Date().toISOString(),
+                settings: {
+                    mode: 'rapido',
+                    syncIntervalMs: CHAT_FAST_SYNC_MS,
+                    targetArrivalMs: 60000,
+                    filePath: githubChatConfig ? githubChatConfig.path : 'chat/heligrafes-chat.json'
+                },
+                status: {
+                    onlineWindowMs: CHAT_ONLINE_MS,
+                    typingWindowMs: CHAT_TYPING_MS,
+                    totalMessages: chatMessages.length,
+                    totalDeleted: deletedChatIds.length
+                },
+                messages: chatMessages.filter(msg => !deletedChatIds.includes(String(msg.id))).slice(-300),
+                presence: chatPresence,
+                userColors,
+                deletedIds: deletedChatIds.slice(-500)
+            };
         }
 
         function notifyNewChatMessages(previousLatestId) {
             const currentUser = (document.getElementById('chat-user')?.value || '').trim();
             const latest = chatMessages[chatMessages.length - 1];
             if (!latest || latest.id === previousLatestId || latest.id === lastChatNotificationId || latest.user === currentUser) return;
+            if (latest.to && latest.to !== 'TODOS' && latest.to !== currentUser) return;
             lastChatNotificationId = latest.id;
             localStorage.setItem('multi_chat_last_notification_v52', latest.id);
             const text = `${latest.user || 'Utilizador'} enviou uma mensagem no chat.`;
@@ -2305,8 +2570,8 @@ function printDailyReport() {
         function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(confirm("Confirmar venda?")) { p.stock -= qty; const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
         function renderStationeryDailyReport() { const list = document.getElementById('st-sales-list'); if(!list) return; list.innerHTML=''; sales.slice().reverse().forEach(s => { if(s.category === 'PAPELARIA' && s.date === new Date().toLocaleDateString()) list.innerHTML += `<div class="grid grid-cols-12 bg-white p-2 border-b border-slate-100 text-xs text-slate-600 hover:bg-slate-50 items-center"><div class="col-span-2">${new Date(s.id).toLocaleTimeString().slice(0,5)}</div><div class="col-span-5 font-bold">${s.desc}</div><div class="col-span-2 text-center bg-blue-50 rounded">${s.qty||1}</div><div class="col-span-2 text-right font-bold text-emerald-600">${s.total.toLocaleString()}</div><div class="col-span-1 text-center"><button onclick="deleteSale(${s.id})" class="text-red-400 font-bold hover:text-red-600">×</button></div></div>`; }); }
         function renderOrdersHistory() { const tbody = document.getElementById('orders-history-body'); tbody.innerHTML = ''; sales.slice().reverse().forEach(s => { const debt = getDebtAmount(s); let statusHtml = debt <= 0 ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600">Pago</span>' : `<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">Dívida: ${debt.toLocaleString()}</span><button onclick="registerDebtPayment(${s.id})" class="ml-2 text-emerald-600 font-black text-[10px] underline">Pagar</button>`; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-3 text-slate-500">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client || 'Balcão'}<div class="text-[10px] text-slate-400">${s.phone || ''}</div></td><td class="p-3 text-slate-600 text-xs">${s.desc}</td><td class="p-3 text-right font-medium">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center">${statusHtml}</td><td class="p-3 text-center"><button onclick='printInvoiceDouble(${s.id})' class="text-blue-500 font-bold text-xs mr-2">🖨️</button><button onclick='deleteSale(${s.id})' class="text-red-400 font-bold text-xs">🗑️</button></td></tr>`; }); }
-        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, shiftCloses: shiftCloses, extraCashAdds: extraCashAdds, debtPayments: debtPayments, chatMessages: chatMessages }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; shiftCloses = data.shiftCloses || []; extraCashAdds = data.extraCashAdds || []; debtPayments = data.debtPayments || []; chatMessages = data.chatMessages || []; saveData(); saveChatMessages(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
+        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, shiftCloses: shiftCloses, extraCashAdds: extraCashAdds, debtPayments: debtPayments, chatMessages: chatMessages, chatPresence: chatPresence, deletedChatIds: deletedChatIds }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; shiftCloses = data.shiftCloses || []; extraCashAdds = data.extraCashAdds || []; debtPayments = data.debtPayments || []; chatMessages = data.chatMessages || []; chatPresence = data.chatPresence || {}; deletedChatIds = data.deletedChatIds || []; saveData(); saveChatMessages(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
         function deleteSale(id) { if(checkPermission() && confirm("Anular?")) { sales = sales.filter(s=>s.id!==id); saveData(); renderStationeryDailyReport(); renderDashboard(); renderOrdersHistory(); } }
         function renderRH() { const sel = document.getElementById('rh-employee-select'); sel.innerHTML = '<option value="">Selecione...</option>'; employees.forEach(e => sel.innerHTML += `<option value="${e.id}">${e.name}</option>`); const tbody = document.getElementById('payroll-body'); tbody.innerHTML = ''; const currentMonth = new Date().getMonth(); const currentYear = new Date().getFullYear(); employees.forEach(emp => { let delays = 0; let absences = 0; attendance.forEach(att => { const d = new Date(att.date); if (att.empId === emp.id && d.getMonth() === currentMonth && d.getFullYear() === currentYear) { if (att.status === 'ATRASO') delays++; if (att.status === 'FALTA') absences++; } }); const totalDeductions = (delays * 200) + (absences * 1000); const finalSalary = emp.salary - totalDeductions; tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${emp.name}</td><td class="p-3 text-slate-500">${emp.salary.toLocaleString()} Kz</td><td class="p-3 text-center text-red-500 font-bold">${absences} <span class="text-[9px] text-slate-400">(-${(absences*1000).toLocaleString()})</span></td><td class="p-3 text-center text-orange-500 font-bold">${delays} <span class="text-[9px] text-slate-400">(-${(delays*200).toLocaleString()})</span></td><td class="p-3 text-right font-black text-emerald-600 text-lg">${finalSalary.toLocaleString()} Kz</td><td class="p-3 text-right"><button onclick="deleteEmployee(${emp.id})" class="text-red-400 hover:text-red-600">×</button></td></tr>`; }); }
         function addEmployee() { const name = document.getElementById('new-emp-name').value; const salary = parseFloat(document.getElementById('new-emp-salary').value); if (name && salary) { employees.push({ id: Date.now(), name, salary }); saveData(); document.getElementById('new-emp-name').value = ''; document.getElementById('new-emp-salary').value = ''; renderRH(); } }
