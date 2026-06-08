@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-08T21:57:03.364Z",
+  "updatedAt": "2026-06-08T21:57:19.913Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 30,
+    "totalMessages": 31,
     "totalDeleted": 0
   },
   "messages": [
@@ -262,6 +262,15 @@
       "text": "ESTA FIXE",
       "date": "08/06/2026",
       "time": "23:56"
+    },
+    {
+      "id": "1780955824493-aarohm",
+      "room": "GERAL",
+      "user": "hernane",
+      "to": "Buuh",
+      "text": "OK",
+      "date": "08/06/2026",
+      "time": "23:57"
     }
   ],
   "presence": {
@@ -269,8 +278,8 @@
       "user": "hernane",
       "room": "GERAL",
       "to": "Buuh",
-      "typing": true,
-      "lastSeen": 1780955822854
+      "typing": false,
+      "lastSeen": 1780955839134
     },
     "Buuh": {
       "user": "Buuh",
