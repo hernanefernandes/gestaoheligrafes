@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-08T21:41:09.353Z",
+  "updatedAt": "2026-06-08T21:41:34.012Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 25,
+    "totalMessages": 26,
     "totalDeleted": 0
   },
   "messages": [
@@ -217,6 +217,15 @@
       "text": "OI",
       "date": "08/06/2026",
       "time": "23:40"
+    },
+    {
+      "id": "1780954874420-i2x5r9",
+      "room": "GERAL",
+      "user": "hernane",
+      "to": "Buuh",
+      "text": "E COMO",
+      "date": "08/06/2026",
+      "time": "23:41"
     }
   ],
   "presence": {
@@ -225,7 +234,7 @@
       "room": "GERAL",
       "to": "Buuh",
       "typing": false,
-      "lastSeen": 1780954867210
+      "lastSeen": 1780954892203
     },
     "Buuh": {
       "user": "Buuh",
