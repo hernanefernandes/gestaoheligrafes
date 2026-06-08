@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-08T21:39:01.702Z",
+  "updatedAt": "2026-06-08T21:39:25.204Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 22,
+    "totalMessages": 23,
     "totalDeleted": 0
   },
   "messages": [
@@ -191,9 +191,24 @@
       "text": "g",
       "date": "08/06/2026",
       "time": "23:06"
+    },
+    {
+      "id": "1780952837731-u84xgq",
+      "room": "GERAL",
+      "user": "hernane",
+      "text": "chegei",
+      "date": "08/06/2026",
+      "time": "23:07"
     }
   ],
   "presence": {
+    "hernane": {
+      "user": "hernane",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1780954762205
+    },
     "Buuh": {
       "user": "Buuh",
       "room": "GERAL",
