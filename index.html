@@ -786,6 +786,10 @@
         let githubChatSha = localStorage.getItem('multi_chat_github_sha_v52') || '';
         let githubChatSyncTimer = null;
         let lastChatNotificationId = localStorage.getItem('multi_chat_last_notification_v52') || '';
+        let isGitHubChatSyncing = false;
+        let isGitHubChatSending = false;
+        let pendingGitHubChatSend = false;
+        const CHAT_FAST_SYNC_MS = 850;
         const EXTRA_CASH_AMOUNT = 550;
         const EXTRA_CASH_MIN_BALANCE = 2300;
         const EXTRA_CASH_IDLE_MS = 2 * 60 * 60 * 1000;
@@ -862,6 +866,14 @@ window.onload = function() {
             if ('Notification' in window && Notification.permission === 'default') {
                 Notification.requestPermission();
             }
+            window.addEventListener('storage', function(event) {
+                if (event.key === 'multi_chat_messages_v52') {
+                    const beforeLatest = chatMessages[chatMessages.length - 1]?.id || '';
+                    chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
+                    renderChatMessages();
+                    notifyNewChatMessages(beforeLatest);
+                }
+            });
             startGitHubChatSync();
             renderChatMessages();
         }
@@ -1061,7 +1073,8 @@ window.onload = function() {
             if (githubChatSyncTimer) clearInterval(githubChatSyncTimer);
             if (!githubChatConfig || !githubChatConfig.repo || !githubChatConfig.token) return;
             syncChatFromGitHub(false);
-            githubChatSyncTimer = setInterval(() => syncChatFromGitHub(false), 20000);
+            githubChatSyncTimer = setInterval(() => syncChatFromGitHub(false), CHAT_FAST_SYNC_MS);
+            setGitHubChatStatus(`Ligado a ${githubChatConfig.repo}. Modo rápido ativo (${CHAT_FAST_SYNC_MS}ms).`);
         }
 
         function setGitHubChatStatus(text) {
@@ -1082,6 +1095,8 @@ window.onload = function() {
                 if (manual) alert('Configure primeiro a ligação GitHub.');
                 return;
             }
+            if (isGitHubChatSyncing && !manual) return;
+            isGitHubChatSyncing = true;
             try {
                 const url = `https://api.github.com/repos/${githubChatConfig.repo}/contents/${encodeURIComponent(githubChatConfig.path).replace(/%2F/g, '/')}?ref=${encodeURIComponent(githubChatConfig.branch || 'main')}`;
                 const res = await fetch(url, {
@@ -1110,11 +1125,18 @@ window.onload = function() {
             } catch (err) {
                 setGitHubChatStatus(`Erro GitHub: ${err.message}`);
                 if (manual) alert(`Erro ao sincronizar GitHub: ${err.message}`);
+            } finally {
+                isGitHubChatSyncing = false;
             }
         }
 
         async function syncChatToGitHub(forceCreate = false) {
             if (!githubChatConfig || !githubChatConfig.repo || !githubChatConfig.token) return;
+            if (isGitHubChatSending) {
+                pendingGitHubChatSend = true;
+                return;
+            }
+            isGitHubChatSending = true;
             try {
                 if (!githubChatSha && !forceCreate) await syncChatFromGitHub(false);
                 const payload = {
@@ -1164,6 +1186,12 @@ window.onload = function() {
                 setGitHubChatStatus(`Ligado a ${githubChatConfig.repo}. Enviado ${new Date().toLocaleTimeString().slice(0,5)}.`);
             } catch (err) {
                 setGitHubChatStatus(`Erro ao enviar: ${err.message}`);
+            } finally {
+                isGitHubChatSending = false;
+                if (pendingGitHubChatSend) {
+                    pendingGitHubChatSend = false;
+                    syncChatToGitHub(false);
+                }
             }
         }
 
