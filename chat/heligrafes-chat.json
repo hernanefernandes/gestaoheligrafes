@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-08T22:08:35.278Z",
+  "updatedAt": "2026-06-11T14:29:15.723Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -283,6 +283,13 @@
     }
   ],
   "presence": {
+    "Ernesto": {
+      "user": "Ernesto",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1781188155720
+    },
     "Buuh": {
       "user": "Buuh",
       "room": "GERAL",
