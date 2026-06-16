@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-06-16T08:48:12.087Z",
+  "updatedAt": "2026-06-16T08:48:44.977Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -284,12 +284,12 @@
     }
   ],
   "presence": {
-    "Ernesto": {
-      "user": "Ernesto",
+    "hernane": {
+      "user": "hernane",
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1781599687085
+      "lastSeen": 1781599721748
     },
     "Buuh": {
       "user": "Buuh",
@@ -298,12 +298,12 @@
       "typing": false,
       "lastSeen": 1780956513175
     },
-    "hernane": {
-      "user": "hernane",
+    "Ernesto": {
+      "user": "Ernesto",
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1781599666750
+      "lastSeen": 1781599687085
     }
   },
   "userColors": {
