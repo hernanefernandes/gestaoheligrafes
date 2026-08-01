@@ -113,6 +113,66 @@
             .pdf-table th { background: #f1f5f9; padding: 8px; border: 1px solid #cbd5e1; text-align: left; }
             .pdf-table td { padding: 8px; border: 1px solid #cbd5e1; }
         }
+
+        /* --- IDENTIDADE VISUAL GRUPO HELIGRAFES --- */
+        :root {
+            --heli-blue: #063b8f;
+            --heli-blue-deep: #042a68;
+            --heli-sky: #1faee5;
+            --heli-yellow: #f9bd17;
+            --heli-orange: #f36d16;
+            --heli-ink: #17324d;
+            --heli-soft: #f4f8fd;
+        }
+        body { background: #edf3fa; color: var(--heli-ink); }
+        .main-container { background: radial-gradient(circle at 76% -8%, #dcefff 0, transparent 32%), linear-gradient(135deg, #f8fbff 0%, #edf3fa 72%, #e8eef7 100%); }
+        .app-sidebar { width: 18rem; background: linear-gradient(180deg, var(--heli-blue-deep) 0%, #063b8f 48%, #092f70 100%); border: 0; box-shadow: 16px 0 42px rgba(5, 42, 104, .18); }
+        .app-brand { margin: 18px 16px 8px; padding: 14px; border: 1px solid rgba(255,255,255,.16); border-radius: 20px; background: rgba(255,255,255,.1); box-shadow: inset 0 1px 0 rgba(255,255,255,.15); }
+        .app-brand-logo { width: 100%; height: 82px; object-fit: contain; border-radius: 12px; background: #fff; padding: 6px 10px; box-shadow: 0 10px 22px rgba(0,0,0,.16); }
+        .app-sidebar nav { padding: 20px 16px; }
+        .app-sidebar nav > p { color: #9bc8ff; padding-left: 14px; }
+        .app-sidebar .sidebar-link { color: rgba(255,255,255,.78); padding: 12px 14px; margin-bottom: 5px; border: 1px solid transparent; border-radius: 14px; font-size: .88rem; }
+        .app-sidebar .sidebar-link:hover { color: white; background: rgba(255,255,255,.12); transform: translateX(3px); }
+        .app-sidebar .sidebar-link.active { color: var(--heli-blue-deep); background: linear-gradient(135deg, #fff 0%, #eaf6ff 100%); border-color: rgba(255,255,255,.75); box-shadow: 0 12px 24px rgba(0,0,0,.17); }
+        .app-sidebar > div:last-child { padding: 16px; }
+        .app-sidebar > div:last-child > div { border: 1px solid rgba(255,255,255,.17); background: rgba(255,255,255,.1); color: white; box-shadow: none; }
+        .app-sidebar > div:last-child p:first-child { color: #b8d9ff; }
+        .app-topbar { min-height: 108px; height: auto; padding: 18px 32px; background: rgba(255,255,255,.77); border-bottom: 1px solid rgba(187, 207, 230, .7); box-shadow: 0 8px 24px rgba(45, 76, 117, .05); }
+        .topbar-company { border-left-color: var(--heli-yellow) !important; }
+        .topbar-company h4 { color: var(--heli-blue-deep); }
+        .topbar-session { border-color: #dbe8f7; background: #fff; box-shadow: 0 8px 22px rgba(20, 59, 110, .08); }
+        .clock-control { display: flex; align-items: center; gap: 12px; }
+        .digital-clock-box { min-width: 142px; padding: 10px 14px; border-radius: 16px; background: linear-gradient(135deg, var(--heli-blue-deep), var(--heli-blue)); color: white; box-shadow: 0 10px 20px rgba(6,59,143,.22); }
+        .digital-clock-box .vibrant-clock { color: #fff; background: none; -webkit-text-fill-color: initial; animation: none; }
+        .clock-toggle { display: flex; overflow: hidden; border: 1px solid #cfe0f3; border-radius: 10px; background: #f6faff; }
+        .clock-toggle button { padding: 6px 9px; color: #5e7795; font-size: 10px; font-weight: 800; transition: .2s; }
+        .clock-toggle button.active { color: white; background: var(--heli-blue); }
+        .analog-clock { position: relative; width: 68px; height: 68px; border: 4px solid #fff; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff 0 4%, #eff7ff 5% 100%); box-shadow: 0 8px 20px rgba(6,59,143,.2), inset 0 0 0 1px #afd0f0; }
+        .analog-clock::before, .analog-clock::after { content: ''; position: absolute; inset: 7px; border-top: 2px solid #a9c6df; border-bottom: 2px solid #a9c6df; border-radius: 50%; opacity: .7; }
+        .analog-clock::after { inset: 22px 7px; border: 0; border-left: 2px solid #a9c6df; border-right: 2px solid #a9c6df; }
+        .clock-hand { position: absolute; left: 50%; bottom: 50%; transform-origin: bottom center; border-radius: 999px; z-index: 2; }
+        .clock-hand.hour { width: 4px; height: 18px; margin-left: -2px; background: var(--heli-blue-deep); }
+        .clock-hand.minute { width: 3px; height: 25px; margin-left: -1.5px; background: var(--heli-sky); }
+        .clock-hand.second { width: 1px; height: 28px; margin-left: -.5px; background: var(--heli-orange); }
+        .analog-clock .clock-center { position: absolute; width: 7px; height: 7px; left: calc(50% - 3.5px); top: calc(50% - 3.5px); border-radius: 50%; background: var(--heli-orange); z-index: 3; }
+        .workspace-scroll { padding: 26px 32px 36px; }
+        .glass-panel { border-color: #dce8f5; border-radius: 20px; box-shadow: 0 12px 28px rgba(38, 71, 116, .08); }
+        .big-input { border-color: #d5e3f2; background: #fbfdff; }
+        .big-input:focus { border-color: var(--heli-sky); box-shadow: 0 0 0 4px rgba(31,174,229,.12); }
+        .pos-screen .pos-heading { position: relative; overflow: hidden; padding: 18px 22px; border: 1px solid #d7e8f8; border-radius: 20px; background: linear-gradient(102deg, #fff 0%, #f3f9ff 72%, #e1f3ff 100%); box-shadow: 0 10px 24px rgba(35, 75, 126, .08); }
+        .pos-screen .pos-heading::after { content: ''; position: absolute; top: -42px; right: 28%; width: 170px; height: 170px; border: 16px solid rgba(249,189,23,.23); border-radius: 50%; }
+        .pos-screen .pos-heading h2 { color: var(--heli-blue-deep); }
+        .pos-screen .pos-heading p { color: #5d7896; }
+        .pos-screen .pos-action { position: relative; z-index: 1; border-radius: 12px; }
+        .pos-screen .pos-product-panel { border-left-color: var(--heli-blue); background: linear-gradient(135deg, #fff, #f6fbff); }
+        .pos-screen .pos-cart-panel { border: 1px solid #dce8f5; border-radius: 20px; box-shadow: 0 12px 28px rgba(38, 71, 116, .08); }
+        .pos-screen .pos-cart-panel > div:first-child { background: linear-gradient(90deg, #eef7ff, #f7fbff); border-bottom-color: #dce8f5; }
+        .pos-screen .pos-cart-panel > div:last-child { background: linear-gradient(90deg, #f7fbff, #eef8ff); border-top-color: #dce8f5; }
+        .pos-screen .pos-side-panel { border-radius: 18px; border-color: #dce8f5; box-shadow: 0 10px 24px rgba(38, 71, 116, .08); }
+        .pos-screen #vr-total-display { color: var(--heli-blue-deep); }
+        .pos-screen #vr-payment-method { border-color: #b8d8f4; color: var(--heli-blue); }
+        @media (max-width: 1024px) { .app-sidebar { width: 15.5rem; } .app-topbar { padding: 16px 22px; } .workspace-scroll { padding: 22px; } }
+        @media (max-width: 760px) { .app-sidebar { width: 4.75rem; } .app-brand { margin: 12px 8px; padding: 6px; } .app-brand-logo { height: 48px; padding: 3px; } .app-sidebar nav { padding: 12px 8px; } .app-sidebar nav > p, .app-sidebar .sidebar-link span:last-child, .app-sidebar > div:last-child > div > div { display: none; } .app-sidebar .sidebar-link { justify-content: center; padding: 12px 4px; } .app-sidebar .sidebar-link span:first-child { margin-right: 0; } .app-sidebar > div:last-child { padding: 8px; } .app-sidebar > div:last-child > div { justify-content: center; padding: 10px; } .app-topbar { padding: 12px 14px; } .topbar-company { display: none; } .topbar-session { padding: 8px 10px; gap: 10px !important; } .topbar-session > div:nth-child(2) { display: none; } .clock-toggle button { padding: 5px 6px; font-size: 9px; } .workspace-scroll { padding: 16px; } .pos-screen .pos-heading { align-items: flex-start; gap: 12px; } .pos-screen .pos-heading > div:last-child { flex-wrap: wrap; justify-content: flex-end; } }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden main-container">
@@ -121,22 +181,29 @@
     <div id="report-print-area"></div>
     <div id="shopping-list-area"></div>
 
-    <aside class="w-72 bg-white/80 backdrop-blur-xl border-r border-slate-200/60 flex flex-col no-print z-20 shadow-xl">
-        <div class="p-8 pb-4">
-            <div class="flex items-center gap-3 mb-1">
-                <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white font-black text-lg shadow-lg shadow-blue-500/30">GH</div>
-                <div>
-                    <h1 class="text-xl font-extrabold text-slate-800 tracking-tight leading-none">HELIGRAFES-GESTÃO</h1>
-                    <span class="text-[10px] font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-0.5 rounded-full">Premium v52</span>
-                </div>
+    <div id="manager-code-modal" class="hidden fixed inset-0 z-50 items-center justify-center bg-slate-900/60 p-4" role="dialog" aria-modal="true" aria-labelledby="manager-code-title">
+        <div class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+            <h2 id="manager-code-title" class="text-lg font-black text-slate-800">Acesso do gerente</h2>
+            <p id="manager-code-message" class="mt-1 text-sm text-slate-500">Introduza o código de autorização.</p>
+            <input id="manager-code-input" type="password" autocomplete="current-password" class="big-input mt-5" placeholder="Código de acesso" onkeydown="handleManagerCodeKeydown(event)">
+            <div class="mt-5 flex justify-end gap-3">
+                <button type="button" onclick="cancelManagerCode()" class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-50">Cancelar</button>
+                <button type="button" onclick="submitManagerCode()" class="rounded-xl bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-700">Confirmar</button>
             </div>
+        </div>
+    </div>
+
+    <aside class="app-sidebar w-72 backdrop-blur-xl flex flex-col no-print z-20">
+        <div class="app-brand">
+            <img src="logo-grupo-heligrafes.jpg" class="app-brand-logo" alt="Grupo Heligrafes, LDA">
+            <p class="mt-3 text-center text-[10px] font-black uppercase tracking-[0.18em] text-blue-100">Gestão integrada</p>
         </div>
 
         <nav class="flex-1 px-6 space-y-2 overflow-y-auto py-6">
             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-4 mb-3">Departamentos Heligrafes</p>
-            <div onclick="showTab('academico')" class="sidebar-link active" id="btn-academico"><span class="text-xl mr-3 opacity-90">🎓</span> <span>Trabalho Académico</span></div>
+            <div onclick="showTab('academico')" class="sidebar-link" id="btn-academico"><span class="text-xl mr-3 opacity-90">🎓</span> <span>Trabalho Académico</span></div>
             <div onclick="showTab('tshirts')" class="sidebar-link" id="btn-tshirts"><span class="text-xl mr-3 opacity-90">👕</span> <span>T-Shirts & Brindes</span></div>
-            <div onclick="showTab('tabacaria')" class="sidebar-link" id="btn-tabacaria"><span class="text-xl mr-3 opacity-90">⚡</span> <span>VENDA DIARIA</span></div>
+            <div onclick="showTab('tabacaria')" class="sidebar-link active" id="btn-tabacaria"><span class="text-xl mr-3 opacity-90">⚡</span> <span>VENDA DIÁRIA</span></div>
             <div onclick="showTab('outros')" class="sidebar-link" id="btn-outros"><span class="text-xl mr-3 opacity-90">📦</span> <span>Papelaria & Decoração</span></div>
             
             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-4 mt-8 mb-3">Administração</p>
@@ -161,10 +228,22 @@
 
     <main class="flex-1 flex flex-col relative overflow-hidden">
         
-        <header class="h-32 px-10 flex items-center justify-between no-print z-10 bg-white/50 backdrop-blur-sm">
+        <header class="app-topbar h-32 px-10 flex items-center justify-between no-print z-10 backdrop-blur-sm">
             <div class="flex items-center gap-6">
-                <div class="text-3xl font-black vibrant-clock tracking-tighter" id="digital-clock">00:00:00</div>
-                <div class="border-l-2 border-slate-300 pl-6">
+                <div class="clock-control" aria-label="Relógio do sistema">
+                    <div id="digital-clock-box" class="digital-clock-box">
+                        <div class="text-[9px] font-black uppercase tracking-[0.18em] text-blue-100">Hora local</div>
+                        <div class="text-2xl font-black vibrant-clock tracking-tight" id="digital-clock">00:00:00</div>
+                    </div>
+                    <div id="analog-clock" class="analog-clock hidden" aria-label="Relógio analógico">
+                        <span id="clock-hour-hand" class="clock-hand hour"></span><span id="clock-minute-hand" class="clock-hand minute"></span><span id="clock-second-hand" class="clock-hand second"></span><span class="clock-center"></span>
+                    </div>
+                    <div class="clock-toggle" aria-label="Preferência de relógio">
+                        <button id="clock-digital-btn" type="button" onclick="setClockMode('digital')">Digital</button>
+                        <button id="clock-analog-btn" type="button" onclick="setClockMode('analog')">Analógico</button>
+                    </div>
+                </div>
+                <div class="topbar-company border-l-2 border-slate-300 pl-6">
                     <h4 class="text-lg font-bold text-slate-800 flex items-center gap-2">
                         GRUPO HELIGRAFES, LDA - Painel de Controlo- 924 565 514-951 555 614
                         <span id="alert-badge" class="hidden bg-red-500 text-white text-[10px] px-2 rounded-full animate-bounce">!</span>
@@ -173,7 +252,12 @@
                     <div id="pending-debts-header" class="mt-2 flex flex-wrap gap-2"></div>
                 </div>
             </div>
-            <div class="flex items-center gap-6 bg-white/80 px-6 py-3 rounded-2xl border border-white shadow-sm">
+            <div class="topbar-session flex items-center gap-6 bg-white/80 px-6 py-3 rounded-2xl border border-white shadow-sm">
+                <div class="text-right">
+                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Sessao de Venda</p>
+                    <p class="text-sm font-black text-blue-700" id="sales-session-label">Local / Vendedor</p>
+                    <button onclick="configureSalesSession(true)" class="text-[10px] font-black text-slate-500 underline">alterar</button>
+                </div>
                 <div class="text-right">
                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Faturação Hoje</p>
                     <p class="text-xl font-black text-slate-500" id="dash-revenue">Gestão de Stocks</p>
@@ -181,9 +265,9 @@
             </div>
         </header>
 
-        <div class="flex-1 overflow-y-auto px-10 pb-10">
+        <div class="workspace-scroll flex-1 overflow-y-auto px-10 pb-10">
             
-            <div id="academico" class="tab-content fade-in active no-print">
+            <div id="academico" class="tab-content fade-in hidden no-print">
     <div class="grid grid-cols-12 gap-6 h-full">
         <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
             <div class="bg-blue-600 p-4 rounded-2xl shadow-lg flex items-center gap-4 text-white">
@@ -330,22 +414,22 @@
     </div>
 </div>
 
-            <div id="tabacaria" class="tab-content hidden h-full no-print">
-                <div class="flex justify-between items-center mb-6">
+            <div id="tabacaria" class="pos-screen tab-content fade-in h-full no-print">
+                <div class="pos-heading flex justify-between items-center mb-6">
                     <div>
                         <h2 class="text-2xl font-black text-slate-800 tracking-tight">PONTO DE VENDA (POS)</h2>
                         <p class="text-sm text-slate-500 font-medium">Gestão de Venda Rápida & Controlo de Caixa</p>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="printDailyReport()" class="bg-slate-800 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-md hover:bg-slate-700 transition-all">🖨️ Imprimir Fecho</button>
-                        <button onclick="sendDailyReport('whatsapp')" class="bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold text-sm border border-green-200 shadow-sm hover:bg-green-200 transition-all">🟢 WhatsApp</button>
-                        <button onclick="sendDailyReport('email')" class="bg-blue-100 text-blue-700 px-4 py-2 rounded-xl font-bold text-sm border border-blue-200 shadow-sm hover:bg-blue-200 transition-all">📧 Email</button>
+                        <button onclick="printDailyReport()" class="pos-action bg-slate-800 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-md hover:bg-slate-700 transition-all">🖨️ Imprimir Fecho</button>
+                        <button onclick="sendDailyReport('whatsapp')" class="pos-action bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold text-sm border border-green-200 shadow-sm hover:bg-green-200 transition-all">🟢 WhatsApp</button>
+                        <button onclick="sendDailyReport('email')" class="pos-action bg-blue-100 text-blue-700 px-4 py-2 rounded-xl font-bold text-sm border border-blue-200 shadow-sm hover:bg-blue-200 transition-all">📧 Email</button>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-12 gap-6 h-[calc(100%-80px)]">
                     <div class="col-span-12 lg:col-span-7 flex flex-col gap-4">
-                        <div class="glass-panel p-5 border-l-4 border-blue-600 shadow-lg bg-white">
+                        <div class="pos-product-panel glass-panel p-5 border-l-4 border-blue-600 shadow-lg bg-white">
                             <div class="grid grid-cols-12 gap-4 items-end">
                                 <div class="col-span-12 md:col-span-5">
                                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">📦 Produto</label>
@@ -366,7 +450,7 @@
                             </div>
                         </div>
 
-                        <div class="flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                        <div class="pos-cart-panel flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                             <div class="bg-slate-100 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
                                 <h3 class="font-bold text-slate-600 text-sm uppercase tracking-wide">Itens na Fatura</h3>
                                 <span id="vr-count-items" class="text-xs font-bold text-slate-400 bg-white px-2 py-1 rounded border">0 Itens</span>
@@ -384,8 +468,7 @@
                                 <div class="grid grid-cols-2 gap-4 items-center">
                                     <div>
                                         <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Método de Pagamento *</label>
-                                        <select id="vr-payment-method" class="w-full h-12 bg-white border-2 border-blue-200 rounded-xl px-3 font-bold text-blue-700 outline-none">
-                                            <option value="">Selecione...</option>
+                                        <select id="vr-payment-method" onchange="saveDailyPaymentMethod()" class="w-full h-12 bg-white border-2 border-blue-200 rounded-xl px-3 font-bold text-blue-700 outline-none">
                                             <option value="Dinheiro">Dinheiro 💵</option>
                                             <option value="Express">Express ⚡</option>
                                             <option value="TPA">TPA 💳</option>
@@ -405,7 +488,7 @@
                     </div>
 
                     <div class="col-span-12 lg:col-span-5 flex flex-col gap-4">
-                        <div class="glass-panel p-5 bg-white shadow-lg border-l-4 border-rose-500">
+                        <div class="pos-side-panel glass-panel p-5 bg-white shadow-lg border-l-4 border-rose-500">
                             <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">📉 Despesas do Dia</h3>
                             <div class="grid grid-cols-2 gap-2 mb-4">
                                 <input type="text" id="vr-expense-type" placeholder="O que pagou?" class="w-full h-10 px-3 bg-slate-50 border rounded-lg text-sm">
@@ -417,7 +500,7 @@
                             </div>
                         </div>
 
-                        <div class="glass-panel p-5 bg-white shadow-lg border-l-4 border-amber-500">
+                        <div class="pos-side-panel glass-panel p-5 bg-white shadow-lg border-l-4 border-amber-500">
                             <h3 class="font-bold text-slate-700 mb-3 flex items-center gap-2">⏱️ Controlo de Lançamento</h3>
                             <div class="grid grid-cols-2 gap-3 text-xs">
                                 <div class="bg-slate-50 border border-slate-100 rounded-xl p-3">
@@ -432,7 +515,7 @@
                             <div id="vr-idle-alert" class="hidden mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-800"></div>
                         </div>
 
-                        <div class="glass-panel p-5 bg-white shadow-lg border-l-4 border-emerald-500 flex-1 flex flex-col overflow-hidden">
+                        <div class="pos-side-panel glass-panel p-5 bg-white shadow-lg border-l-4 border-emerald-500 flex-1 flex flex-col overflow-hidden">
                             <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">🛒 Vendas Recentes (Hoje)</h3>
                             <div class="overflow-y-auto flex-1 space-y-2 text-xs" id="vr-daily-sales-summary">
                             </div>
@@ -520,7 +603,8 @@
                 <div class="grid grid-cols-12 gap-6 h-full">
                     <div class="col-span-12 lg:col-span-5">
                         <div class="glass-panel p-6 shadow-lg h-full flex flex-col bg-slate-50 border-2 border-slate-200">
-                            <h3 class="text-2xl font-black text-slate-700 mb-4 flex items-center gap-3">🖨️ Reimprimir Faturas</h3>
+                            <h3 class="text-2xl font-black text-slate-700 mb-1 flex items-center gap-3">🖨️ Reimprimir Faturas</h3>
+                            <p class="mb-4 text-xs font-bold text-slate-400">Disponíveis apenas durante 7 dias. As vendas continuam nos relatórios.</p>
                             <div class="mb-4"><label class="block text-xs font-bold text-slate-400 uppercase mb-2">Filtrar por Cliente ou Código</label><input type="text" id="print-search" oninput="renderPrintTab()" class="big-input w-full" placeholder="Escreva para pesquisar..."></div>
                             <div class="flex-1 overflow-y-auto bg-white rounded-xl border border-slate-200">
                                 <table class="w-full text-left text-sm"><thead class="bg-slate-100 text-slate-500 uppercase font-bold text-xs sticky top-0"><tr><th class="p-3">Data</th><th class="p-3">Cliente</th><th class="p-3 text-right">Total</th><th class="p-3 text-center">Ação</th></tr></thead><tbody id="print-list-body" class="divide-y divide-slate-100"></tbody></table>
@@ -555,6 +639,45 @@
                                         <span class="text-xs font-black text-amber-300" id="stock-debt-total">0 Kz</span>
                                     </div>
                                     <div id="stock-debt-list" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-12">
+                        <div class="glass-panel p-5 bg-white shadow-lg border-l-4 border-indigo-600">
+                            <div class="grid grid-cols-12 gap-4 items-end">
+                                <div class="col-span-12 lg:col-span-3">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Local deste caixa</label>
+                                    <select id="business-location" class="big-input" onchange="saveBusinessLocation()">
+                                        <option value="LOCAL 1">LOCAL 1</option>
+                                        <option value="LOCAL 2">LOCAL 2</option>
+                                        <option value="LOCAL 3">LOCAL 3</option>
+                                    </select>
+                                </div>
+                                <div class="col-span-12 lg:col-span-3">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Repositorio</label>
+                                    <input type="text" id="ops-github-repo" class="big-input" placeholder="hernanefernandes/gestaoheligrafes">
+                                </div>
+                                <div class="col-span-6 lg:col-span-2">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Branch</label>
+                                    <input type="text" id="ops-github-branch" class="big-input" placeholder="main">
+                                </div>
+                                <div class="col-span-6 lg:col-span-2">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Ficheiro dados</label>
+                                    <input type="text" id="ops-github-path" class="big-input" placeholder="data/heligrafes-operacional.json">
+                                </div>
+                                <div class="col-span-12 lg:col-span-2">
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Token GitHub</label>
+                                    <input type="password" id="ops-github-token" class="big-input" placeholder="token">
+                                </div>
+                                <div class="col-span-12 flex flex-wrap gap-2 items-center">
+                                    <button onclick="saveOperationalSyncConfig()" class="px-4 py-2 bg-indigo-600 text-white font-black rounded-xl text-xs">LIGAR 3 LOCAIS</button>
+                                    <button onclick="syncOperationalFromGitHub(true)" class="px-4 py-2 bg-slate-100 text-slate-700 font-black rounded-xl text-xs border border-slate-200">PUXAR AGORA</button>
+                                    <button onclick="syncOperationalToGitHub(true)" class="px-4 py-2 bg-emerald-100 text-emerald-700 font-black rounded-xl text-xs border border-emerald-200">ENVIAR AGORA</button>
+                                    <span id="ops-sync-status" class="text-xs font-bold text-slate-500">Sincronizacao desligada.</span>
+                                </div>
+                                <div class="col-span-12">
+                                    <div id="location-profit-summary" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
                                 </div>
                             </div>
                         </div>
@@ -607,6 +730,7 @@
                     </div>
                     <button onclick="renderReports()" class="bg-white border border-slate-300 px-4 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">🔄 Atualizar Dados</button>
                 </div>
+                <div id="report-location-profit-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print"></div>
                 <div id="report-content-area" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 h-[calc(100%-80px)] overflow-y-auto pb-4">
                     <div class="glass-panel p-5 flex flex-col gap-3 border-t-4 border-blue-600">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">💰 Fluxo & Saldo de Caixa</h4>
@@ -669,8 +793,13 @@
                 <div class="grid grid-cols-12 gap-6">
                     <div class="col-span-12">
                         <div class="glass-panel p-6 bg-white shadow-lg border-l-4 border-purple-600">
-                            <h3 class="text-xl font-bold text-slate-700 mb-2 flex items-center gap-2">📦 Histórico de Transações</h3>
-                            <p class="text-sm text-slate-500 mb-4">Lista completa de vendas.</p>
+                            <div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                    <h3 class="text-xl font-bold text-slate-700 mb-2 flex items-center gap-2">📦 Histórico de Transações</h3>
+                                    <p class="text-sm text-slate-500">Lista completa de vendas.</p>
+                                </div>
+                                <button type="button" onclick="deleteAllTransactions()" class="rounded-xl bg-rose-600 px-4 py-2 text-xs font-black text-white shadow-sm hover:bg-rose-700">🗑️ APAGAR TUDO</button>
+                            </div>
                             <div class="overflow-x-auto max-h-[500px] border border-slate-200 rounded-xl">
                                 <table class="w-full text-left text-sm"><thead class="bg-slate-100 text-slate-600 uppercase text-xs font-bold sticky top-0"><tr><th class="p-3">Data</th><th class="p-3">Cliente / Tipo</th><th class="p-3">Descrição</th><th class="p-3 text-right">Total</th><th class="p-3 text-center">Estado</th><th class="p-3 text-center">Ação</th></tr></thead><tbody id="orders-history-body" class="divide-y divide-slate-100 bg-white"></tbody></table>
                             </div>
@@ -764,8 +893,23 @@
             
             <div id="rh" class="tab-content hidden no-print">
                 <div class="grid grid-cols-12 gap-6">
-                    <div class="col-span-12 lg:col-span-4"><div class="glass-panel p-6 bg-white shadow-lg border-l-4 border-emerald-600 h-full"><h3 class="text-xl font-bold text-slate-700 mb-4 flex items-center gap-2">⏰ Relógio de Ponto</h3><div class="mb-4"><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Funcionário</label><select id="rh-employee-select" class="big-input bg-emerald-50 border-emerald-200"></select></div><div class="grid grid-cols-2 gap-3"><button onclick="registerPoint('ENTRADA')" class="py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/30">☀️ ENTRADA <span class="block text-[10px] font-normal opacity-80">Limite: 07:30</span></button><button onclick="registerPoint('SAIDA')" class="py-4 bg-slate-600 hover:bg-slate-700 text-white font-bold rounded-xl shadow-lg shadow-slate-500/30">🌙 SAÍDA <span class="block text-[10px] font-normal opacity-80">Ref: 19:00</span></button></div><div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-800"><p><strong>Regras Automáticas:</strong></p><ul class="list-disc ml-4 mt-1"><li>Entrada após 07:30 = <strong>Atraso (-200 Kz)</strong></li><li>Sem registo no dia = <strong>Falta (-1.000 Kz)</strong></li></ul></div><button onclick="processAbsences()" class="mt-4 w-full py-2 border-2 border-red-200 text-red-600 font-bold rounded-lg hover:bg-red-50 text-xs uppercase">⚠️ Verificar Faltas Anteriores</button></div></div>
-                    <div class="col-span-12 lg:col-span-8"><div class="glass-panel p-6 bg-white shadow-lg h-full"><h3 class="text-xl font-bold text-slate-700 mb-4">👥 Gestão de Equipa</h3><div class="flex gap-4 items-end mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200"><div class="flex-1"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nome Completo</label><input type="text" id="new-emp-name" class="w-full p-2 border rounded font-bold"></div><div class="w-40"><label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Salário Base</label><input type="number" id="new-emp-salary" class="w-full p-2 border rounded font-bold" placeholder="Kz"></div><button onclick="addEmployee()" class="bg-blue-600 text-white font-bold px-6 py-2 rounded h-10">ADICIONAR</button></div><div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="bg-slate-100 text-slate-600 uppercase text-xs"><tr><th class="p-3">Nome</th><th class="p-3">Salário Base</th><th class="p-3 text-center">Faltas (Mês)</th><th class="p-3 text-center">Atrasos (Mês)</th><th class="p-3 text-right">A RECEBER</th><th class="p-3"></th></tr></thead><tbody id="payroll-body"></tbody></table></div></div></div>
+                    <div class="col-span-12 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-slate-800 px-6 py-5 text-white shadow-lg">
+                        <div><h2 class="text-2xl font-black">👥 RH & Salários</h2><p class="mt-1 text-sm text-slate-300">Cadastro, ponto, faltas e processamento mensal da equipa.</p></div>
+                        <div class="min-w-48"><label class="mb-1 block text-[10px] font-black uppercase tracking-wider text-slate-300">Período de salário</label><input type="month" id="rh-period" onchange="renderRH()" class="w-full rounded-xl border border-slate-600 bg-slate-700 px-3 py-2 text-sm font-bold text-white outline-none focus:border-emerald-400"></div>
+                    </div>
+
+                    <div class="col-span-6 lg:col-span-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-4"><p class="text-[10px] font-black uppercase tracking-wider text-emerald-600">Colaboradores ativos</p><p id="rh-active-count" class="mt-1 text-3xl font-black text-emerald-800">0</p></div>
+                    <div class="col-span-6 lg:col-span-3 rounded-2xl border border-blue-100 bg-blue-50 p-4"><p class="text-[10px] font-black uppercase tracking-wider text-blue-600">Presentes hoje</p><p id="rh-present-count" class="mt-1 text-3xl font-black text-blue-800">0</p></div>
+                    <div class="col-span-6 lg:col-span-3 rounded-2xl border border-amber-100 bg-amber-50 p-4"><p class="text-[10px] font-black uppercase tracking-wider text-amber-600">Atrasos hoje</p><p id="rh-late-count" class="mt-1 text-3xl font-black text-amber-800">0</p></div>
+                    <div class="col-span-6 lg:col-span-3 rounded-2xl border border-rose-100 bg-rose-50 p-4"><p class="text-[10px] font-black uppercase tracking-wider text-rose-600">Pagamentos pendentes</p><p id="rh-pending-payroll" class="mt-1 text-xl font-black text-rose-800">0 colaboradores</p></div>
+
+                    <div class="col-span-12 lg:col-span-4"><div class="glass-panel h-full border-l-4 border-emerald-600 bg-white p-6 shadow-lg"><div class="mb-4 flex items-start justify-between gap-3"><div><h3 class="flex items-center gap-2 text-xl font-bold text-slate-700">🟢 Marcador de Presença</h3><p class="mt-1 text-xs text-slate-400">A hora é gravada automaticamente pelo sistema.</p></div><span id="rh-marker-clock" class="rounded-lg bg-slate-800 px-2 py-1 font-mono text-xs font-black text-white">00:00</span></div><div class="mb-4"><label class="mb-1 block text-xs font-bold uppercase text-slate-400">Funcionário ativo</label><select id="rh-employee-select" onchange="prepareAttendanceMarker()" class="big-input border-emerald-200 bg-emerald-50"></select></div><div class="grid grid-cols-2 gap-3"><button onclick="registerPoint('ENTRADA')" class="rounded-xl bg-emerald-600 py-4 font-bold text-white shadow-lg shadow-emerald-500/30 hover:bg-emerald-700">☀️ MARCAR ENTRADA <span class="block text-[10px] font-normal opacity-80">Limite: 07:30</span></button><button onclick="registerPoint('SAIDA')" class="rounded-xl bg-slate-600 py-4 font-bold text-white shadow-lg hover:bg-slate-700">🌙 MARCAR SAÍDA <span class="block text-[10px] font-normal opacity-80">Hora automática</span></button></div><p id="rh-point-status" class="mt-4 rounded-lg bg-slate-50 p-3 text-xs font-bold text-slate-500">Selecione o colaborador e faça a marcação.</p><div class="mt-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800"><strong>Descontos automáticos:</strong> atraso após 07:30 (-200 Kz); falta sem marcação até ao fim do dia (-1.000 Kz).</div><button onclick="processAbsences()" class="mt-4 w-full rounded-lg border-2 border-rose-200 py-2 text-xs font-bold uppercase text-rose-600 hover:bg-rose-50">⚠️ Atualizar faltas automaticamente</button></div></div>
+
+                    <div class="col-span-12 lg:col-span-8"><div class="glass-panel h-full bg-white p-6 shadow-lg"><div class="mb-5 flex items-center justify-between gap-3"><div><h3 class="text-xl font-bold text-slate-700">Registo de colaborador</h3><p class="text-xs text-slate-400">O salário base fica oculto e só é revelado ao gerente durante o pagamento.</p></div><button id="btn-cancel-emp-edit" onclick="cancelEmployeeEdit()" class="hidden text-xs font-bold text-slate-500 underline">Cancelar edição</button></div><input type="hidden" id="edit-emp-id"><div class="grid grid-cols-12 gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4"><div class="col-span-12 md:col-span-5"><label class="mb-1 block text-[10px] font-bold uppercase text-slate-400">Nome completo *</label><input type="text" id="new-emp-name" class="big-input" placeholder="Nome do colaborador"></div><div class="col-span-12 md:col-span-3"><label class="mb-1 block text-[10px] font-bold uppercase text-slate-400">Função / cargo</label><input type="text" id="new-emp-role" class="big-input" placeholder="Ex.: Operador"></div><div class="col-span-6 md:col-span-2"><label class="mb-1 block text-[10px] font-bold uppercase text-slate-400">Contacto</label><input type="tel" id="new-emp-phone" class="big-input" placeholder="9xx xxx xxx"></div><div class="col-span-6 md:col-span-2"><label class="mb-1 block text-[10px] font-bold uppercase text-slate-400">Salário confidencial *</label><input type="password" inputmode="decimal" id="new-emp-salary" autocomplete="off" class="big-input" placeholder="Valor em Kz"></div><div class="col-span-12 flex justify-end"><button id="btn-add-emp" onclick="addEmployee()" class="rounded-xl bg-blue-600 px-6 py-3 text-sm font-black text-white shadow-lg hover:bg-blue-700">ADICIONAR COLABORADOR</button></div></div></div></div>
+
+                    <div class="col-span-12"><div class="glass-panel bg-white p-6 shadow-lg"><div class="mb-4 flex flex-wrap items-end justify-between gap-3"><div><h3 class="text-xl font-bold text-slate-700">Controlo salarial do período</h3><p class="text-xs text-slate-400">Os valores são confidenciais e aparecem apenas ao gerente no ato do pagamento.</p></div><span id="rh-period-label" class="rounded-full bg-slate-100 px-3 py-1 text-xs font-black text-slate-600"></span></div><div class="overflow-x-auto rounded-xl border border-slate-200"><table class="w-full min-w-[880px] text-left text-sm"><thead class="bg-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-500"><tr><th class="p-3">Colaborador</th><th class="p-3">Função / contacto</th><th class="p-3 text-center">Pres.</th><th class="p-3 text-center">Atrasos</th><th class="p-3 text-center">Faltas</th><th class="p-3 text-center">Situação salarial</th><th class="p-3 text-center">Pagamento</th><th class="p-3 text-right">Ações</th></tr></thead><tbody id="payroll-body" class="divide-y divide-slate-100"></tbody></table></div></div></div>
+
+                    <div class="col-span-12"><div class="glass-panel bg-white p-6 shadow-lg"><div class="mb-4 flex items-center justify-between gap-3"><div><h3 class="text-xl font-bold text-slate-700">Histórico de ponto</h3><p class="text-xs text-slate-400">Registos do período selecionado.</p></div><span id="rh-attendance-count" class="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">0 registos</span></div><div class="overflow-x-auto rounded-xl border border-slate-200"><table class="w-full min-w-[760px] text-left text-sm"><thead class="bg-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-500"><tr><th class="p-3">Data</th><th class="p-3">Colaborador</th><th class="p-3">Entrada</th><th class="p-3">Saída</th><th class="p-3">Estado</th><th class="p-3 text-right">Ação</th></tr></thead><tbody id="rh-attendance-body" class="divide-y divide-slate-100"></tbody></table></div></div></div>
                 </div>
             </div>
 
@@ -794,6 +938,7 @@
         let products = JSON.parse(localStorage.getItem('multi_products_v52')) || [{ id: 1, name: "Produto Exemplo", price: 1000, cost: 500, stock: 10, img: "" }];
         let employees = JSON.parse(localStorage.getItem('multi_employees_v52')) || [];
         let attendance = JSON.parse(localStorage.getItem('multi_attendance_v52')) || [];
+        let payrollPayments = JSON.parse(localStorage.getItem('multi_payroll_payments_v52')) || [];
         let shiftCloses = JSON.parse(localStorage.getItem('multi_shift_history_v52')) || []; // Histórico de Fechos
         let extraCashAdds = JSON.parse(localStorage.getItem('multi_extra_cash_v52')) || [];
         let debtPayments = JSON.parse(localStorage.getItem('multi_debt_payments_v52')) || [];
@@ -808,23 +953,43 @@
         let isGitHubChatSyncing = false;
         let isGitHubChatSending = false;
         let pendingGitHubChatSend = false;
+        let operationalSyncConfig = JSON.parse(localStorage.getItem('multi_ops_github_config_v52')) || null;
+        let operationalSyncSha = localStorage.getItem('multi_ops_github_sha_v52') || '';
+        let operationalSyncTimer = null;
+        let isOperationalSyncing = false;
+        let isOperationalSending = false;
+        let pendingOperationalSend = false;
+        let operationalSaveTimer = null;
         let chatTypingTimer = null;
         let chatPresenceTimer = null;
         let chatPresenceSyncTimer = null;
         const CHAT_FAST_SYNC_MS = 850;
+        const OPS_FAST_SYNC_MS = 2000;
+        const BUSINESS_LOCATIONS = ['LOCAL 1', 'LOCAL 2', 'LOCAL 3'];
         const CHAT_ONLINE_MS = 90000;
         const CHAT_TYPING_MS = 2500;
         const CHAT_EMOJIS = ['😀','😂','😊','🙏','👍','👎','👌','💪','🔥','❤️','✅','⚠️','📌','📎','🧾','🖨️','💰','⏰','🎉','👏'];
         const EXTRA_CASH_AMOUNT = 550;
         const EXTRA_CASH_MIN_BALANCE = 2300;
         const EXTRA_CASH_IDLE_MS = 2 * 60 * 60 * 1000;
+        const DAILY_PAYMENT_METHOD_KEY = 'multi_vr_payment_method_v52';
+        const CLOCK_MODE_KEY = 'multi_clock_mode_v52';
+        const RH_AUTO_ABSENCE_HOUR = 19;
         
         let vrCart = []; 
         let charts = {};
+        let clockMode = localStorage.getItem(CLOCK_MODE_KEY) || 'digital';
 
         /* --- INICIALIZAÇÃO --- */
 
 window.onload = function() {
+    initSalesSession();
+    initDailyPaymentMethod();
+    migrateEmployeeMetadata();
+    startRhMarkerClock();
+    runAttendanceAutomation();
+    migrateOperationalMetadata();
+    loadOperationalSyncConfig();
     sales.forEach(s => {
         if (s.initialPaid === undefined) s.initialPaid = parseFloat(s.paid || 0) || 0;
     });
@@ -837,21 +1002,401 @@ window.onload = function() {
     renderShiftHistory(); // Carrega o histórico de fechos
     initInternalChat();
     renderPendingDebts();
+    renderLocationProfitReport();
+    startOperationalSync();
     checkIdleCashIncrease();
     renderIdleCashStatus();
+    showTab('tabacaria');
     setInterval(() => {
         checkIdleCashIncrease();
         renderIdleCashStatus();
+        runAttendanceAutomation();
     }, 60000);
     if(document.getElementById('relatorios')) renderReports();
 };
 
         /* --- RELÓGIO & NOTIFICAÇÕES --- */
+        /* --- SESSAO, LOCAIS E SINCRONIZACAO OPERACIONAL --- */
+        function getCurrentBusinessLocation() {
+            return sessionStorage.getItem('multi_business_location_v52') || localStorage.getItem('multi_business_location_v52') || 'LOCAL 1';
+        }
+
+        function getCurrentSeller() {
+            return sessionStorage.getItem('multi_sales_user_v52') || '';
+        }
+
+        function updateSalesSessionLabel() {
+            const label = document.getElementById('sales-session-label');
+            if (label) label.innerText = `${getCurrentBusinessLocation()} / ${getCurrentSeller() || 'Sem vendedor'}`;
+            const select = document.getElementById('business-location');
+            if (select) select.value = getCurrentBusinessLocation();
+        }
+
+        function configureSalesSession(force = false) {
+            let locationName = getCurrentBusinessLocation();
+            let sellerName = getCurrentSeller();
+            if (force || !BUSINESS_LOCATIONS.includes(locationName)) {
+                const requested = prompt('Local deste caixa: LOCAL 1, LOCAL 2 ou LOCAL 3', locationName || 'LOCAL 1');
+                if (requested === null && locationName) return false;
+                const normalized = String(requested || 'LOCAL 1').trim().toUpperCase();
+                locationName = BUSINESS_LOCATIONS.includes(normalized) ? normalized : 'LOCAL 1';
+            }
+            if (force || !sellerName) {
+                const requestedSeller = prompt('Nome do usuario/vendedor para esta sessao:', sellerName || '');
+                if (requestedSeller === null && sellerName) return false;
+                sellerName = String(requestedSeller || '').trim();
+                if (!sellerName) {
+                    alert('Informe o nome do usuario para registar vendas nesta sessao.');
+                    return false;
+                }
+            }
+            sessionStorage.setItem('multi_business_location_v52', locationName);
+            localStorage.setItem('multi_business_location_v52', locationName);
+            sessionStorage.setItem('multi_sales_user_v52', sellerName);
+            updateSalesSessionLabel();
+            return true;
+        }
+
+        function initSalesSession() {
+            const savedLocation = localStorage.getItem('multi_business_location_v52') || 'LOCAL 1';
+            sessionStorage.setItem('multi_business_location_v52', sessionStorage.getItem('multi_business_location_v52') || savedLocation);
+            updateSalesSessionLabel();
+            if (!getCurrentSeller()) setTimeout(() => configureSalesSession(false), 300);
+        }
+
+        function saveBusinessLocation() {
+            const select = document.getElementById('business-location');
+            if (!select) return;
+            sessionStorage.setItem('multi_business_location_v52', select.value);
+            localStorage.setItem('multi_business_location_v52', select.value);
+            updateSalesSessionLabel();
+            renderLocationProfitReport();
+        }
+
+        function ensureSalesSession() {
+            if (!getCurrentSeller()) return configureSalesSession(false);
+            updateSalesSessionLabel();
+            return true;
+        }
+
+        function migrateOperationalMetadata() {
+            const fallbackLocation = getCurrentBusinessLocation();
+            sales.forEach(s => {
+                if (!s.location) s.location = fallbackLocation;
+                if (!s.seller) s.seller = s.user || s.operator || 'Anterior';
+                if (!s.createdAt) s.createdAt = new Date(s.id || Date.now()).toISOString();
+            });
+            products.forEach(p => {
+                if (!p.updatedAt) p.updatedAt = new Date().toISOString();
+                if (p.stock === undefined || Number.isNaN(parseInt(p.stock))) p.stock = 0;
+            });
+            extraCashAdds.forEach(item => {
+                if (!item.location) item.location = fallbackLocation;
+                if (!item.seller) item.seller = 'Sistema';
+            });
+            debtPayments.forEach(item => {
+                if (!item.location) item.location = fallbackLocation;
+                if (!item.seller) item.seller = 'Anterior';
+            });
+        }
+
+        function tagOperationalRecord(record) {
+            return {
+                ...record,
+                location: record.location || getCurrentBusinessLocation(),
+                seller: record.seller || getCurrentSeller() || 'Sem usuario',
+                updatedAt: new Date().toISOString()
+            };
+        }
+
+        function touchProduct(product) {
+            if (product) product.updatedAt = new Date().toISOString();
+        }
+
+        function setOperationalStatus(text) {
+            const status = document.getElementById('ops-sync-status');
+            if (status) status.innerText = text;
+        }
+
+        function loadOperationalSyncConfig() {
+            const repo = document.getElementById('ops-github-repo');
+            const branch = document.getElementById('ops-github-branch');
+            const path = document.getElementById('ops-github-path');
+            const token = document.getElementById('ops-github-token');
+            const inferredRepo = inferGitHubRepoFromUrl() || 'hernanefernandes/gestaoheligrafes';
+            const chatConfig = githubChatConfig || {};
+            const cfg = operationalSyncConfig || {};
+            if (repo) repo.value = cfg.repo || chatConfig.repo || inferredRepo;
+            if (branch) branch.value = cfg.branch || chatConfig.branch || 'main';
+            if (path) path.value = cfg.path || 'data/heligrafes-operacional.json';
+            if (token) token.value = cfg.token || chatConfig.token || '';
+            updateSalesSessionLabel();
+            setOperationalStatus(operationalSyncConfig ? `Ligado a ${operationalSyncConfig.repo}.` : 'Sincronizacao desligada.');
+        }
+
+        function saveOperationalSyncConfig() {
+            const repo = (document.getElementById('ops-github-repo')?.value || '').trim();
+            const branch = (document.getElementById('ops-github-branch')?.value || 'main').trim();
+            const path = (document.getElementById('ops-github-path')?.value || 'data/heligrafes-operacional.json').trim();
+            const token = (document.getElementById('ops-github-token')?.value || '').trim();
+            if (!repo || !/^[^\/\s]+\/[^\/\s]+$/.test(repo)) return alert('Informe o repositorio no formato utilizador/repositorio.');
+            if (!token) return alert('Informe um token GitHub com permissao de escrita no repositorio.');
+            operationalSyncConfig = { repo, branch, path, token };
+            localStorage.setItem('multi_ops_github_config_v52', JSON.stringify(operationalSyncConfig));
+            setOperationalStatus(`Ligado a ${repo}. A sincronizar os 3 locais...`);
+            startOperationalSync();
+            syncOperationalFromGitHub(true);
+        }
+
+        function startOperationalSync() {
+            if (operationalSyncTimer) clearInterval(operationalSyncTimer);
+            if (!operationalSyncConfig || !operationalSyncConfig.repo || !operationalSyncConfig.token) return;
+            syncOperationalFromGitHub(false);
+            operationalSyncTimer = setInterval(() => syncOperationalFromGitHub(false), OPS_FAST_SYNC_MS);
+        }
+
+        function scheduleOperationalSync() {
+            if (!operationalSyncConfig || !operationalSyncConfig.token) return;
+            clearTimeout(operationalSaveTimer);
+            operationalSaveTimer = setTimeout(() => syncOperationalToGitHub(false), 600);
+        }
+
+        function buildOperationalPayload() {
+            return {
+                version: 'v52-operacional',
+                updatedAt: new Date().toISOString(),
+                locations: BUSINESS_LOCATIONS,
+                products,
+                sales,
+                extraCashAdds,
+                debtPayments,
+                shiftCloses
+            };
+        }
+
+        async function syncOperationalFromGitHub(manual = false) {
+            if (!operationalSyncConfig || !operationalSyncConfig.repo || !operationalSyncConfig.token) {
+                if (manual) alert('Configure primeiro a sincronizacao dos 3 locais.');
+                return;
+            }
+            if (isOperationalSyncing && !manual) return;
+            isOperationalSyncing = true;
+            try {
+                const url = `https://api.github.com/repos/${operationalSyncConfig.repo}/contents/${encodeURIComponent(operationalSyncConfig.path).replace(/%2F/g, '/')}?ref=${encodeURIComponent(operationalSyncConfig.branch || 'main')}`;
+                const res = await fetch(url, { headers: { Authorization: `Bearer ${operationalSyncConfig.token}`, Accept: 'application/vnd.github+json' } });
+                if (res.status === 404) {
+                    operationalSyncSha = '';
+                    localStorage.removeItem('multi_ops_github_sha_v52');
+                    if (manual) await syncOperationalToGitHub(true);
+                    return;
+                }
+                if (!res.ok) throw new Error(`GitHub respondeu ${res.status}`);
+                const data = await res.json();
+                operationalSyncSha = data.sha || '';
+                localStorage.setItem('multi_ops_github_sha_v52', operationalSyncSha);
+                const payload = JSON.parse(b64DecodeUnicode((data.content || '').replace(/\n/g, '')) || '{}');
+                mergeOperationalPayload(payload);
+                persistOperationalLocal();
+                refreshOperationalViews();
+                setOperationalStatus(`3 locais sincronizados ${new Date().toLocaleTimeString().slice(0,5)}.`);
+            } catch (err) {
+                setOperationalStatus(`Erro sincronizacao: ${err.message}`);
+                if (manual) alert(`Erro ao sincronizar: ${err.message}`);
+            } finally {
+                isOperationalSyncing = false;
+            }
+        }
+
+        async function syncOperationalToGitHub(forceCreate = false) {
+            if (!operationalSyncConfig || !operationalSyncConfig.repo || !operationalSyncConfig.token) return;
+            if (isOperationalSending) {
+                pendingOperationalSend = true;
+                return;
+            }
+            isOperationalSending = true;
+            try {
+                if (!operationalSyncSha && !forceCreate) await syncOperationalFromGitHub(false);
+                const body = {
+                    message: `Atualizar dados operacionais Heligrafes ${new Date().toLocaleString()}`,
+                    content: b64EncodeUnicode(JSON.stringify(buildOperationalPayload(), null, 2)),
+                    branch: operationalSyncConfig.branch || 'main'
+                };
+                if (operationalSyncSha) body.sha = operationalSyncSha;
+                const url = `https://api.github.com/repos/${operationalSyncConfig.repo}/contents/${encodeURIComponent(operationalSyncConfig.path).replace(/%2F/g, '/')}`;
+                const res = await fetch(url, { method: 'PUT', headers: { Authorization: `Bearer ${operationalSyncConfig.token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                if (res.status === 409) {
+                    await syncOperationalFromGitHub(false);
+                    body.content = b64EncodeUnicode(JSON.stringify(buildOperationalPayload(), null, 2));
+                    if (operationalSyncSha) body.sha = operationalSyncSha;
+                    const retry = await fetch(url, { method: 'PUT', headers: { Authorization: `Bearer ${operationalSyncConfig.token}`, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+                    if (!retry.ok) throw new Error(`GitHub respondeu ${retry.status}`);
+                    const retryData = await retry.json();
+                    operationalSyncSha = retryData.content && retryData.content.sha ? retryData.content.sha : operationalSyncSha;
+                    localStorage.setItem('multi_ops_github_sha_v52', operationalSyncSha);
+                    setOperationalStatus(`Dados enviados ${new Date().toLocaleTimeString().slice(0,5)}.`);
+                    return;
+                }
+                if (!res.ok) throw new Error(`GitHub respondeu ${res.status}`);
+                const data = await res.json();
+                operationalSyncSha = data.content && data.content.sha ? data.content.sha : operationalSyncSha;
+                localStorage.setItem('multi_ops_github_sha_v52', operationalSyncSha);
+                setOperationalStatus(`Dados enviados ${new Date().toLocaleTimeString().slice(0,5)}.`);
+            } catch (err) {
+                setOperationalStatus(`Erro ao enviar: ${err.message}`);
+            } finally {
+                isOperationalSending = false;
+                if (pendingOperationalSend) {
+                    pendingOperationalSend = false;
+                    syncOperationalToGitHub(false);
+                }
+            }
+        }
+
+        function mergeById(localItems, remoteItems, preferUpdatedAt = false) {
+            const map = new Map();
+            (localItems || []).forEach(item => { if (item && item.id !== undefined) map.set(String(item.id), item); });
+            (remoteItems || []).forEach(remote => {
+                if (!remote || remote.id === undefined) return;
+                const key = String(remote.id);
+                const local = map.get(key);
+                if (!local) map.set(key, remote);
+                else if (preferUpdatedAt) {
+                    const remoteTime = new Date(remote.updatedAt || remote.createdAt || remote.id || 0).getTime();
+                    const localTime = new Date(local.updatedAt || local.createdAt || local.id || 0).getTime();
+                    if (remoteTime >= localTime) map.set(key, remote);
+                } else {
+                    map.set(key, { ...local, ...remote });
+                }
+            });
+            return Array.from(map.values());
+        }
+
+        function mergeOperationalPayload(payload) {
+            products = mergeById(products, payload.products || [], true);
+            sales = mergeById(sales, payload.sales || [], true).sort((a, b) => getSaleTimestamp(a) - getSaleTimestamp(b));
+            extraCashAdds = mergeById(extraCashAdds, payload.extraCashAdds || [], false);
+            debtPayments = mergeById(debtPayments, payload.debtPayments || [], false);
+            shiftCloses = mergeById(shiftCloses, payload.shiftCloses || [], false);
+            migrateOperationalMetadata();
+        }
+
+        function persistOperationalLocal() {
+            localStorage.setItem('multi_sales_v52', JSON.stringify(sales));
+            localStorage.setItem('multi_products_v52', JSON.stringify(products));
+            localStorage.setItem('multi_shift_history_v52', JSON.stringify(shiftCloses));
+            localStorage.setItem('multi_extra_cash_v52', JSON.stringify(extraCashAdds));
+            localStorage.setItem('multi_debt_payments_v52', JSON.stringify(debtPayments));
+        }
+
+        function refreshOperationalViews() {
+            renderDashboard();
+            renderDailySummaries();
+            renderPendingDebts();
+            renderLocationProfitReport();
+            if (document.getElementById('stocks') && !document.getElementById('stocks').classList.contains('hidden')) {
+                renderStockList();
+                updateRestockSelect();
+            }
+            if (document.getElementById('relatorios') && !document.getElementById('relatorios').classList.contains('hidden')) renderReports();
+            if (document.getElementById('historico') && !document.getElementById('historico').classList.contains('hidden')) renderOrdersHistory();
+            if (document.getElementById('outros') && !document.getElementById('outros').classList.contains('hidden')) updateStockSelect();
+            if (document.getElementById('tabacaria') && !document.getElementById('tabacaria').classList.contains('hidden')) updateProductDatalist();
+        }
+
+        function getSaleCost(sale) {
+            if (sale.category === 'EXPENSE') return 0;
+            if (sale.cost !== undefined) return parseFloat(sale.cost) || 0;
+            if (sale.items && Array.isArray(sale.items)) {
+                return sale.items.reduce((sum, item) => sum + ((parseFloat(item.cost) || 0) * (parseFloat(item.qty) || 1)), 0);
+            }
+            return 0;
+        }
+
+        function getLocationProfitStats() {
+            const stats = {};
+            BUSINESS_LOCATIONS.forEach(location => {
+                stats[location] = { location, revenue: 0, cost: 0, expenses: 0, debtPaid: 0, extra: 0, profit: 0, salesCount: 0 };
+            });
+            sales.forEach(s => {
+                const location = s.location || 'LOCAL 1';
+                if (!stats[location]) stats[location] = { location, revenue: 0, cost: 0, expenses: 0, debtPaid: 0, extra: 0, profit: 0, salesCount: 0 };
+                if (s.category === 'EXPENSE') stats[location].expenses += parseFloat(s.total || 0);
+                else {
+                    stats[location].revenue += getSaleInitialPaid(s);
+                    stats[location].cost += getSaleCost(s);
+                    stats[location].salesCount++;
+                }
+            });
+            extraCashAdds.forEach(item => {
+                const location = item.location || 'LOCAL 1';
+                if (!stats[location]) stats[location] = { location, revenue: 0, cost: 0, expenses: 0, debtPaid: 0, extra: 0, profit: 0, salesCount: 0 };
+                stats[location].extra += parseFloat(item.amount || 0);
+            });
+            debtPayments.forEach(item => {
+                const location = item.location || 'LOCAL 1';
+                if (!stats[location]) stats[location] = { location, revenue: 0, cost: 0, expenses: 0, debtPaid: 0, extra: 0, profit: 0, salesCount: 0 };
+                stats[location].debtPaid += parseFloat(item.amount || 0);
+            });
+            Object.values(stats).forEach(item => {
+                item.profit = item.revenue + item.extra + item.debtPaid - item.cost - item.expenses;
+            });
+            return Object.values(stats);
+        }
+
+        function renderLocationProfitReport() {
+            const stats = getLocationProfitStats();
+            const html = stats.map(item => `
+                <div class="rounded-xl border ${item.location === getCurrentBusinessLocation() ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white'} p-4 shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-[10px] font-black text-slate-400 uppercase">Lucro por local</p>
+                            <h4 class="text-lg font-black text-slate-800">${item.location}</h4>
+                        </div>
+                        <span class="text-[10px] font-black px-2 py-1 rounded-full ${item.profit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${item.salesCount} vendas</span>
+                    </div>
+                    <div class="mt-3 text-2xl font-black ${item.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${item.profit.toLocaleString()} Kz</div>
+                    <div class="grid grid-cols-2 gap-2 mt-3 text-[11px] text-slate-500">
+                        <div>Entradas: <b class="text-slate-700">${(item.revenue + item.extra + item.debtPaid).toLocaleString()} Kz</b></div>
+                        <div>Custos: <b class="text-slate-700">${item.cost.toLocaleString()} Kz</b></div>
+                        <div>Despesas: <b class="text-rose-600">${item.expenses.toLocaleString()} Kz</b></div>
+                        <div>Dividas pagas: <b class="text-emerald-600">${item.debtPaid.toLocaleString()} Kz</b></div>
+                    </div>
+                </div>`).join('');
+            const stockTarget = document.getElementById('location-profit-summary');
+            const reportTarget = document.getElementById('report-location-profit-summary');
+            if (stockTarget) stockTarget.innerHTML = html;
+            if (reportTarget) reportTarget.innerHTML = html;
+        }
+
+        function setClockMode(mode) {
+            clockMode = mode === 'analog' ? 'analog' : 'digital';
+            localStorage.setItem(CLOCK_MODE_KEY, clockMode);
+            const digital = document.getElementById('digital-clock-box');
+            const analog = document.getElementById('analog-clock');
+            const digitalButton = document.getElementById('clock-digital-btn');
+            const analogButton = document.getElementById('clock-analog-btn');
+            if (digital) digital.classList.toggle('hidden', clockMode !== 'digital');
+            if (analog) analog.classList.toggle('hidden', clockMode !== 'analog');
+            if (digitalButton) digitalButton.classList.toggle('active', clockMode === 'digital');
+            if (analogButton) analogButton.classList.toggle('active', clockMode === 'analog');
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const digital = document.getElementById('digital-clock');
+            if (digital) digital.innerText = now.toLocaleTimeString('pt-PT');
+            const hour = document.getElementById('clock-hour-hand');
+            const minute = document.getElementById('clock-minute-hand');
+            const second = document.getElementById('clock-second-hand');
+            if (hour) hour.style.transform = `rotate(${((now.getHours() % 12) * 30) + (now.getMinutes() * .5)}deg)`;
+            if (minute) minute.style.transform = `rotate(${(now.getMinutes() * 6) + (now.getSeconds() * .1)}deg)`;
+            if (second) second.style.transform = `rotate(${now.getSeconds() * 6}deg)`;
+        }
+
         function startClock() {
-            setInterval(() => {
-                const now = new Date();
-                document.getElementById('digital-clock').innerText = now.toLocaleTimeString('pt-PT');
-            }, 1000);
+            setClockMode(clockMode);
+            updateClock();
+            setInterval(updateClock, 1000);
         }
 
         function checkNotifications() {
@@ -1012,8 +1557,8 @@ window.onload = function() {
             }
         }
 
-        function clearChatRoom() {
-            if (!checkPermission()) return;
+        async function clearChatRoom() {
+            if (!await checkPermission()) return;
             const room = document.getElementById('chat-room').value;
             if (!confirm('Limpar todas as mensagens desta sala?')) return;
             chatMessages.filter(msg => msg.room === room).forEach(msg => {
@@ -1500,17 +2045,23 @@ window.onload = function() {
             if(id === 'impressao') renderPrintTab();
         }
         
-        function verificarAdmin(t) { const s = prompt("🔒 Código:"); if(s==="hernane2710.") showTab(t); else if(s!==null) alert("⛔"); }
+        async function verificarAdmin(t) {
+            if (await checkPermission('Código de acesso:')) showTab(t);
+        }
 
         /* --- SISTEMA CENTRAL (SAVE/LOAD) --- */
         function saveData(newSale = null) {
             let savedSale = null;
             if(newSale) {
+                ensureSalesSession();
                 savedSale = {
                     id: newSale.id || Date.now(),
                     createdAt: newSale.createdAt || new Date().toISOString(),
                     time: newSale.time || new Date().toLocaleTimeString().slice(0,5),
                     ...newSale,
+                    location: newSale.location || getCurrentBusinessLocation(),
+                    seller: newSale.seller || getCurrentSeller() || 'Sem usuario',
+                    updatedAt: new Date().toISOString(),
                     initialPaid: newSale.initialPaid !== undefined ? newSale.initialPaid : (parseFloat(newSale.paid || 0) || 0)
                 };
                 sales.push(savedSale);
@@ -1519,6 +2070,7 @@ window.onload = function() {
             localStorage.setItem('multi_products_v52', JSON.stringify(products));
             localStorage.setItem('multi_employees_v52', JSON.stringify(employees));
             localStorage.setItem('multi_attendance_v52', JSON.stringify(attendance));
+            localStorage.setItem('multi_payroll_payments_v52', JSON.stringify(payrollPayments));
             localStorage.setItem('multi_shift_history_v52', JSON.stringify(shiftCloses)); // Salva histórico de fechos
             localStorage.setItem('multi_extra_cash_v52', JSON.stringify(extraCashAdds));
             localStorage.setItem('multi_debt_payments_v52', JSON.stringify(debtPayments));
@@ -1527,7 +2079,9 @@ window.onload = function() {
             renderDailySummaries();
             renderIdleCashStatus();
             renderPendingDebts();
+            renderLocationProfitReport();
             checkNotifications(); 
+            scheduleOperationalSync();
             
             const ind = document.getElementById('save-indicator'); 
             if(ind) { 
@@ -1617,11 +2171,14 @@ window.onload = function() {
             const method = prompt('Método de pagamento:', sale.method || 'Dinheiro') || sale.method || 'Dinheiro';
             const paidAmount = Math.min(amount, debt);
             sale.paid = (parseFloat(sale.paid) || 0) + paidAmount;
+            sale.updatedAt = new Date().toISOString();
             debtPayments.push({
                 id: Date.now(),
                 originalSaleId: sale.id,
                 date: new Date().toLocaleDateString(),
                 time: new Date().toLocaleTimeString().slice(0,5),
+                location: getCurrentBusinessLocation(),
+                seller: getCurrentSeller() || 'Sem usuario',
                 originalDate: sale.date,
                 client: sale.client || '',
                 phone: sale.phone || '',
@@ -1693,6 +2250,8 @@ window.onload = function() {
                     periodKey,
                     date: today,
                     time: new Date().toLocaleTimeString().slice(0,5),
+                    location: lastSale.location || getCurrentBusinessLocation(),
+                    seller: lastSale.seller || getCurrentSeller() || 'Sistema',
                     amount: EXTRA_CASH_AMOUNT,
                     reason: 'Gestão de Stocks',
                     lastSaleId: lastSale.id,
@@ -1705,6 +2264,8 @@ window.onload = function() {
             if (lastEntry) {
                 localStorage.setItem('multi_extra_cash_v52', JSON.stringify(extraCashAdds));
                 renderDashboard();
+                renderLocationProfitReport();
+                scheduleOperationalSync();
                 renderDailySummaries();
                 renderReports();
                 const noticeKey = `extra-cash-alert-${lastEntry.id}`;
@@ -1747,15 +2308,51 @@ window.onload = function() {
         }
 
         /* --- FECHO DE CAIXA (Lógica Completa) --- */
-        function checkPermission() {
-            const code = prompt("🔑 Código de Autorização de Gerente:");
+        function requestManagerCode(message) {
+            return new Promise(resolve => {
+                const modal = document.getElementById('manager-code-modal');
+                const input = document.getElementById('manager-code-input');
+                document.getElementById('manager-code-message').innerText = message;
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                input.value = '';
+                window.managerCodeResolver = resolve;
+                setTimeout(() => input.focus(), 0);
+            });
+        }
+
+        function closeManagerCodeDialog(value) {
+            const modal = document.getElementById('manager-code-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            const resolve = window.managerCodeResolver;
+            window.managerCodeResolver = null;
+            if (resolve) resolve(value);
+        }
+
+        function submitManagerCode() {
+            closeManagerCodeDialog(document.getElementById('manager-code-input').value);
+        }
+
+        function cancelManagerCode() {
+            closeManagerCodeDialog(null);
+        }
+
+        function handleManagerCodeKeydown(event) {
+            if (event.key === 'Enter') submitManagerCode();
+            if (event.key === 'Escape') cancelManagerCode();
+        }
+
+        async function checkPermission(message = 'Código de Autorização de Gerente:') {
+            const code = await requestManagerCode(message);
+            if (code === null) return false;
             if (code === "hernane2710.") return true;
             alert("⛔ Acesso Negado! Código incorreto.");
             return false;
         }
 
-        function executeShiftClose() {
-            if (!checkPermission()) return;
+        async function executeShiftClose() {
+            if (!await checkPermission()) return;
 
             const today = new Date().toLocaleDateString();
             let stats = {
@@ -1844,15 +2441,22 @@ window.onload = function() {
         }
 
         /* --- ÁREA DE IMPRESSÃO & LISTA DE COMPRAS --- */
+        function isInvoiceAvailableForReprint(sale) {
+            const timestamp = getSaleTimestamp(sale);
+            const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+            return Number.isFinite(timestamp) && timestamp >= Date.now() - sevenDaysInMs && timestamp <= Date.now();
+        }
+
         function renderPrintTab() {
             const query = document.getElementById('print-search').value.toLowerCase();
             const list = document.getElementById('print-list-body');
             list.innerHTML = '';
-            const filteredSales = sales.filter(s => (s.client && s.client.toLowerCase().includes(query)) || s.id.toString().includes(query)).slice().reverse().slice(0, 50);
+            const filteredSales = sales.filter(s => s.category !== 'EXPENSE' && isInvoiceAvailableForReprint(s) && ((s.client && s.client.toLowerCase().includes(query)) || s.id.toString().includes(query))).slice().reverse().slice(0, 50);
 
             filteredSales.forEach(s => {
                 list.innerHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-3 text-slate-500 text-xs">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client} <span class="text-xs font-normal text-slate-400">(${s.category})</span></td><td class="p-3 text-right font-bold text-blue-600">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center"><button onclick="printInvoiceDouble(${s.id})" class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold hover:bg-blue-200">IMPRIMIR</button></td></tr>`;
             });
+            if (!filteredSales.length) list.innerHTML = '<tr><td colspan="4" class="p-6 text-center text-sm italic text-slate-400">Nenhuma fatura disponível para reimprimir nos últimos 7 dias.</td></tr>';
 
             // Preview Lista de Compras
             const today = new Date().toLocaleDateString();
@@ -1888,6 +2492,30 @@ window.onload = function() {
         }
 
       /* --- POS (VENDA RÁPIDA) --- */
+function initDailyPaymentMethod() {
+    const select = document.getElementById('vr-payment-method');
+    if (!select) return;
+    const savedMethod = localStorage.getItem(DAILY_PAYMENT_METHOD_KEY) || 'Dinheiro';
+    const availableMethod = Array.from(select.options).some(option => option.value === savedMethod);
+    select.value = availableMethod ? savedMethod : 'Dinheiro';
+    saveDailyPaymentMethod();
+}
+
+function saveDailyPaymentMethod() {
+    const select = document.getElementById('vr-payment-method');
+    if (select && select.value) localStorage.setItem(DAILY_PAYMENT_METHOD_KEY, select.value);
+}
+
+function promptDailyPaymentMethod() {
+    const select = document.getElementById('vr-payment-method');
+    if (!select) return;
+    select.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    select.focus({ preventScroll: true });
+    if (typeof select.showPicker === 'function') {
+        try { select.showPicker(); } catch (error) { /* O foco mantém o seletor pronto em navegadores sem abertura programática. */ }
+    }
+}
+
 function updateProductDatalist() { 
     const dl = document.getElementById('vr-products'); 
     dl.innerHTML = ''; 
@@ -1908,6 +2536,11 @@ function addToVRCart() {
     if(name && price && qty > 0) {
         // Verifica se o produto já está no carrinho
         const itemExistente = vrCart.find(item => item.name === name);
+        const product = products.find(p => p.name === name);
+        const qtyNoCarrinho = itemExistente ? itemExistente.qty : 0;
+        if (product && (parseInt(product.stock) || 0) < qtyNoCarrinho + qty) {
+            return alert(`Stock insuficiente para ${name}. Disponivel: ${product.stock}`);
+        }
         
         if (itemExistente) {
             // Se já existe, soma a quantidade ao que lá está
@@ -1919,6 +2552,7 @@ function addToVRCart() {
         }
         
         renderVRCart();
+        promptDailyPaymentMethod();
         document.getElementById('vr-product').value = '';
         document.getElementById('vr-price').value = '';
         document.getElementById('vr-qty').value = '1';
@@ -1981,18 +2615,34 @@ function renderVRCart() {
     countDisplay.innerText = `${vrCart.length} Item(s)`;
 }
 
-function removeVRCartItem(index) { 
-    if(checkPermission()) { vrCart.splice(index, 1); renderVRCart(); }
+async function removeVRCartItem(index) { 
+    if(await checkPermission()) { vrCart.splice(index, 1); renderVRCart(); }
 }
 
 function finalizeVRSale() { 
     const method = document.getElementById('vr-payment-method').value;
     if(vrCart.length===0) return; 
     if(!method) return alert("Selecione o método!");
+    if(!ensureSalesSession()) return;
+    for (const item of vrCart) {
+        const product = products.find(p => p.name === item.name);
+        if (product && (parseInt(product.stock) || 0) < item.qty) {
+            return alert(`Stock insuficiente para ${item.name}. Disponivel: ${product.stock}`);
+        }
+    }
     
     const t = vrCart.reduce((a,b)=>a+b.total,0); 
     
     const nomesProdutos = vrCart.map(item => `${item.qty}x ${item.name}`).join(', ');
+    const itemsForSale = vrCart.map(item => {
+        const product = products.find(p => p.name === item.name);
+        if (product) {
+            product.stock = (parseInt(product.stock) || 0) - item.qty;
+            touchProduct(product);
+        }
+        return { ...item, productId: product ? product.id : null, cost: product ? (parseFloat(product.cost) || 0) : (parseFloat(item.cost) || 0) };
+    });
+    const totalCost = itemsForSale.reduce((sum, item) => sum + ((parseFloat(item.cost) || 0) * (parseFloat(item.qty) || 1)), 0);
     
     const newSale = { 
         date: new Date().toLocaleDateString(), 
@@ -2003,7 +2653,8 @@ function finalizeVRSale() {
         category: 'TABACARIA', 
         client: "Balcão", 
         qty: vrCart.length, 
-        items: [...vrCart], 
+        items: itemsForSale,
+        cost: totalCost,
         method: method 
     }; 
     
@@ -2083,15 +2734,16 @@ function renderDailySummaries() {
     expensesList.innerHTML = painelCaixaHtml + expensesList.innerHTML;
 }
 
-function editExpense(id) {
+async function editExpense(id) {
     const exp = sales.find(s => s.id === id);
-    if (exp && checkPermission()) {
+    if (exp && await checkPermission()) {
         const newDesc = prompt("Nova descrição:", exp.desc);
         const newVal = prompt("Novo valor (Kz):", exp.total);
         if (newDesc && newVal) {
             exp.desc = newDesc;
             exp.total = parseFloat(newVal);
             exp.paid = parseFloat(newVal);
+            exp.updatedAt = new Date().toISOString();
             saveData();
         }
     }
@@ -2311,6 +2963,7 @@ function printDailyReport() {
 
         // --- RELATÓRIOS ---
         function renderReports() {
+            renderLocationProfitReport();
             const today = new Date().toLocaleDateString();
             const now = new Date();
             const currentMonth = now.getMonth();
@@ -2432,10 +3085,10 @@ function printDailyReport() {
         /* --- STOCKS & ACADÉMICO --- */
         function renderStockList() { const list = document.getElementById('stock-list-body'); list.innerHTML=''; products.forEach(p => { const profit = p.price - (p.cost || 0); const margin = p.cost > 0 ? ((profit/p.price)*100).toFixed(0) : 100; list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3 font-medium text-slate-700">${p.name}</td><td class="p-3 text-slate-500">${(p.cost || 0).toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${p.price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-blue-600 font-bold">${p.stock}</td><td class="p-3 text-right flex justify-end gap-2"><button onclick="editProduct(${p.id})" class="text-blue-500 text-xs font-bold">✏️ EDITAR</button><button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`; }); }
         function editProduct(id) { const prod = products.find(p => p.id === id); if(!prod) return; document.getElementById('edit-prod-id').value = prod.id; document.getElementById('new-prod-name').value = prod.name; document.getElementById('new-prod-cost').value = prod.cost || 0; document.getElementById('new-prod-price').value = prod.price; document.getElementById('new-prod-qty').value = prod.stock; if(document.getElementById('new-prod-img')) document.getElementById('new-prod-img').value = prod.img || ''; const btn = document.getElementById('btn-add-prod'); btn.innerHTML = "💾 ATUALIZAR PRODUTO"; btn.classList.replace('bg-blue-600', 'bg-emerald-600'); btn.onclick = function() { updateProductExisting(id); }; document.getElementById('btn-cancel-edit').classList.remove('hidden'); document.getElementById('new-prod-name').focus(); }
-        function updateProductExisting(id) { const name = document.getElementById('new-prod-name').value; const price = parseFloat(document.getElementById('new-prod-price').value); const cost = parseFloat(document.getElementById('new-prod-cost').value); const stock = parseInt(document.getElementById('new-prod-qty').value); const img = document.getElementById('new-prod-img').value; const idx = products.findIndex(p => p.id === id); if(idx !== -1 && name && price) { products[idx] = { id: parseInt(id), name, price, cost: cost||0, stock, img }; saveData(); renderStockList(); alert("Produto atualizado!"); cancelEdit(); } }
+        function updateProductExisting(id) { const name = document.getElementById('new-prod-name').value; const price = parseFloat(document.getElementById('new-prod-price').value); const cost = parseFloat(document.getElementById('new-prod-cost').value); const stock = parseInt(document.getElementById('new-prod-qty').value); const img = document.getElementById('new-prod-img').value; const idx = products.findIndex(p => p.id === id); if(idx !== -1 && name && price) { products[idx] = { id: parseInt(id), name, price, cost: cost||0, stock, img, updatedAt: new Date().toISOString() }; saveData(); renderStockList(); updateProductDatalist(); updateStockSelect(); alert("Produto atualizado!"); cancelEdit(); } }
         function cancelEdit() { document.getElementById('edit-prod-id').value = ''; document.getElementById('new-prod-name').value = ''; document.getElementById('new-prod-cost').value = ''; document.getElementById('new-prod-price').value = ''; document.getElementById('new-prod-qty').value = ''; document.getElementById('new-prod-img').value = ''; const btn = document.getElementById('btn-add-prod'); btn.innerHTML = "CRIAR PRODUTO"; btn.classList.replace('bg-emerald-600', 'bg-blue-600'); btn.onclick = addNewProduct; document.getElementById('btn-cancel-edit').classList.add('hidden'); }
-        function addNewProduct() { const name = document.getElementById('new-prod-name').value; const price = parseFloat(document.getElementById('new-prod-price').value); const cost = parseFloat(document.getElementById('new-prod-cost').value) || 0; const stock = parseInt(document.getElementById('new-prod-qty').value); const img = document.getElementById('new-prod-img').value; if(name && price) { products.push({ id: Date.now(), name, price, cost, stock, img }); saveData(); renderStockList(); alert("Produto Adicionado!"); } }
-        function addStock() { const id = document.getElementById('restock-select').value; const qtyToAdd = parseInt(document.getElementById('restock-qty').value); if (!id || !qtyToAdd) return alert("Erro"); const p = products.find(x => x.id == id); if (p) { p.stock += qtyToAdd; saveData(); alert("Stock atualizado!"); renderStockList(); updateRestockSelect(); } }
+        function addNewProduct() { const name = document.getElementById('new-prod-name').value; const price = parseFloat(document.getElementById('new-prod-price').value); const cost = parseFloat(document.getElementById('new-prod-cost').value) || 0; const stock = parseInt(document.getElementById('new-prod-qty').value); const img = document.getElementById('new-prod-img').value; if(name && price) { products.push({ id: Date.now(), name, price, cost, stock, img, updatedAt: new Date().toISOString() }); saveData(); renderStockList(); updateRestockSelect(); updateProductDatalist(); updateStockSelect(); alert("Produto Adicionado!"); } }
+        function addStock() { const id = document.getElementById('restock-select').value; const qtyToAdd = parseInt(document.getElementById('restock-qty').value); if (!id || !qtyToAdd) return alert("Erro"); const p = products.find(x => x.id == id); if (p) { p.stock += qtyToAdd; touchProduct(p); saveData(); alert("Stock atualizado!"); renderStockList(); updateRestockSelect(); } }
         function deleteProduct(id) { if(confirm("Remover?")) { products = products.filter(p=>p.id!==id); saveData(); renderStockList(); updateRestockSelect(); } }
         function suggestPrice() { const cost = parseFloat(document.getElementById('new-prod-cost').value); if(cost > 0) { const suggested = cost + (cost * 0.4); document.getElementById('price-suggestion').innerHTML = `💡 Sugestão (40%): <b>${suggested.toLocaleString()} Kz</b>`; if(document.getElementById('new-prod-price').value == "") document.getElementById('new-prod-price').value = suggested; } }
         function updateRestockSelect() { const sel = document.getElementById('restock-select'); sel.innerHTML = '<option value="">Selecionar...</option>'; products.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
@@ -2567,17 +3220,335 @@ function printDailyReport() {
         function updateStockSelect() { const sel = document.getElementById('st-product-select'); sel.innerHTML = '<option value="">🔍 Procurar Produto...</option>'; products.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
         function updateStockDisplay() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); if(p) { document.getElementById('st-current-stock').innerText = p.stock; document.getElementById('st-current-price').innerText = p.price.toLocaleString() + ' Kz'; } calcStationeryTotal(); }
         function calcStationeryTotal() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = document.getElementById('st-qty').value; document.getElementById('st-total').value = (p ? p.price * qty : 0).toLocaleString() + ' Kz'; }
-        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(confirm("Confirmar venda?")) { p.stock -= qty; const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
+        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(!ensureSalesSession()) return; if(confirm("Confirmar venda?")) { p.stock -= qty; touchProduct(p); const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
         function renderStationeryDailyReport() { const list = document.getElementById('st-sales-list'); if(!list) return; list.innerHTML=''; sales.slice().reverse().forEach(s => { if(s.category === 'PAPELARIA' && s.date === new Date().toLocaleDateString()) list.innerHTML += `<div class="grid grid-cols-12 bg-white p-2 border-b border-slate-100 text-xs text-slate-600 hover:bg-slate-50 items-center"><div class="col-span-2">${new Date(s.id).toLocaleTimeString().slice(0,5)}</div><div class="col-span-5 font-bold">${s.desc}</div><div class="col-span-2 text-center bg-blue-50 rounded">${s.qty||1}</div><div class="col-span-2 text-right font-bold text-emerald-600">${s.total.toLocaleString()}</div><div class="col-span-1 text-center"><button onclick="deleteSale(${s.id})" class="text-red-400 font-bold hover:text-red-600">×</button></div></div>`; }); }
         function renderOrdersHistory() { const tbody = document.getElementById('orders-history-body'); tbody.innerHTML = ''; sales.slice().reverse().forEach(s => { const debt = getDebtAmount(s); let statusHtml = debt <= 0 ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600">Pago</span>' : `<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">Dívida: ${debt.toLocaleString()}</span><button onclick="registerDebtPayment(${s.id})" class="ml-2 text-emerald-600 font-black text-[10px] underline">Pagar</button>`; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-3 text-slate-500">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client || 'Balcão'}<div class="text-[10px] text-slate-400">${s.phone || ''}</div></td><td class="p-3 text-slate-600 text-xs">${s.desc}</td><td class="p-3 text-right font-medium">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center">${statusHtml}</td><td class="p-3 text-center"><button onclick='printInvoiceDouble(${s.id})' class="text-blue-500 font-bold text-xs mr-2">🖨️</button><button onclick='deleteSale(${s.id})' class="text-red-400 font-bold text-xs">🗑️</button></td></tr>`; }); }
-        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, shiftCloses: shiftCloses, extraCashAdds: extraCashAdds, debtPayments: debtPayments, chatMessages: chatMessages, chatPresence: chatPresence, deletedChatIds: deletedChatIds }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; shiftCloses = data.shiftCloses || []; extraCashAdds = data.extraCashAdds || []; debtPayments = data.debtPayments || []; chatMessages = data.chatMessages || []; chatPresence = data.chatPresence || {}; deletedChatIds = data.deletedChatIds || []; saveData(); saveChatMessages(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
-        function deleteSale(id) { if(checkPermission() && confirm("Anular?")) { sales = sales.filter(s=>s.id!==id); saveData(); renderStationeryDailyReport(); renderDashboard(); renderOrdersHistory(); } }
-        function renderRH() { const sel = document.getElementById('rh-employee-select'); sel.innerHTML = '<option value="">Selecione...</option>'; employees.forEach(e => sel.innerHTML += `<option value="${e.id}">${e.name}</option>`); const tbody = document.getElementById('payroll-body'); tbody.innerHTML = ''; const currentMonth = new Date().getMonth(); const currentYear = new Date().getFullYear(); employees.forEach(emp => { let delays = 0; let absences = 0; attendance.forEach(att => { const d = new Date(att.date); if (att.empId === emp.id && d.getMonth() === currentMonth && d.getFullYear() === currentYear) { if (att.status === 'ATRASO') delays++; if (att.status === 'FALTA') absences++; } }); const totalDeductions = (delays * 200) + (absences * 1000); const finalSalary = emp.salary - totalDeductions; tbody.innerHTML += `<tr class="border-b border-slate-100 hover:bg-slate-50"><td class="p-3 font-bold text-slate-700">${emp.name}</td><td class="p-3 text-slate-500">${emp.salary.toLocaleString()} Kz</td><td class="p-3 text-center text-red-500 font-bold">${absences} <span class="text-[9px] text-slate-400">(-${(absences*1000).toLocaleString()})</span></td><td class="p-3 text-center text-orange-500 font-bold">${delays} <span class="text-[9px] text-slate-400">(-${(delays*200).toLocaleString()})</span></td><td class="p-3 text-right font-black text-emerald-600 text-lg">${finalSalary.toLocaleString()} Kz</td><td class="p-3 text-right"><button onclick="deleteEmployee(${emp.id})" class="text-red-400 hover:text-red-600">×</button></td></tr>`; }); }
-        function addEmployee() { const name = document.getElementById('new-emp-name').value; const salary = parseFloat(document.getElementById('new-emp-salary').value); if (name && salary) { employees.push({ id: Date.now(), name, salary }); saveData(); document.getElementById('new-emp-name').value = ''; document.getElementById('new-emp-salary').value = ''; renderRH(); } }
-        function deleteEmployee(id) { if(confirm('Remover funcionário?')) { employees = employees.filter(e => e.id !== id); saveData(); renderRH(); } }
-        function registerPoint(type) { const empId = parseInt(document.getElementById('rh-employee-select').value); if (!empId) return alert("Selecione um funcionário."); const now = new Date(); const dateStr = now.toISOString().split('T')[0]; const timeStr = now.toLocaleTimeString(); let record = attendance.find(a => a.empId === empId && a.date.startsWith(dateStr)); if (type === 'ENTRADA') { if (record && record.entry) return alert("Entrada já registada hoje!"); const limitHour = 7; const limitMin = 30; let status = 'PRESENTE'; let penalty = 0; if (now.getHours() > limitHour || (now.getHours() === limitHour && now.getMinutes() > limitMin)) { status = 'ATRASO'; penalty = 200; alert("⚠️ ATRASO REGISTADO! Multa de 200 Kz."); } else { alert("✅ Entrada Registada a tempo."); } if(record) { record.entry = timeStr; record.status = status; record.penalty = penalty; } else { attendance.push({ id: Date.now(), empId: empId, date: now.toISOString(), entry: timeStr, exit: null, status: status, penalty: penalty }); } } else if (type === 'SAIDA') { if (!record) return alert("É necessário dar entrada primeiro."); record.exit = timeStr; alert("👋 Saída registada. Bom descanso!"); } saveData(); renderRH(); }
-        function processAbsences() { const today = new Date(); const currentMonth = today.getMonth(); const currentYear = today.getFullYear(); for (let d = 1; d < today.getDate(); d++) { const checkDate = new Date(currentYear, currentMonth, d); if (checkDate.getDay() === 0) continue; const dateStr = checkDate.toISOString().split('T')[0]; employees.forEach(emp => { const hasRecord = attendance.find(a => a.empId === emp.id && a.date.startsWith(dateStr)); if (!hasRecord) { attendance.push({ id: Date.now() + Math.random(), empId: emp.id, date: checkDate.toISOString(), entry: '-', exit: '-', status: 'FALTA', penalty: 1000 }); } }); } saveData(); renderRH(); alert("Verificação concluída."); }
+        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, payrollPayments: payrollPayments, shiftCloses: shiftCloses, extraCashAdds: extraCashAdds, debtPayments: debtPayments, chatMessages: chatMessages, chatPresence: chatPresence, deletedChatIds: deletedChatIds }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; payrollPayments = data.payrollPayments || []; shiftCloses = data.shiftCloses || []; extraCashAdds = data.extraCashAdds || []; debtPayments = data.debtPayments || []; chatMessages = data.chatMessages || []; chatPresence = data.chatPresence || {}; deletedChatIds = data.deletedChatIds || []; migrateEmployeeMetadata(); saveData(); saveChatMessages(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
+        async function deleteSale(id) {
+            if (!await checkPermission()) return;
+            if (!confirm('Apagar esta transação?')) return;
+            sales = sales.filter(s => s.id !== id);
+            debtPayments = debtPayments.filter(payment => payment.originalSaleId !== id);
+            saveData();
+            renderStationeryDailyReport();
+            renderDashboard();
+            renderOrdersHistory();
+        }
+
+        async function deleteAllTransactions() {
+            if (!sales.length) return alert('Não existem transações para apagar.');
+            if (!await checkPermission()) return;
+            if (!confirm('Apagar todas as vendas, despesas e pagamentos de dívidas? Esta ação não pode ser desfeita sem um backup.')) return;
+            sales = [];
+            debtPayments = [];
+            saveData();
+            renderStationeryDailyReport();
+            renderDashboard();
+            renderOrdersHistory();
+            alert('Histórico de transações apagado.');
+        }
+        function getLocalDateKey(date = new Date()) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        function getRhPeriod() {
+            const input = document.getElementById('rh-period');
+            const currentPeriod = getLocalDateKey().slice(0, 7);
+            if (input && !input.value) input.value = currentPeriod;
+            return input ? input.value || currentPeriod : currentPeriod;
+        }
+
+        function getRhPeriodLabel(period) {
+            const [year, month] = period.split('-').map(Number);
+            return new Date(year, (month || 1) - 1, 1).toLocaleDateString('pt-PT', { month: 'long', year: 'numeric' });
+        }
+
+        function getAttendanceDateKey(record) {
+            const raw = String(record?.date || '');
+            return /^\d{4}-\d{2}-\d{2}/.test(raw) ? raw.slice(0, 10) : getLocalDateKey(new Date(raw));
+        }
+
+        function migrateEmployeeMetadata() {
+            employees.forEach(emp => {
+                if (emp.active === undefined) emp.active = true;
+                if (!emp.role) emp.role = 'Sem função definida';
+                if (!emp.phone) emp.phone = '';
+                if (!emp.startDate) emp.startDate = getLocalDateKey(new Date(Number(emp.id) || Date.now()));
+            });
+            payrollPayments = payrollPayments.filter(payment => payment && payment.empId !== undefined && payment.period);
+        }
+
+        function getEmployeeAttendance(empId, period) {
+            return attendance.filter(record => String(record.empId) === String(empId) && getAttendanceDateKey(record).startsWith(period));
+        }
+
+        function getEmployeePayroll(emp, period) {
+            const records = getEmployeeAttendance(emp.id, period);
+            const present = records.filter(record => ['PRESENTE', 'ATRASO'].includes(record.status)).length;
+            const delays = records.filter(record => record.status === 'ATRASO').length;
+            const absences = records.filter(record => record.status === 'FALTA').length;
+            const deductions = records.reduce((sum, record) => {
+                if (record.status === 'ATRASO') return sum + (parseFloat(record.penalty) || 200);
+                if (record.status === 'FALTA') return sum + (parseFloat(record.penalty) || 1000);
+                return sum;
+            }, 0);
+            const baseSalary = parseFloat(emp.salary) || 0;
+            const netSalary = Math.max(0, baseSalary - deductions);
+            const payment = payrollPayments.find(item => String(item.empId) === String(emp.id) && item.period === period);
+            return { records, present, delays, absences, deductions, baseSalary, netSalary, payment };
+        }
+
+        function setRhPointStatus(text) {
+            const target = document.getElementById('rh-point-status');
+            if (target) target.innerText = text;
+        }
+
+        function updateRhMarkerClock() {
+            const target = document.getElementById('rh-marker-clock');
+            if (target) target.innerText = new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function startRhMarkerClock() {
+            updateRhMarkerClock();
+            setInterval(updateRhMarkerClock, 1000);
+        }
+
+        function prepareAttendanceMarker() {
+            const selectedId = document.getElementById('rh-employee-select')?.value;
+            const employee = employees.find(emp => String(emp.id) === String(selectedId));
+            if (employee) setRhPointStatus(`${employee.name}: selecione MARCAR ENTRADA ou MARCAR SAÍDA. A hora será registada automaticamente.`);
+            else setRhPointStatus('Selecione o colaborador e faça a marcação.');
+        }
+
+        function runAttendanceAutomation() {
+            migrateEmployeeMetadata();
+            const now = new Date();
+            const lastDateToCheck = new Date(now);
+            if (now.getHours() < RH_AUTO_ABSENCE_HOUR) lastDateToCheck.setDate(lastDateToCheck.getDate() - 1);
+            const firstDateToCheck = new Date(lastDateToCheck);
+            firstDateToCheck.setDate(firstDateToCheck.getDate() - 31);
+            let added = 0;
+
+            for (const checkDate = new Date(firstDateToCheck); checkDate <= lastDateToCheck; checkDate.setDate(checkDate.getDate() + 1)) {
+                if (checkDate.getDay() === 0) continue;
+                const dateKey = getLocalDateKey(checkDate);
+                employees.filter(employee => employee.active !== false && (!employee.startDate || employee.startDate <= dateKey)).forEach(employee => {
+                    const hasRecord = attendance.some(record => String(record.empId) === String(employee.id) && getAttendanceDateKey(record) === dateKey);
+                    if (!hasRecord) {
+                        attendance.push({ id: Date.now() + Math.random(), empId: employee.id, date: dateKey, entry: '-', exit: '-', status: 'FALTA', penalty: 1000, automatic: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+                        added++;
+                    }
+                });
+            }
+
+            if (added) {
+                saveData();
+                if (document.getElementById('rh') && !document.getElementById('rh').classList.contains('hidden')) renderRH();
+            }
+            return added;
+        }
+
+        function renderRH() {
+            migrateEmployeeMetadata();
+            const period = getRhPeriod();
+            const activeEmployees = employees.filter(emp => emp.active !== false);
+            const selectedEmployee = document.getElementById('rh-employee-select');
+            const selectedValue = selectedEmployee?.value || '';
+            if (selectedEmployee) {
+                selectedEmployee.innerHTML = '<option value="">Selecione...</option>';
+                activeEmployees.forEach(emp => selectedEmployee.innerHTML += `<option value="${emp.id}">${escapeChatHtml(emp.name)} — ${escapeChatHtml(emp.role)}</option>`);
+                if (activeEmployees.some(emp => String(emp.id) === selectedValue)) selectedEmployee.value = selectedValue;
+            }
+
+            const today = getLocalDateKey();
+            const todayRecords = attendance.filter(record => getAttendanceDateKey(record) === today);
+            const presentToday = todayRecords.filter(record => ['PRESENTE', 'ATRASO'].includes(record.status)).length;
+            const lateToday = todayRecords.filter(record => record.status === 'ATRASO').length;
+            const pendingPayrollCount = activeEmployees.filter(emp => !getEmployeePayroll(emp, period).payment).length;
+
+            document.getElementById('rh-active-count').innerText = activeEmployees.length;
+            document.getElementById('rh-present-count').innerText = presentToday;
+            document.getElementById('rh-late-count').innerText = lateToday;
+            document.getElementById('rh-pending-payroll').innerText = `${pendingPayrollCount} colaborador${pendingPayrollCount === 1 ? '' : 'es'}`;
+            document.getElementById('rh-period-label').innerText = getRhPeriodLabel(period);
+
+            const payrollBody = document.getElementById('payroll-body');
+            payrollBody.innerHTML = '';
+            employees.slice().sort((a, b) => Number(b.active !== false) - Number(a.active !== false) || a.name.localeCompare(b.name)).forEach(emp => {
+                const stats = getEmployeePayroll(emp, period);
+                const activeBadge = emp.active !== false
+                    ? '<span class="mt-1 inline-block rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-emerald-700">ATIVO</span>'
+                    : '<span class="mt-1 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black text-slate-500">INATIVO</span>';
+                const paymentHtml = emp.active === false
+                    ? '<span class="text-xs font-bold text-slate-400">Inativo</span>'
+                    : stats.payment
+                        ? `<div><span class="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700">PAGO</span><button onclick="reversePayrollPayment(${stats.payment.id})" class="ml-2 text-[10px] font-black text-rose-500 underline">Reverter</button></div>`
+                        : `<button onclick="registerPayrollPayment(${emp.id})" class="rounded-lg bg-emerald-600 px-3 py-1.5 text-[10px] font-black text-white hover:bg-emerald-700">REGISTAR PAGAMENTO</button>`;
+                const salaryStatusHtml = emp.active === false
+                    ? '<span class="text-xs font-bold text-slate-400">Inativo</span>'
+                    : stats.payment
+                        ? '<span class="rounded-full bg-emerald-50 px-2 py-1 text-[10px] font-black text-emerald-700">PROCESSADO</span>'
+                        : stats.deductions
+                            ? '<span class="rounded-full bg-amber-50 px-2 py-1 text-[10px] font-black text-amber-700">DESCONTOS APLICADOS</span>'
+                            : '<span class="rounded-full bg-blue-50 px-2 py-1 text-[10px] font-black text-blue-700">AGUARDA PAGAMENTO</span>';
+                const staffAction = emp.active !== false
+                    ? `<button onclick="archiveEmployee(${emp.id})" class="text-[10px] font-black text-rose-500 hover:underline">Desativar</button>`
+                    : `<button onclick="reactivateEmployee(${emp.id})" class="text-[10px] font-black text-emerald-600 hover:underline">Reativar</button>`;
+                payrollBody.innerHTML += `<tr class="hover:bg-slate-50"><td class="p-3"><div class="font-bold text-slate-700">${escapeChatHtml(emp.name)}</div>${activeBadge}</td><td class="p-3 text-xs text-slate-500"><div class="font-bold text-slate-600">${escapeChatHtml(emp.role)}</div><div>${escapeChatHtml(emp.phone || 'Sem contacto')}</div></td><td class="p-3 text-center font-black text-blue-600">${stats.present}</td><td class="p-3 text-center font-black text-amber-600">${stats.delays}</td><td class="p-3 text-center font-black text-rose-600">${stats.absences}</td><td class="p-3 text-center">${salaryStatusHtml}</td><td class="p-3 text-center">${paymentHtml}</td><td class="p-3 text-right"><button onclick="editEmployee(${emp.id})" class="mr-3 text-[10px] font-black text-blue-600 hover:underline">Editar</button>${staffAction}</td></tr>`;
+            });
+            if (!employees.length) payrollBody.innerHTML = '<tr><td colspan="8" class="p-6 text-center text-sm italic text-slate-400">Ainda não há colaboradores registados.</td></tr>';
+            renderAttendanceHistory(period);
+        }
+
+        function renderAttendanceHistory(period = getRhPeriod()) {
+            const target = document.getElementById('rh-attendance-body');
+            const count = document.getElementById('rh-attendance-count');
+            if (!target || !count) return;
+            const rows = attendance.filter(record => getAttendanceDateKey(record).startsWith(period)).slice().sort((a, b) => `${getAttendanceDateKey(b)} ${b.entry || ''}`.localeCompare(`${getAttendanceDateKey(a)} ${a.entry || ''}`));
+            count.innerText = `${rows.length} registo${rows.length === 1 ? '' : 's'}`;
+            target.innerHTML = rows.map(record => {
+                const employee = employees.find(emp => String(emp.id) === String(record.empId));
+                const statusClass = record.status === 'FALTA' ? 'bg-rose-50 text-rose-700' : record.status === 'ATRASO' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700';
+                return `<tr class="hover:bg-slate-50"><td class="p-3 font-bold text-slate-600">${getAttendanceDateKey(record).split('-').reverse().join('/')}</td><td class="p-3 font-bold text-slate-700">${escapeChatHtml(employee?.name || 'Colaborador removido')}</td><td class="p-3 text-slate-500">${record.entry || '-'}</td><td class="p-3 text-slate-500">${record.exit || '-'}</td><td class="p-3"><span class="rounded-full px-2 py-1 text-[10px] font-black ${statusClass}">${record.status || 'PRESENTE'}</span></td><td class="p-3 text-right"><button onclick="deleteAttendanceRecord('${record.id}')" class="text-[10px] font-black text-rose-500 hover:underline">Apagar</button></td></tr>`;
+            }).join('');
+            if (!rows.length) target.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-sm italic text-slate-400">Sem registos neste período.</td></tr>';
+        }
+
+        function addEmployee() {
+            const editId = document.getElementById('edit-emp-id').value;
+            const name = document.getElementById('new-emp-name').value.trim();
+            const role = document.getElementById('new-emp-role').value.trim() || 'Sem função definida';
+            const phone = document.getElementById('new-emp-phone').value.trim();
+            const salary = parseFloat(document.getElementById('new-emp-salary').value);
+            if (!name || !Number.isFinite(salary) || salary < 0) return alert('Indique o nome e um salário válido.');
+            if (editId) {
+                const employee = employees.find(emp => String(emp.id) === editId);
+                if (!employee) return alert('Colaborador não encontrado.');
+                Object.assign(employee, { name, role, phone, salary, updatedAt: new Date().toISOString() });
+                alert('Dados do colaborador atualizados.');
+            } else {
+                employees.push({ id: Date.now(), name, role, phone, salary, active: true, startDate: getLocalDateKey(), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+                alert('Colaborador adicionado.');
+            }
+            saveData();
+            cancelEmployeeEdit();
+            renderRH();
+        }
+
+        async function editEmployee(id) {
+            if (!await checkPermission('Código para editar colaborador:')) return;
+            const employee = employees.find(emp => String(emp.id) === String(id));
+            if (!employee) return;
+            document.getElementById('edit-emp-id').value = employee.id;
+            document.getElementById('new-emp-name').value = employee.name || '';
+            document.getElementById('new-emp-role').value = employee.role || '';
+            document.getElementById('new-emp-phone').value = employee.phone || '';
+            document.getElementById('new-emp-salary').value = employee.salary || '';
+            document.getElementById('btn-add-emp').innerText = 'ATUALIZAR COLABORADOR';
+            document.getElementById('btn-cancel-emp-edit').classList.remove('hidden');
+            document.getElementById('new-emp-name').focus();
+        }
+
+        function cancelEmployeeEdit() {
+            document.getElementById('edit-emp-id').value = '';
+            document.getElementById('new-emp-name').value = '';
+            document.getElementById('new-emp-role').value = '';
+            document.getElementById('new-emp-phone').value = '';
+            document.getElementById('new-emp-salary').value = '';
+            document.getElementById('btn-add-emp').innerText = 'ADICIONAR COLABORADOR';
+            document.getElementById('btn-cancel-emp-edit').classList.add('hidden');
+        }
+
+        async function archiveEmployee(id) {
+            if (!await checkPermission('Código para desativar colaborador:')) return;
+            const employee = employees.find(emp => String(emp.id) === String(id));
+            if (!employee || !confirm(`Desativar ${employee.name}? O histórico de ponto será preservado.`)) return;
+            employee.active = false;
+            employee.updatedAt = new Date().toISOString();
+            saveData();
+            renderRH();
+        }
+
+        async function reactivateEmployee(id) {
+            if (!await checkPermission('Código para reativar colaborador:')) return;
+            const employee = employees.find(emp => String(emp.id) === String(id));
+            if (!employee) return;
+            employee.active = true;
+            employee.updatedAt = new Date().toISOString();
+            saveData();
+            renderRH();
+        }
+
+        async function deleteEmployee(id) {
+            await archiveEmployee(id);
+        }
+
+        function registerPoint(type) {
+            const empId = document.getElementById('rh-employee-select').value;
+            const employee = employees.find(emp => String(emp.id) === String(empId));
+            if (!employee || employee.active === false) return alert('Selecione um colaborador ativo.');
+            const now = new Date();
+            const dateKey = getLocalDateKey(now);
+            const time = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+            let record = attendance.find(item => String(item.empId) === String(empId) && getAttendanceDateKey(item) === dateKey);
+            if (type === 'ENTRADA') {
+                if (record && record.entry && record.entry !== '-') return alert('A entrada já foi registada hoje.');
+                const late = now.getHours() > 7 || (now.getHours() === 7 && now.getMinutes() > 30);
+                const status = late ? 'ATRASO' : 'PRESENTE';
+                const penalty = late ? 200 : 0;
+                if (record) Object.assign(record, { entry: time, exit: null, status, penalty, updatedAt: now.toISOString() });
+                else attendance.push({ id: Date.now(), empId: employee.id, date: dateKey, entry: time, exit: null, status, penalty, createdAt: now.toISOString(), updatedAt: now.toISOString() });
+                setRhPointStatus(`${employee.name}: entrada ${late ? 'com atraso' : 'registada'} às ${time}.`);
+                alert(late ? 'Atraso registado: desconto de 200 Kz.' : 'Entrada registada com sucesso.');
+            } else {
+                if (!record || !record.entry || record.entry === '-') return alert('Registe a entrada antes da saída.');
+                if (record.exit) return alert('A saída já foi registada hoje.');
+                record.exit = time;
+                record.updatedAt = now.toISOString();
+                setRhPointStatus(`${employee.name}: saída registada às ${time}.`);
+                alert('Saída registada.');
+            }
+            saveData();
+            renderRH();
+        }
+
+        async function processAbsences() {
+            if (!await checkPermission('Código para atualizar faltas automáticas:')) return;
+            const added = runAttendanceAutomation();
+            if (!added) renderRH();
+            alert(added ? `${added} falta(s) registada(s) automaticamente.` : 'Não foram encontradas faltas sem registo.');
+        }
+
+        async function registerPayrollPayment(empId) {
+            const employee = employees.find(emp => String(emp.id) === String(empId));
+            const period = getRhPeriod();
+            const stats = employee && getEmployeePayroll(employee, period);
+            if (!employee || !stats || stats.payment) return;
+            if (!await checkPermission('Código para registar pagamento salarial:')) return;
+            if (!confirm(`Registar o pagamento de ${stats.netSalary.toLocaleString()} Kz para ${employee.name}?`)) return;
+            payrollPayments.push({ id: Date.now(), empId: employee.id, period, amount: stats.netSalary, deductions: stats.deductions, paidAt: new Date().toISOString(), paidBy: getCurrentSeller() || 'Gerente' });
+            saveData();
+            renderRH();
+            alert('Pagamento salarial registado.');
+        }
+
+        async function reversePayrollPayment(paymentId) {
+            if (!await checkPermission('Código para reverter pagamento salarial:')) return;
+            const payment = payrollPayments.find(item => String(item.id) === String(paymentId));
+            if (!payment || !confirm('Reverter este pagamento salarial?')) return;
+            payrollPayments = payrollPayments.filter(item => String(item.id) !== String(paymentId));
+            saveData();
+            renderRH();
+        }
+
+        async function deleteAttendanceRecord(recordId) {
+            if (!await checkPermission('Código para apagar registo de ponto:')) return;
+            if (!confirm('Apagar este registo de ponto?')) return;
+            attendance = attendance.filter(record => String(record.id) !== String(recordId));
+            saveData();
+            renderRH();
+        }
     
 
 // --- FUNCOES DOS BOTOES T-SHIRTS ---
