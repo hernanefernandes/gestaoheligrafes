@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-03T18:57:37.540Z",
+  "updatedAt": "2026-08-03T18:58:40.385Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 1,
+    "totalMessages": 2,
     "totalDeleted": 35
   },
   "messages": [
@@ -21,6 +21,15 @@
       "text": "BOA NOITE PESSOAL",
       "date": "02/08/2026",
       "time": "02:26"
+    },
+    {
+      "id": "1785783481901-i447ef",
+      "room": "GERAL",
+      "user": "Hernane",
+      "to": "Hernane",
+      "text": "ERNESTOOOOOOO",
+      "date": "03/08/2026",
+      "time": "20:58"
     }
   ],
   "presence": {
@@ -50,7 +59,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1785630344120
+      "lastSeen": 1785783467151
     },
     "HE": {
       "user": "HE",
@@ -93,19 +102,75 @@
       "to": "TODOS",
       "typing": false,
       "lastSeen": 1785709465506
+    },
+    "HR": {
+      "user": "HR",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785783466302
+    },
+    "He": {
+      "user": "He",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785783468880
+    },
+    "Her": {
+      "user": "Her",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785783469102
+    },
+    "Hern": {
+      "user": "Hern",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785783469343
+    },
+    "Herna": {
+      "user": "Herna",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785783469566
+    },
+    "Hernan": {
+      "user": "Hernan",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785783469680
+    },
+    "Hernane": {
+      "user": "Hernane",
+      "room": "GERAL",
+      "to": "Hernane",
+      "typing": false,
+      "lastSeen": 1785783520384
     }
   },
   "userColors": {
     "Buuh": "#059669",
     "Ernesto": "#4f46e5",
     "H": "#db2777",
+    "He": "#ea580c",
     "HE": "#7c3aed",
+    "Her": "#be123c",
     "HER": "#ea580c",
+    "Hern": "#be123c",
     "HERN": "#7c3aed",
+    "Herna": "#059669",
     "HERNA": "#4f46e5",
+    "Hernan": "#db2777",
     "HERNAN": "#db2777",
     "hernane": "#0891b2",
-    "HERNANE": "#ea580c"
+    "Hernane": "#0891b2",
+    "HERNANE": "#ea580c",
+    "HR": "#059669"
   },
   "deletedIds": [
     "1780956026323-jk6una",
