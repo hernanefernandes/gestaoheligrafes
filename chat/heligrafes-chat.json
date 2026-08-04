@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-04T12:03:05.121Z",
+  "updatedAt": "2026-08-04T11:03:34.172Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -10,7 +10,7 @@
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
     "totalMessages": 6,
-    "totalDeleted": 35
+    "totalDeleted": 36
   },
   "messages": [
     {
@@ -30,15 +30,6 @@
       "text": "BOA NOITE PESSOAL",
       "date": "02/08/2026",
       "time": "02:26"
-    },
-    {
-      "id": "1785769676244-b5iypd",
-      "room": "GERAL",
-      "user": "MATIAS",
-      "to": "TODOS",
-      "text": "OI",
-      "date": "03/08/2026",
-      "time": "17:07"
     },
     {
       "id": "1785782951233-9jsl07",
@@ -66,30 +57,18 @@
       "text": "Muito Bom Dia a Todos",
       "date": "04/08/2026",
       "time": "08:40"
+    },
+    {
+      "id": "1785841243704-pbhkou",
+      "room": "GERAL",
+      "user": "MATIAS",
+      "to": "TODOS",
+      "text": "VALDEMIRO ESTAS NA LINHA",
+      "date": "04/08/2026",
+      "time": "13:00"
     }
   ],
   "presence": {
-    "Ernesto": {
-      "user": "Ernesto",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785844956337
-    },
-    "Buuh": {
-      "user": "Buuh",
-      "room": "GERAL",
-      "to": "hernane",
-      "typing": false,
-      "lastSeen": 1780956513175
-    },
-    "hernane": {
-      "user": "hernane",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1781600686817
-    },
     "H": {
       "user": "H",
       "room": "GERAL",
@@ -139,6 +118,69 @@
       "typing": false,
       "lastSeen": 1785709465506
     },
+    "M": {
+      "user": "M",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322500530
+    },
+    "MA": {
+      "user": "MA",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322500706
+    },
+    "MAT": {
+      "user": "MAT",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322501003
+    },
+    "MATI": {
+      "user": "MATI",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322501586
+    },
+    "MATIA": {
+      "user": "MATIA",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322501714
+    },
+    "MATIAS": {
+      "user": "MATIAS",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785841414171
+    },
+    "Ernesto": {
+      "user": "Ernesto",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785844956337
+    },
+    "Buuh": {
+      "user": "Buuh",
+      "room": "GERAL",
+      "to": "hernane",
+      "typing": false,
+      "lastSeen": 1780956513175
+    },
+    "hernane": {
+      "user": "hernane",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1781600686817
+    },
     "HR": {
       "user": "HR",
       "room": "GERAL",
@@ -187,48 +229,6 @@
       "to": "TODOS",
       "typing": false,
       "lastSeen": 1785844985120
-    },
-    "M": {
-      "user": "M",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322500530
-    },
-    "MA": {
-      "user": "MA",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322500706
-    },
-    "MAT": {
-      "user": "MAT",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322501003
-    },
-    "MATI": {
-      "user": "MATI",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322501586
-    },
-    "MATIA": {
-      "user": "MATIA",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322501714
-    },
-    "MATIAS": {
-      "user": "MATIAS",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785840578410
     }
   },
   "userColors": {
@@ -291,6 +291,7 @@
     "1780955824493-aarohm",
     "1780956245245-qrkaud",
     "1780956440780-fo8xut",
-    "1785630376164-2pd88b"
+    "1785630376164-2pd88b",
+    "1785769676244-b5iypd"
   ]
 }
