@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-04T18:50:10.003Z",
+  "updatedAt": "2026-08-04T18:51:04.364Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 21,
+    "totalMessages": 23,
     "totalDeleted": 37
   },
   "messages": [
@@ -201,6 +201,24 @@
       "text": "JA BAIXEI O TEU RELATORIO.....",
       "date": "04/08/2026",
       "time": "20:49"
+    },
+    {
+      "id": "1785869413701-a8oke5",
+      "room": "GERAL",
+      "user": "Hernane",
+      "to": "Ernesto",
+      "text": "OK, JA BAXEIO O RELATORIO",
+      "date": "04/08/2026",
+      "time": "20:50"
+    },
+    {
+      "id": "1785869454222-54qnaq",
+      "room": "GERAL",
+      "user": "Hernane",
+      "to": "Ernesto",
+      "text": "T-Shirt: T-Shirt - T-Shirt do Cliente\nCli: SUZINÁRIA \nQUAL É A INFORMAÇAO.....",
+      "date": "04/08/2026",
+      "time": "20:50"
     }
   ],
   "presence": {
@@ -320,8 +338,8 @@
       "user": "Hernane",
       "room": "GERAL",
       "to": "Ernesto",
-      "typing": true,
-      "lastSeen": 1785869409399
+      "typing": false,
+      "lastSeen": 1785869463609
     },
     "M": {
       "user": "M",
