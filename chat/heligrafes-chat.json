@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-04T18:53:08.617Z",
+  "updatedAt": "2026-08-04T18:54:08.618Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 23,
+    "totalMessages": 24,
     "totalDeleted": 37
   },
   "messages": [
@@ -219,6 +219,15 @@
       "text": "T-Shirt: T-Shirt - T-Shirt do Cliente\nCli: SUZINÁRIA \nQUAL É A INFORMAÇAO.....",
       "date": "04/08/2026",
       "time": "20:50"
+    },
+    {
+      "id": "1785869623963-919yy5",
+      "room": "GERAL",
+      "user": "Hernane",
+      "to": "MATIAS",
+      "text": "MATIAS ENVIAR O TOPPER PARA IMPRIMIR",
+      "date": "04/08/2026",
+      "time": "20:53"
     }
   ],
   "presence": {
@@ -337,9 +346,9 @@
     "Hernane": {
       "user": "Hernane",
       "room": "GERAL",
-      "to": "TODOS",
+      "to": "MATIAS",
       "typing": false,
-      "lastSeen": 1785869588615
+      "lastSeen": 1785869648614
     },
     "M": {
       "user": "M",
