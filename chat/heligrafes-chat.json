@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-04T07:39:27.893Z",
+  "updatedAt": "2026-08-04T06:39:48.423Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,10 +9,19 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 3,
+    "totalMessages": 5,
     "totalDeleted": 35
   },
   "messages": [
+    {
+      "id": "1785260406104-0ddd76",
+      "room": "GERAL",
+      "user": "HERNANE",
+      "to": "TODOS",
+      "text": "HHHHHHHHHH",
+      "date": "28/07/2026",
+      "time": "19:40"
+    },
     {
       "id": "1785630397794-7n3cpk",
       "room": "GERAL",
@@ -21,6 +30,15 @@
       "text": "BOA NOITE PESSOAL",
       "date": "02/08/2026",
       "time": "02:26"
+    },
+    {
+      "id": "1785769676244-b5iypd",
+      "room": "GERAL",
+      "user": "MATIAS",
+      "to": "TODOS",
+      "text": "OI",
+      "date": "03/08/2026",
+      "time": "17:07"
     },
     {
       "id": "1785782951233-9jsl07",
@@ -42,27 +60,6 @@
     }
   ],
   "presence": {
-    "Ernesto": {
-      "user": "Ernesto",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785829167892
-    },
-    "Buuh": {
-      "user": "Buuh",
-      "room": "GERAL",
-      "to": "hernane",
-      "typing": false,
-      "lastSeen": 1780956513175
-    },
-    "hernane": {
-      "user": "hernane",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1781600686817
-    },
     "H": {
       "user": "H",
       "room": "GERAL",
@@ -111,6 +108,69 @@
       "to": "TODOS",
       "typing": false,
       "lastSeen": 1785709465506
+    },
+    "M": {
+      "user": "M",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322500530
+    },
+    "MA": {
+      "user": "MA",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322500706
+    },
+    "MAT": {
+      "user": "MAT",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322501003
+    },
+    "MATI": {
+      "user": "MATI",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322501586
+    },
+    "MATIA": {
+      "user": "MATIA",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322501714
+    },
+    "MATIAS": {
+      "user": "MATIAS",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785825588422
+    },
+    "Ernesto": {
+      "user": "Ernesto",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785829167892
+    },
+    "Buuh": {
+      "user": "Buuh",
+      "room": "GERAL",
+      "to": "hernane",
+      "typing": false,
+      "lastSeen": 1780956513175
+    },
+    "hernane": {
+      "user": "hernane",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1781600686817
     },
     "HR": {
       "user": "HR",
@@ -179,7 +239,13 @@
     "hernane": "#0891b2",
     "Hernane": "#0891b2",
     "HERNANE": "#ea580c",
-    "HR": "#059669"
+    "HR": "#059669",
+    "M": "#be123c",
+    "MA": "#db2777",
+    "MAT": "#4f46e5",
+    "MATI": "#ca8a04",
+    "MATIA": "#059669",
+    "MATIAS": "#ca8a04"
   },
   "deletedIds": [
     "1780956026323-jk6una",
