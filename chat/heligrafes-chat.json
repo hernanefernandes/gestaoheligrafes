@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-04T16:41:20.128Z",
+  "updatedAt": "2026-08-04T15:41:38.410Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 7,
+    "totalMessages": 8,
     "totalDeleted": 36
   },
   "messages": [
@@ -68,6 +68,15 @@
       "time": "13:00"
     },
     {
+      "id": "1785858055634-2k2pya",
+      "room": "GERAL",
+      "user": "MATIAS",
+      "to": "TODOS",
+      "text": "Boa tarde sim cota, o trabalho esta correr so um pequeno intercambio da moça da capa dura",
+      "date": "04/08/2026",
+      "time": "17:40"
+    },
+    {
       "id": "1785861530342-63y7l7",
       "room": "GERAL",
       "user": "Hernane",
@@ -78,27 +87,6 @@
     }
   ],
   "presence": {
-    "Ernesto": {
-      "user": "Ernesto",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785861456330
-    },
-    "Buuh": {
-      "user": "Buuh",
-      "room": "GERAL",
-      "to": "hernane",
-      "typing": false,
-      "lastSeen": 1780956513175
-    },
-    "hernane": {
-      "user": "hernane",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1781600686817
-    },
     "H": {
       "user": "H",
       "room": "GERAL",
@@ -148,6 +136,69 @@
       "typing": false,
       "lastSeen": 1785709465506
     },
+    "M": {
+      "user": "M",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322500530
+    },
+    "MA": {
+      "user": "MA",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322500706
+    },
+    "MAT": {
+      "user": "MAT",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322501003
+    },
+    "MATI": {
+      "user": "MATI",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322501586
+    },
+    "MATIA": {
+      "user": "MATIA",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785322501714
+    },
+    "MATIAS": {
+      "user": "MATIAS",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785858098409
+    },
+    "Ernesto": {
+      "user": "Ernesto",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1785861456330
+    },
+    "Buuh": {
+      "user": "Buuh",
+      "room": "GERAL",
+      "to": "hernane",
+      "typing": false,
+      "lastSeen": 1780956513175
+    },
+    "hernane": {
+      "user": "hernane",
+      "room": "GERAL",
+      "to": "TODOS",
+      "typing": false,
+      "lastSeen": 1781600686817
+    },
     "HR": {
       "user": "HR",
       "room": "GERAL",
@@ -196,48 +247,6 @@
       "to": "TODOS",
       "typing": false,
       "lastSeen": 1785861680127
-    },
-    "M": {
-      "user": "M",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322500530
-    },
-    "MA": {
-      "user": "MA",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322500706
-    },
-    "MAT": {
-      "user": "MAT",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322501003
-    },
-    "MATI": {
-      "user": "MATI",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322501586
-    },
-    "MATIA": {
-      "user": "MATIA",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785322501714
-    },
-    "MATIAS": {
-      "user": "MATIAS",
-      "room": "GERAL",
-      "to": "TODOS",
-      "typing": true,
-      "lastSeen": 1785858046457
     }
   },
   "userColors": {
