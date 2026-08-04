@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-03T19:37:34.231Z",
+  "updatedAt": "2026-08-04T07:29:40.405Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 2,
+    "totalMessages": 3,
     "totalDeleted": 35
   },
   "messages": [
@@ -21,6 +21,15 @@
       "text": "BOA NOITE PESSOAL",
       "date": "02/08/2026",
       "time": "02:26"
+    },
+    {
+      "id": "1785782951233-9jsl07",
+      "room": "GERAL",
+      "user": "Ernesto",
+      "to": "TODOS",
+      "text": "OLÁ BOA NOITE",
+      "date": "03/08/2026",
+      "time": "19:49"
     },
     {
       "id": "1785783481901-i447ef",
@@ -38,7 +47,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1785782870202
+      "lastSeen": 1785828578337
     },
     "Buuh": {
       "user": "Buuh",
