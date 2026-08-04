@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-04T18:49:08.613Z",
+  "updatedAt": "2026-08-04T18:50:03.881Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 20,
+    "totalMessages": 21,
     "totalDeleted": 37
   },
   "messages": [
@@ -192,6 +192,15 @@
       "text": "A INFORMACAO.... T-Shirt: T-Shirt - T-Shirt do Cliente\nCli: SUZINÁRIA",
       "date": "04/08/2026",
       "time": "20:48"
+    },
+    {
+      "id": "1785869366788-g7ytmz",
+      "room": "GERAL",
+      "user": "Hernane",
+      "to": "TODOS",
+      "text": "JA BAIXEI O TEU RELATORIO.....",
+      "date": "04/08/2026",
+      "time": "20:49"
     }
   ],
   "presence": {
@@ -310,9 +319,9 @@
     "Hernane": {
       "user": "Hernane",
       "room": "GERAL",
-      "to": "TODOS",
-      "typing": false,
-      "lastSeen": 1785869348610
+      "to": "Ernesto",
+      "typing": true,
+      "lastSeen": 1785869403668
     },
     "M": {
       "user": "M",
