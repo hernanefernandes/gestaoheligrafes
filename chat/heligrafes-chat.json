@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-04T18:20:09.088Z",
+  "updatedAt": "2026-08-04T18:20:10.125Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 15,
+    "totalMessages": 16,
     "totalDeleted": 36
   },
   "messages": [
@@ -147,6 +147,15 @@
       "text": "ok, Tras o teu contrato de trabalho para para atualizaçao.",
       "date": "04/08/2026",
       "time": "20:09"
+    },
+    {
+      "id": "1785867610116-hhm2ub",
+      "room": "GERAL",
+      "user": "Hernane",
+      "to": "TODOS",
+      "text": "CONFIRMADO",
+      "date": "04/08/2026",
+      "time": "20:20"
     }
   ],
   "presence": {
@@ -267,7 +276,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1785867608610
+      "lastSeen": 1785867610121
     },
     "M": {
       "user": "M",
