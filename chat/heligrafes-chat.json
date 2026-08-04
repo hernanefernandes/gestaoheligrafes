@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-04T18:46:08.219Z",
+  "updatedAt": "2026-08-04T18:47:05.044Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 18,
+    "totalMessages": 19,
     "totalDeleted": 36
   },
   "messages": [
@@ -167,6 +167,15 @@
       "time": "19:44"
     },
     {
+      "id": "1785869133272-qxve6i",
+      "room": "GERAL",
+      "user": "Hernane",
+      "to": "TODOS",
+      "text": "SIM, BOA NOITE ERNESTO....",
+      "date": "04/08/2026",
+      "time": "20:45"
+    },
+    {
       "id": "1785869133504-19iep0",
       "room": "GERAL",
       "user": "Ernesto",
@@ -297,7 +306,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1785869108610
+      "lastSeen": 1785869218185
     },
     "M": {
       "user": "M",
