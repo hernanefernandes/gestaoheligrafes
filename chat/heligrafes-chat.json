@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-05T07:54:46.296Z",
+  "updatedAt": "2026-08-05T07:54:51.185Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 28,
+    "totalMessages": 29,
     "totalDeleted": 37
   },
   "messages": [
@@ -270,6 +270,15 @@
       "text": "Ernesto bom dia.",
       "date": "05/08/2026",
       "time": "09:54"
+    },
+    {
+      "id": "1785916489053-rccf80",
+      "room": "GERAL",
+      "user": "HERNANE",
+      "to": "MATIAS",
+      "text": "BOM DIA MATIAS.....",
+      "date": "05/08/2026",
+      "time": "09:54"
     }
   ],
   "presence": {
@@ -340,8 +349,8 @@
       "user": "HERNANE",
       "room": "GERAL",
       "to": "MATIAS",
-      "typing": true,
-      "lastSeen": 1785916486169
+      "typing": false,
+      "lastSeen": 1785916489818
     },
     "HR": {
       "user": "HR",
