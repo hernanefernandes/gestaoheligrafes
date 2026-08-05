@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-05T08:19:46.802Z",
+  "updatedAt": "2026-08-05T08:19:57.335Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 34,
+    "totalMessages": 35,
     "totalDeleted": 37
   },
   "messages": [
@@ -317,6 +317,15 @@
       "time": "10:14"
     },
     {
+      "id": "1785917988534-mmhh8r",
+      "room": "GERAL",
+      "user": "MATIAS",
+      "to": "TODOS",
+      "text": "COTA HERNANE ESTAS NA LINHA",
+      "date": "05/08/2026",
+      "time": "10:19"
+    },
+    {
       "id": "1785919075608-3xrizb",
       "room": "GERAL",
       "user": "HERNANE",
@@ -415,8 +424,8 @@
       "user": "MATIAS",
       "room": "GERAL",
       "to": "TODOS",
-      "typing": true,
-      "lastSeen": 1785917986556
+      "typing": false,
+      "lastSeen": 1785917996191
     },
     "Ernesto": {
       "user": "Ernesto",
