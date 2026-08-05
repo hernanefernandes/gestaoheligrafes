@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-05T08:14:04.827Z",
+  "updatedAt": "2026-08-05T08:15:04.835Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 30,
+    "totalMessages": 31,
     "totalDeleted": 37
   },
   "messages": [
@@ -288,6 +288,15 @@
       "text": "BOM DIA MATIAS.....",
       "date": "05/08/2026",
       "time": "09:54"
+    },
+    {
+      "id": "1785917679479-qyknld",
+      "room": "GERAL",
+      "user": "HERNANE",
+      "to": "MATIAS",
+      "text": "ok, Ja resolvemos",
+      "date": "05/08/2026",
+      "time": "10:14"
     }
   ],
   "presence": {
@@ -357,9 +366,9 @@
     "HERNANE": {
       "user": "HERNANE",
       "room": "GERAL",
-      "to": "MATIAS",
+      "to": "Ernesto",
       "typing": false,
-      "lastSeen": 1785917644826
+      "lastSeen": 1785917704833
     },
     "HR": {
       "user": "HR",
