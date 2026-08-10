@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-10T14:56:27.124Z",
+  "updatedAt": "2026-08-10T14:56:33.043Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 850,
@@ -453,7 +453,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1786373784916
+      "lastSeen": 1786373789926
     },
     "M": {
       "user": "M",
