@@ -1,0 +1,707 @@
+/* ================================
+   GRUPO HELIGRAFES - BRANDING STYLES v53 (FIXED)
+   Sistema de Identidade Visual Completo
+   ================================ */
+
+/* --- PALETA DE CORES HELIGRAFES --- */
+:root {
+    --heli-primary: #063B8F;           /* Azul profundo */
+    --heli-primary-dark: #042a68;      /* Azul mais escuro */
+    --heli-secondary: #1FAEE5;         /* Azul claro/Cyan */
+    --heli-accent: #F9BD17;            /* Amarelo vibrante */
+    --heli-accent-alt: #F36D16;        /* Laranja ação */
+    --heli-success: #10B981;           /* Verde confirmação */
+    --heli-warning: #F59E0B;           /* Âmbar alerta */
+    --heli-danger: #EF4444;            /* Vermelho erro */
+    --heli-neutral-50: #F9FAFB;        /* Branco quase puro */
+    --heli-neutral-100: #F3F4F6;       /* Cinza muito claro */
+    --heli-neutral-200: #E5E7EB;       /* Cinza claro */
+    --heli-neutral-400: #9CA3AF;       /* Cinza médio */
+    --heli-neutral-600: #4B5563;       /* Cinza escuro */
+    --heli-neutral-800: #1F2937;       /* Cinza muito escuro */
+    --heli-neutral-900: #111827;       /* Preto quase puro */
+}
+
+/* --- LOGO SVG INLINE HELIGRAFES --- */
+.heli-logo-svg {
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #fff 0%, #eaf6ff 100%);
+    padding: 4px;
+    box-sizing: border-box;
+    box-shadow: 0 4px 12px rgba(6, 59, 143, 0.2);
+    animation: heli-logo-pulse 3s ease-in-out infinite;
+}
+
+/* --- LOGO JPG FALLBACK --- */
+.heli-logo-jpg {
+    display: inline-block;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    border-radius: 6px;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><style>.logo-primary{fill:%23063B8F}.logo-secondary{fill:%231FAEE5}.logo-accent{fill:%23F9BD17}.logo-alt{fill:%23F36D16}</style></defs><circle cx="100" cy="100" r="95" class="logo-primary"/><circle cx="100" cy="100" r="75" class="logo-secondary" opacity="0.6"/><circle cx="100" cy="100" r="55" class="logo-accent" opacity="0.6"/><circle cx="100" cy="100" r="35" class="logo-alt" opacity="0.4"/><text x="100" y="115" font-size="80" font-weight="bold" fill="white" text-anchor="middle" font-family="Arial,sans-serif">H</text></svg>') center/contain no-repeat;
+    box-shadow: 0 4px 12px rgba(6, 59, 143, 0.2);
+    animation: heli-logo-pulse 3s ease-in-out infinite;
+}
+
+/* --- CONTAINER DO LOGO COM BRANDING --- */
+.heli-logo-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, 
+        rgba(6, 59, 143, 0.1) 0%, 
+        rgba(31, 174, 229, 0.05) 100%);
+    border: 1px solid rgba(31, 174, 229, 0.2);
+    transition: all 0.3s ease;
+}
+
+.heli-logo-container:hover {
+    background: linear-gradient(135deg, 
+        rgba(6, 59, 143, 0.15) 0%, 
+        rgba(31, 174, 229, 0.1) 100%);
+    border-color: rgba(31, 174, 229, 0.4);
+    transform: translateY(-1px);
+}
+
+/* --- ÍCONE DO LOGO COM ANIMAÇÃO --- */
+.heli-logo-icon {
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    background: linear-gradient(135deg, #fff 0%, #eaf6ff 100%);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: heli-logo-pulse 3s ease-in-out infinite;
+    box-shadow: 0 4px 12px rgba(6, 59, 143, 0.2);
+    font-weight: 900;
+    font-size: 28px;
+    color: #063B8F;
+}
+
+@keyframes heli-logo-pulse {
+    0%, 100% { 
+        filter: brightness(1) drop-shadow(0 4px 12px rgba(6, 59, 143, 0.2)); 
+    }
+    50% { 
+        filter: brightness(1.08) drop-shadow(0 6px 16px rgba(31, 174, 229, 0.3)); 
+    }
+}
+
+/* --- TEXTO DA MARCA --- */
+.heli-brand-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.heli-brand-text .company-name {
+    font-weight: 900;
+    font-size: 14px;
+    background: linear-gradient(90deg, var(--heli-primary), var(--heli-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+}
+
+.heli-brand-text .tagline {
+    font-size: 11px;
+    color: var(--heli-secondary);
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+/* --- BADGE DE VERSÃO --- */
+.heli-version-badge {
+    display: inline-block;
+    background: var(--heli-accent-alt);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(243, 109, 22, 0.3);
+    white-space: nowrap;
+}
+
+/* --- ANIMAÇÕES DE ENTRADA --- */
+@keyframes module-enter-heli {
+    0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    50% {
+        filter: brightness(1.05);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.module-header {
+    animation: module-enter-heli 0.6s ease-out;
+}
+
+/* --- EFEITOS HOVER EM CARDS COM BRANDING --- */
+.heli-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(6, 59, 143, 0.1);
+}
+
+.heli-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(6, 59, 143, 0.15);
+    border-color: var(--heli-secondary);
+}
+
+/* --- PAINEL COM LOGO INTEGRADO --- */
+.heli-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    background: linear-gradient(135deg, 
+        rgba(6, 59, 143, 0.05) 0%, 
+        rgba(31, 174, 229, 0.05) 100%);
+    border-bottom: 2px solid rgba(31, 174, 229, 0.2);
+    border-radius: 12px 12px 0 0;
+}
+
+.heli-panel-header .logo-box {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #fff 0%, #eaf6ff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 24px;
+    color: #063B8F;
+    box-shadow: 0 4px 12px rgba(6, 59, 143, 0.2);
+}
+
+.heli-panel-header .content {
+    flex: 1;
+}
+
+.heli-panel-header .title {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--heli-primary);
+    margin: 0;
+    line-height: 1.2;
+}
+
+.heli-panel-header .subtitle {
+    font-size: 12px;
+    color: var(--heli-neutral-600);
+    margin: 4px 0 0 0;
+    font-weight: 500;
+}
+
+/* --- INDICADORES DE STATUS COM CORES HELIGRAFES --- */
+.status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.status-online {
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--heli-success);
+    border: 1px solid var(--heli-success);
+}
+
+.status-online::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--heli-success);
+    border-radius: 50%;
+    animation: pulse-success 2s ease-in-out infinite;
+}
+
+.status-away {
+    background: rgba(249, 189, 23, 0.1);
+    color: var(--heli-accent);
+    border: 1px solid var(--heli-accent);
+}
+
+.status-away::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--heli-accent);
+    border-radius: 50%;
+}
+
+.status-busy {
+    background: rgba(243, 109, 22, 0.1);
+    color: var(--heli-accent-alt);
+    border: 1px solid var(--heli-accent-alt);
+}
+
+.status-busy::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--heli-accent-alt);
+    border-radius: 50%;
+}
+
+.status-offline {
+    background: rgba(156, 163, 175, 0.1);
+    color: var(--heli-neutral-400);
+    border: 1px solid var(--heli-neutral-400);
+}
+
+.status-offline::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    background: var(--heli-neutral-400);
+    border-radius: 50%;
+}
+
+/* --- ANIMAÇÕES DE PULSE --- */
+@keyframes pulse-success {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); 
+    }
+    70% { 
+        box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); 
+    }
+}
+
+@keyframes pulse-primary {
+    0%, 100% { 
+        box-shadow: 0 0 0 0 rgba(6, 59, 143, 0.7); 
+    }
+    70% { 
+        box-shadow: 0 0 0 10px rgba(6, 59, 143, 0); 
+    }
+}
+
+/* --- CABEÇALHO ATUALIZADO COM LOGO --- */
+.app-topbar-branding {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex: 1;
+}
+
+.app-topbar-branding .heli-logo-container {
+    flex-shrink: 0;
+}
+
+/* --- SIDEBAR ATUALIZADO --- */
+.app-sidebar-heli {
+    background: linear-gradient(180deg, var(--heli-primary-dark) 0%, var(--heli-primary) 48%, #092f70 100%);
+}
+
+.app-brand-heli {
+    margin: 20px 16px 12px;
+    padding: 16px;
+    border: 2px solid rgba(31, 174, 229, 0.3);
+    background: linear-gradient(135deg,
+        rgba(31, 174, 229, 0.15) 0%,
+        rgba(249, 189, 23, 0.05) 100%);
+    border-radius: 16px;
+    box-shadow: 0 8px 16px rgba(6, 59, 143, 0.2);
+    transition: all 0.3s ease;
+}
+
+.app-brand-heli:hover {
+    background: linear-gradient(135deg,
+        rgba(31, 174, 229, 0.2) 0%,
+        rgba(249, 189, 23, 0.1) 100%);
+    border-color: rgba(31, 174, 229, 0.5);
+}
+
+.app-brand-logo-heli {
+    width: 100%;
+    height: 100px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fff 0%, #eaf6ff 100%);
+    padding: 12px;
+    box-sizing: border-box;
+    box-shadow: 0 12px 24px rgba(6, 59, 143, 0.2);
+    animation: heli-logo-pulse 3s ease-in-out infinite;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 48px;
+    color: #063B8F;
+}
+
+.app-brand-heli > p {
+    margin-top: 8px;
+    font-size: 11px;
+    background: linear-gradient(90deg, var(--heli-secondary), var(--heli-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 1px;
+    text-align: center;
+    font-weight: 800;
+}
+
+/* --- SEPARADORES DO SIDEBAR --- */
+.sidebar-section-divider {
+    margin: 12px 0;
+    padding: 8px 16px;
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgba(155, 200, 255, 0.7);
+    border-top: 1px solid rgba(31, 174, 229, 0.2);
+    border-bottom: 1px solid rgba(31, 174, 229, 0.1);
+}
+
+/* --- ESTADO DE SEGURANÇA --- */
+.system-security-badge {
+    margin: 16px;
+    padding: 12px;
+    border: 2px solid rgba(16, 185, 129, 0.4);
+    background: linear-gradient(135deg,
+        rgba(16, 185, 129, 0.1) 0%,
+        rgba(16, 185, 129, 0.05) 100%);
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+}
+
+.system-security-badge .label {
+    display: block;
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: var(--heli-success);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.system-security-badge .status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 900;
+    color: var(--heli-success);
+}
+
+.system-security-badge .indicator {
+    width: 8px;
+    height: 8px;
+    background: var(--heli-success);
+    border-radius: 50%;
+    animation: pulse-success 2s ease-in-out infinite;
+    box-shadow: 0 0 8px var(--heli-success);
+}
+
+/* --- RODAPÉ COM STATUS --- */
+.app-footer-heli {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    background: linear-gradient(90deg, 
+        var(--heli-neutral-900) 0%,
+        var(--heli-neutral-800) 50%,
+        var(--heli-neutral-900) 100%);
+    color: white;
+    padding: 8px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+    border-top: 2px solid var(--heli-secondary);
+    box-shadow: 0 -2px 12px rgba(6, 59, 143, 0.2);
+}
+
+.app-footer-heli.no-print {
+    display: flex;
+}
+
+@media print {
+    .app-footer-heli {
+        display: none !important;
+    }
+}
+
+.footer-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+}
+
+.footer-brand-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    background: linear-gradient(135deg, #fff 0%, #eaf6ff 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 12px;
+    color: #063B8F;
+}
+
+.footer-sync-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-sync-indicator {
+    width: 8px;
+    height: 8px;
+    background: var(--heli-success);
+    border-radius: 50%;
+    animation: pulse-success 2s ease-in-out infinite;
+}
+
+.footer-sync-text {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-version {
+    font-weight: 900;
+    color: var(--heli-accent);
+    letter-spacing: 1px;
+}
+
+/* --- BOTÕES COM BRANDING --- */
+.heli-btn-primary {
+    background: linear-gradient(135deg, var(--heli-primary), var(--heli-secondary));
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(6, 59, 143, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.heli-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(6, 59, 143, 0.35);
+}
+
+.heli-btn-primary:active {
+    transform: translateY(0);
+}
+
+.heli-btn-secondary {
+    background: var(--heli-accent);
+    color: var(--heli-primary);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(249, 189, 23, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.heli-btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(249, 189, 23, 0.35);
+    background: #F8AF00;
+}
+
+.heli-btn-danger {
+    background: var(--heli-danger);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+
+.heli-btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(239, 68, 68, 0.35);
+}
+
+/* --- CARDS COM GRADIENTES HELIGRAFES --- */
+.heli-card-blue {
+    background: linear-gradient(135deg, 
+        rgba(6, 59, 143, 0.05) 0%, 
+        rgba(31, 174, 229, 0.05) 100%);
+    border-left: 4px solid var(--heli-primary);
+}
+
+.heli-card-yellow {
+    background: linear-gradient(135deg, 
+        rgba(249, 189, 23, 0.05) 0%, 
+        rgba(243, 109, 22, 0.05) 100%);
+    border-left: 4px solid var(--heli-accent);
+}
+
+.heli-card-green {
+    background: linear-gradient(135deg, 
+        rgba(16, 185, 129, 0.05) 0%, 
+        rgba(16, 185, 129, 0.05) 100%);
+    border-left: 4px solid var(--heli-success);
+}
+
+.heli-card-red {
+    background: linear-gradient(135deg, 
+        rgba(239, 68, 68, 0.05) 0%, 
+        rgba(239, 68, 68, 0.05) 100%);
+    border-left: 4px solid var(--heli-danger);
+}
+
+/* --- BADGES INFORMATIVOS --- */
+.heli-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.heli-badge-primary {
+    background: rgba(6, 59, 143, 0.15);
+    color: var(--heli-primary);
+    border: 1px solid var(--heli-primary);
+}
+
+.heli-badge-accent {
+    background: rgba(249, 189, 23, 0.15);
+    color: var(--heli-accent);
+    border: 1px solid var(--heli-accent);
+}
+
+.heli-badge-success {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--heli-success);
+    border: 1px solid var(--heli-success);
+}
+
+/* --- RESPONSIVIDADE --- */
+@media (max-width: 1024px) {
+    .heli-logo-container {
+        flex-direction: column;
+        gap: 8px;
+        padding: 8px;
+    }
+    
+    .heli-logo-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .heli-brand-text {
+        display: none;
+    }
+    
+    .heli-version-badge {
+        font-size: 8px;
+        padding: 2px 6px;
+    }
+}
+
+@media (max-width: 760px) {
+    .app-topbar-branding {
+        gap: 12px;
+    }
+    
+    .heli-brand-text {
+        gap: 1px;
+    }
+    
+    .heli-brand-text .company-name {
+        font-size: 12px;
+    }
+    
+    .heli-brand-text .tagline {
+        font-size: 9px;
+    }
+    
+    .app-footer-heli {
+        flex-direction: column;
+        gap: 8px;
+        padding: 6px 12px;
+        font-size: 10px;
+    }
+}
+
+/* --- ANIMAÇÃO DE CARREGAMENTO --- */
+@keyframes heli-shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
+}
+
+.heli-loading {
+    background: linear-gradient(90deg,
+        #e5e7eb 25%,
+        #f3f4f6 50%,
+        #e5e7eb 75%);
+    background-size: 1000px 100%;
+    animation: heli-shimmer 2s infinite;
+}
+
+/* --- IMPRESSÃO --- */
+@media print {
+    .heli-logo-container,
+    .heli-logo-icon,
+    .heli-version-badge,
+    .app-footer-heli,
+    .no-print {
+        display: none !important;
+    }
+}
