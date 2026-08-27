@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-    <title>Heligrafes-Gestão Premium v52- Sistema Completo</title>
+    <title>Heligrafes-Gestão Premium v52 - Sistema Completo</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -142,8 +142,12 @@
         .topbar-company h4 { color: var(--heli-blue-deep); }
         .topbar-session { border-color: #dbe8f7; background: #fff; box-shadow: 0 8px 22px rgba(20, 59, 110, .08); }
         .clock-control { display: flex; align-items: center; gap: 12px; }
-        .digital-clock-box { min-width: 142px; padding: 10px 14px; border-radius: 16px; background: linear-gradient(135deg, var(--heli-blue-deep), var(--heli-blue)); color: white; box-shadow: 0 10px 20px rgba(6,59,143,.22); }
+        .digital-clock-box { position: relative; min-width: 178px; padding: 10px 14px 12px; border-radius: 16px; background: linear-gradient(135deg, var(--heli-blue-deep), var(--heli-blue)); color: white; box-shadow: 0 10px 20px rgba(6,59,143,.22); overflow: hidden; }
+        .digital-clock-box::after { content: ''; position: absolute; left: 0; bottom: 0; width: var(--clock-progress, 0%); height: 4px; background: linear-gradient(90deg, var(--heli-yellow), var(--heli-orange)); transition: width .25s linear; }
         .digital-clock-box .vibrant-clock { color: #fff; background: none; -webkit-text-fill-color: initial; animation: none; }
+        .clock-date-line { margin-top: 2px; color: #cfe7ff; font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+        .clock-live-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 999px; background: var(--heli-yellow); box-shadow: 0 0 0 0 rgba(249,189,23,.55); animation: livePulse 1.4s infinite; }
+        @keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(249,189,23,.55); } 70% { box-shadow: 0 0 0 8px rgba(249,189,23,0); } 100% { box-shadow: 0 0 0 0 rgba(249,189,23,0); } }
         .clock-toggle { display: flex; overflow: hidden; border: 1px solid #cfe0f3; border-radius: 10px; background: #f6faff; }
         .clock-toggle button { padding: 6px 9px; color: #5e7795; font-size: 10px; font-weight: 800; transition: .2s; }
         .clock-toggle button.active { color: white; background: var(--heli-blue); }
@@ -171,6 +175,21 @@
         .pos-screen .pos-side-panel { border-radius: 18px; border-color: #dce8f5; box-shadow: 0 10px 24px rgba(38, 71, 116, .08); }
         .pos-screen #vr-total-display { color: var(--heli-blue-deep); }
         .pos-screen #vr-payment-method { border-color: #b8d8f4; color: var(--heli-blue); }
+        .pos-payment-strip { display: flex; align-items: end; justify-content: space-between; gap: 16px; margin-bottom: 16px; padding: 14px 16px; border: 1px solid #cfe5f7; border-radius: 15px; background: linear-gradient(100deg, #edf8ff, #fafdff); }
+        .pos-payment-strip label { color: var(--heli-blue-deep); }
+        .pos-payment-strip select { min-width: 220px; box-shadow: 0 6px 16px rgba(31, 112, 175, .08); }
+        .pos-cart-scroll { min-height: 250px; max-height: min(46vh, 465px); overflow-y: auto; scrollbar-gutter: stable; }
+        .pos-cart-scroll::-webkit-scrollbar { width: 10px; }
+        .pos-cart-scroll::-webkit-scrollbar-track { background: #eef5fb; border-radius: 999px; }
+        .pos-cart-scroll::-webkit-scrollbar-thumb { border: 3px solid #eef5fb; border-radius: 999px; background: #6eaedb; }
+        .product-thumb { display: inline-flex; width: 38px; height: 38px; flex: 0 0 38px; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #d7e7f5; border-radius: 10px; background: #edf6ff; color: #4b7da9; font-size: 16px; }
+        .product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+        .product-image-upload { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px; border: 1px dashed #9cc8e9; border-radius: 14px; background: #f5fbff; }
+        .product-image-preview { display: flex; width: 92px; height: 92px; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #c7def1; border-radius: 12px; background: white; color: #6d95b7; font-size: 28px; }
+        .product-image-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .vr-selected-product { display: none; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 12px; border: 1px solid #d6e9f8; border-radius: 12px; background: #f6fbff; }
+        .vr-selected-product.visible { display: flex; }
+        @media (max-width: 640px) { .pos-payment-strip { align-items: stretch; flex-direction: column; } .pos-payment-strip select { width: 100%; min-width: 0; } .pos-cart-scroll { max-height: 360px; } }
         @media (max-width: 1024px) { .app-sidebar { width: 15.5rem; } .app-topbar { padding: 16px 22px; } .workspace-scroll { padding: 22px; } }
         @media (max-width: 760px) { .app-sidebar { width: 4.75rem; } .app-brand { margin: 12px 8px; padding: 6px; } .app-brand-logo { height: 48px; padding: 3px; } .app-sidebar nav { padding: 12px 8px; } .app-sidebar nav > p, .app-sidebar .sidebar-link span:last-child, .app-sidebar > div:last-child > div > div { display: none; } .app-sidebar .sidebar-link { justify-content: center; padding: 12px 4px; } .app-sidebar .sidebar-link span:first-child { margin-right: 0; } .app-sidebar > div:last-child { padding: 8px; } .app-sidebar > div:last-child > div { justify-content: center; padding: 10px; } .app-topbar { padding: 12px 14px; } .topbar-company { display: none; } .topbar-session { padding: 8px 10px; gap: 10px !important; } .topbar-session > div:nth-child(2) { display: none; } .clock-toggle button { padding: 5px 6px; font-size: 9px; } .workspace-scroll { padding: 16px; } .pos-screen .pos-heading { align-items: flex-start; gap: 12px; } .pos-screen .pos-heading > div:last-child { flex-wrap: wrap; justify-content: flex-end; } }
     </style>
@@ -233,8 +252,9 @@
             <div class="flex items-center gap-6">
                 <div class="clock-control" aria-label="Relógio do sistema">
                     <div id="digital-clock-box" class="digital-clock-box">
-                        <div class="text-[9px] font-black uppercase tracking-[0.18em] text-blue-100">Hora local</div>
+                        <div class="text-[9px] font-black uppercase tracking-[0.18em] text-blue-100"><span class="clock-live-dot"></span>Hora local</div>
                         <div class="text-2xl font-black vibrant-clock tracking-tight" id="digital-clock">00:00:00</div>
+                        <div id="clock-date-line" class="clock-date-line">Hoje</div>
                     </div>
                     <div id="analog-clock" class="analog-clock hidden" aria-label="Relógio analógico">
                         <span id="clock-hour-hand" class="clock-hand hour"></span><span id="clock-minute-hand" class="clock-hand minute"></span><span id="clock-second-hand" class="clock-hand second"></span><span class="clock-center"></span>
@@ -431,6 +451,23 @@
                 <div class="grid grid-cols-12 gap-6 h-[calc(100%-80px)]">
                     <div class="col-span-12 lg:col-span-7 flex flex-col gap-4">
                         <div class="pos-product-panel glass-panel p-5 border-l-4 border-blue-600 shadow-lg bg-white">
+                            <div class="pos-payment-strip">
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-wider mb-1">Método de Pagamento *</label>
+                                    <p class="text-xs font-medium text-slate-500">Selecione antes de lançar os itens da fatura.</p>
+                                </div>
+                                <select id="vr-payment-method" onchange="saveDailyPaymentMethod()" class="h-12 bg-white border-2 rounded-xl px-3 font-bold outline-none">
+                                    <option value="" selected disabled>Selecione o método</option>
+                                    <option value="Dinheiro">Dinheiro 💵</option>
+                                    <option value="Express">Express ⚡</option>
+                                    <option value="TPA">TPA 💳</option>
+                                    <option value="Transferência">Transf 🏦</option>
+                                </select>
+                            </div>
+                            <div id="vr-selected-product" class="vr-selected-product" aria-live="polite">
+                                <span id="vr-selected-product-thumb" class="product-thumb">📦</span>
+                                <div><p id="vr-selected-product-name" class="text-xs font-black text-slate-700"></p><p class="text-[10px] font-bold text-blue-600">Imagem do produto selecionado</p></div>
+                            </div>
                             <div class="grid grid-cols-12 gap-4 items-end">
                                 <div class="col-span-12 md:col-span-5">
                                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">📦 Produto</label>
@@ -456,7 +493,7 @@
                                 <h3 class="font-bold text-slate-600 text-sm uppercase tracking-wide">Itens na Fatura</h3>
                                 <span id="vr-count-items" class="text-xs font-bold text-slate-400 bg-white px-2 py-1 rounded border">0 Itens</span>
                             </div>
-                            <div class="overflow-y-auto flex-1 p-0">
+                            <div class="pos-cart-scroll flex-1 p-0" aria-label="Lista rolável de itens da fatura">
                                 <table class="w-full text-left text-sm">
                                     <thead class="bg-slate-50 text-slate-500 uppercase font-bold text-xs sticky top-0 z-10">
                                         <tr><th class="p-4 w-1/2">Produto</th><th class="p-4 text-center">Qtd</th><th class="p-4 text-right">Total</th><th class="p-4 text-center"></th></tr>
@@ -466,23 +503,12 @@
                                 </table>
                             </div>
                             <div class="bg-slate-50 p-6 border-t border-slate-200">
-                                <div class="grid grid-cols-2 gap-4 items-center">
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Método de Pagamento *</label>
-                                        <select id="vr-payment-method" onchange="saveDailyPaymentMethod()" class="w-full h-12 bg-white border-2 border-blue-200 rounded-xl px-3 font-bold text-blue-700 outline-none">
-                                            <option value="Dinheiro">Dinheiro 💵</option>
-                                            <option value="Express">Express ⚡</option>
-                                            <option value="TPA">TPA 💳</option>
-                                            <option value="Transferência">Transf 🏦</option>
-                                        </select>
+                                <div class="flex justify-end items-center gap-4">
+                                    <div class="text-right">
+                                        <span class="text-xs font-bold text-slate-400 uppercase">Total</span>
+                                        <span id="vr-total-display" class="block text-3xl font-black text-slate-800 tracking-tight">0 Kz</span>
                                     </div>
-                                    <div class="flex justify-between items-center gap-4">
-                                        <div class="text-right">
-                                            <span class="text-xs font-bold text-slate-400 uppercase">Total</span>
-                                            <span id="vr-total-display" class="block text-3xl font-black text-slate-800 tracking-tight">0 Kz</span>
-                                        </div>
-                                        <button onclick="finalizeVRSale()" class="h-14 px-8 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow-xl transition-all">FINALIZAR</button>
-                                    </div>
+                                    <button onclick="finalizeVRSale()" class="h-14 px-8 bg-emerald-500 hover:bg-emerald-600 text-white font-black rounded-xl shadow-xl transition-all">FINALIZAR</button>
                                 </div>
                             </div>
                         </div>
@@ -727,7 +753,17 @@
                                     <div class="grid grid-cols-2 gap-3 mt-1"><input type="number" id="new-prod-cost" placeholder="Custo (Kz)" class="big-input" oninput="suggestPrice()"><input type="number" id="new-prod-price" placeholder="Venda (Kz)" class="big-input"></div>
                                     <div class="text-xs text-blue-600 mt-2 font-medium" id="price-suggestion">💡 Digite o custo para ver a sugestão.</div>
                                 </div>
-                                <div class="grid grid-cols-2 gap-3"><input type="number" id="new-prod-qty" placeholder="Stock Inicial" class="big-input"><input type="text" id="new-prod-img" placeholder="URL Imagem" class="big-input"></div>
+                                <input type="number" id="new-prod-qty" placeholder="Stock Inicial" class="big-input">
+                                <div class="product-image-upload">
+                                    <div id="new-prod-image-preview" class="product-image-preview" aria-label="Pré-visualização da imagem do produto">📦</div>
+                                    <div class="min-w-0">
+                                        <label class="block text-[10px] font-black uppercase tracking-wider text-blue-600">Imagem do produto</label>
+                                        <input type="file" id="new-prod-image-file" accept="image/png,image/jpeg,image/webp" onchange="handleProductImageUpload(event)" class="mt-2 block w-full text-xs font-medium text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-2 file:text-xs file:font-black file:text-white hover:file:bg-blue-700">
+                                        <p class="mt-2 text-[10px] font-medium text-slate-500">Pode escolher uma imagem JPG, PNG ou WEBP (até 1,5 MB).</p>
+                                        <input type="text" id="new-prod-img" oninput="previewProductImageFromUrl()" placeholder="ou cole a URL da imagem (opcional)" class="big-input mt-2 py-2 text-xs">
+                                        <input type="hidden" id="new-prod-image-data" value="">
+                                    </div>
+                                </div>
                                 <div class="flex gap-2"><button id="btn-add-prod" onclick="addNewProduct()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">CRIAR PRODUTO</button><button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-4 bg-slate-200 text-slate-600 font-bold rounded-xl">✕</button></div>
                             </div>
                         </div>
@@ -765,6 +801,20 @@
                     <button onclick="renderReports()" class="bg-white border border-slate-300 px-4 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">🔄 Atualizar Dados</button>
                 </div>
                 <div id="report-location-profit-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print"></div>
+                <div class="glass-panel bg-white p-5 mb-6 no-print border-l-4 border-slate-800">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="text-xs font-black text-slate-500 uppercase tracking-widest">Controlo do Administrador</h4>
+                        <span class="text-[10px] font-bold text-slate-400">Fechos, caixa zerado e tentativas bloqueadas</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-50 text-slate-400 uppercase font-black">
+                                <tr><th class="p-2">Data/Hora</th><th class="p-2">Utilizador</th><th class="p-2">Local</th><th class="p-2">Ação</th><th class="p-2 text-right">Valor</th></tr>
+                            </thead>
+                            <tbody id="rep-shift-audit-list" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
                 <div id="report-content-area" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6 h-[calc(100%-80px)] overflow-y-auto pb-4">
                     <div class="glass-panel p-5 flex flex-col gap-3 border-t-4 border-blue-600">
                         <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b pb-2">💰 Fluxo & Saldo de Caixa</h4>
@@ -974,6 +1024,7 @@
         let attendance = JSON.parse(localStorage.getItem('multi_attendance_v52')) || [];
         let payrollPayments = JSON.parse(localStorage.getItem('multi_payroll_payments_v52')) || [];
         let shiftCloses = JSON.parse(localStorage.getItem('multi_shift_history_v52')) || []; // Histórico de Fechos
+        let shiftAuditLogs = JSON.parse(localStorage.getItem('multi_shift_audit_logs_v52')) || [];
         let extraCashAdds = JSON.parse(localStorage.getItem('multi_extra_cash_v52')) || [];
         let debtPayments = JSON.parse(localStorage.getItem('multi_debt_payments_v52')) || [];
         let chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
@@ -997,7 +1048,7 @@
         let chatTypingTimer = null;
         let chatPresenceTimer = null;
         let chatPresenceSyncTimer = null;
-        const CHAT_FAST_SYNC_MS = 850;
+        const CHAT_FAST_SYNC_MS = 100;
         const OPS_FAST_SYNC_MS = 2000;
         const BUSINESS_LOCATIONS = ['LOCAL 1', 'LOCAL 2', 'LOCAL 3'];
         const CHAT_ONLINE_MS = 90000;
@@ -1132,6 +1183,15 @@ window.onload = function() {
                 if (!item.location) item.location = fallbackLocation;
                 if (!item.seller) item.seller = 'Anterior';
             });
+            shiftCloses.forEach(item => {
+                if (!item.location) item.location = fallbackLocation;
+                if (!item.seller) item.seller = item.operator || 'Anterior';
+                if (!item.closedAt && item.id) item.closedAt = new Date(item.id).toISOString();
+            });
+            shiftAuditLogs.forEach(item => {
+                if (!item.location) item.location = fallbackLocation;
+                if (!item.seller) item.seller = 'Anterior';
+            });
         }
 
         function tagOperationalRecord(record) {
@@ -1204,7 +1264,8 @@ window.onload = function() {
                 sales,
                 extraCashAdds,
                 debtPayments,
-                shiftCloses
+                shiftCloses,
+                shiftAuditLogs
             };
         }
 
@@ -1311,6 +1372,7 @@ window.onload = function() {
             extraCashAdds = mergeById(extraCashAdds, payload.extraCashAdds || [], false);
             debtPayments = mergeById(debtPayments, payload.debtPayments || [], false);
             shiftCloses = mergeById(shiftCloses, payload.shiftCloses || [], false);
+            shiftAuditLogs = mergeById(shiftAuditLogs, payload.shiftAuditLogs || [], false);
             migrateOperationalMetadata();
         }
 
@@ -1318,6 +1380,7 @@ window.onload = function() {
             localStorage.setItem('multi_sales_v52', JSON.stringify(sales));
             localStorage.setItem('multi_products_v52', JSON.stringify(products));
             localStorage.setItem('multi_shift_history_v52', JSON.stringify(shiftCloses));
+            localStorage.setItem('multi_shift_audit_logs_v52', JSON.stringify(shiftAuditLogs));
             localStorage.setItem('multi_extra_cash_v52', JSON.stringify(extraCashAdds));
             localStorage.setItem('multi_debt_payments_v52', JSON.stringify(debtPayments));
         }
@@ -1361,18 +1424,13 @@ window.onload = function() {
                     stats[location].salesCount++;
                 }
             });
-            extraCashAdds.forEach(item => {
-                const location = item.location || 'LOCAL 1';
-                if (!stats[location]) stats[location] = { location, revenue: 0, cost: 0, expenses: 0, debtPaid: 0, extra: 0, profit: 0, salesCount: 0 };
-                stats[location].extra += parseFloat(item.amount || 0);
-            });
             debtPayments.forEach(item => {
                 const location = item.location || 'LOCAL 1';
                 if (!stats[location]) stats[location] = { location, revenue: 0, cost: 0, expenses: 0, debtPaid: 0, extra: 0, profit: 0, salesCount: 0 };
                 stats[location].debtPaid += parseFloat(item.amount || 0);
             });
             Object.values(stats).forEach(item => {
-                item.profit = item.revenue + item.extra + item.debtPaid - item.cost - item.expenses;
+                item.profit = item.revenue + item.debtPaid - item.cost - item.expenses;
             });
             return Object.values(stats);
         }
@@ -1390,7 +1448,7 @@ window.onload = function() {
                     </div>
                     <div class="mt-3 text-2xl font-black ${item.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${item.profit.toLocaleString()} Kz</div>
                     <div class="grid grid-cols-2 gap-2 mt-3 text-[11px] text-slate-500">
-                        <div>Entradas: <b class="text-slate-700">${(item.revenue + item.extra + item.debtPaid).toLocaleString()} Kz</b></div>
+                        <div>Entradas: <b class="text-slate-700">${(item.revenue + item.debtPaid).toLocaleString()} Kz</b></div>
                         <div>Custos: <b class="text-slate-700">${item.cost.toLocaleString()} Kz</b></div>
                         <div>Despesas: <b class="text-rose-600">${item.expenses.toLocaleString()} Kz</b></div>
                         <div>Dividas pagas: <b class="text-emerald-600">${item.debtPaid.toLocaleString()} Kz</b></div>
@@ -1419,6 +1477,10 @@ window.onload = function() {
             const now = new Date();
             const digital = document.getElementById('digital-clock');
             if (digital) digital.innerText = now.toLocaleTimeString('pt-PT');
+            const box = document.getElementById('digital-clock-box');
+            if (box) box.style.setProperty('--clock-progress', `${((now.getSeconds() + now.getMilliseconds() / 1000) / 60) * 100}%`);
+            const dateLine = document.getElementById('clock-date-line');
+            if (dateLine) dateLine.innerText = now.toLocaleDateString('pt-PT', { weekday: 'short', day: '2-digit', month: 'short' });
             const hour = document.getElementById('clock-hour-hand');
             const minute = document.getElementById('clock-minute-hand');
             const second = document.getElementById('clock-second-hand');
@@ -2086,6 +2148,10 @@ window.onload = function() {
 
         /* --- SISTEMA CENTRAL (SAVE/LOAD) --- */
         function saveData(newSale = null) {
+            if (newSale && newSale.category !== 'EXPENSE' && !String(newSale.method || '').trim()) {
+                alert('Selecione o método de pagamento antes de concluir esta venda.');
+                return null;
+            }
             let savedSale = null;
             if(newSale) {
                 ensureSalesSession();
@@ -2107,6 +2173,7 @@ window.onload = function() {
             localStorage.setItem('multi_attendance_v52', JSON.stringify(attendance));
             localStorage.setItem('multi_payroll_payments_v52', JSON.stringify(payrollPayments));
             localStorage.setItem('multi_shift_history_v52', JSON.stringify(shiftCloses)); // Salva histórico de fechos
+            localStorage.setItem('multi_shift_audit_logs_v52', JSON.stringify(shiftAuditLogs));
             localStorage.setItem('multi_extra_cash_v52', JSON.stringify(extraCashAdds));
             localStorage.setItem('multi_debt_payments_v52', JSON.stringify(debtPayments));
 
@@ -2148,18 +2215,20 @@ window.onload = function() {
                 .sort((a, b) => getDebtAmount(b) - getDebtAmount(a));
         }
 
-        function getDebtPaymentsTotal(date = new Date().toLocaleDateString()) {
+        function getDebtPaymentsTotal(date = new Date().toLocaleDateString(), afterMs = 0) {
             return debtPayments
-                .filter(item => item.date === date)
+                .filter(item => item.date === date && (!afterMs || new Date(item.id || item.createdAt || 0).getTime() > afterMs))
                 .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
         }
 
         function getTodayRevenue(date = new Date().toLocaleDateString()) {
             let total = 0;
+            const activeStart = getActiveShiftStartMs(date);
             sales.forEach(s => {
+                if (activeStart && getSaleTimestamp(s) <= activeStart) return;
                 if (s.date === date && s.category !== 'EXPENSE') total += getSaleInitialPaid(s);
             });
-            return total + getExtraCashTotal(date) + getDebtPaymentsTotal(date);
+            return total + getDebtPaymentsTotal(date, activeStart);
         }
 
         function renderPendingDebts() {
@@ -2179,7 +2248,7 @@ window.onload = function() {
             const revenueEl = document.getElementById('stock-private-revenue');
             const debtTotalEl = document.getElementById('stock-debt-total');
             const debtList = document.getElementById('stock-debt-list');
-            if (revenueEl) revenueEl.innerText = getTodayRevenue().toLocaleString() + ' Kz';
+            if (revenueEl) revenueEl.innerText = 'Ver no relatório impresso';
             const debts = getPendingDebts();
             const totalDebt = debts.reduce((sum, s) => sum + getDebtAmount(s), 0);
             if (debtTotalEl) debtTotalEl.innerText = totalDebt.toLocaleString() + ' Kz';
@@ -2203,7 +2272,8 @@ window.onload = function() {
             if (amountInput === null) return;
             const amount = parseFloat(amountInput);
             if (!amount || amount <= 0) return alert('Valor inválido.');
-            const method = prompt('Método de pagamento:', sale.method || 'Dinheiro') || sale.method || 'Dinheiro';
+            const method = (prompt('Método de pagamento (Dinheiro, Express, TPA ou Transferência):', '') || '').trim();
+            if (!method) return alert('Indique o método de pagamento antes de registar a dívida paga.');
             const paidAmount = Math.min(amount, debt);
             sale.paid = (parseFloat(sale.paid) || 0) + paidAmount;
             sale.updatedAt = new Date().toISOString();
@@ -2233,26 +2303,80 @@ window.onload = function() {
             return 0;
         }
 
-        function getExtraCashTotal(date = new Date().toLocaleDateString()) {
-            return extraCashAdds
-                .filter(item => item.date === date)
-                .reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+        function getShiftCloseScope(date = new Date().toLocaleDateString()) {
+            return {
+                date,
+                location: getCurrentBusinessLocation(),
+                seller: getCurrentSeller() || 'Sem usuario'
+            };
+        }
+
+        function getLatestShiftClose(date = new Date().toLocaleDateString()) {
+            const scope = getShiftCloseScope(date);
+            return shiftCloses
+                .filter(entry => entry.date === scope.date && entry.location === scope.location && entry.seller === scope.seller && entry.closedAt)
+                .sort((a, b) => new Date(b.closedAt || b.id || 0).getTime() - new Date(a.closedAt || a.id || 0).getTime())[0] || null;
+        }
+
+        function getActiveShiftStartMs(date = new Date().toLocaleDateString()) {
+            const lastClose = getLatestShiftClose(date);
+            return lastClose ? new Date(lastClose.closedAt || lastClose.id || 0).getTime() : 0;
+        }
+
+        function addShiftAuditLog(action, stats = {}, details = {}) {
+            const now = new Date();
+            const entry = {
+                id: Date.now() + Math.random(),
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString().slice(0,5),
+                createdAt: now.toISOString(),
+                location: getCurrentBusinessLocation(),
+                seller: getCurrentSeller() || 'Sem usuario',
+                action,
+                amount: parseFloat(stats.totalVendas || 0) || 0,
+                details
+            };
+            shiftAuditLogs.push(entry);
+            localStorage.setItem('multi_shift_audit_logs_v52', JSON.stringify(shiftAuditLogs));
+            return entry;
+        }
+
+        function sendAdminChatNotice(text) {
+            const now = new Date();
+            chatMessages.push({
+                id: `admin-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                room: 'GERAL',
+                user: 'Sistema',
+                to: 'Administrador',
+                text,
+                date: now.toLocaleDateString(),
+                time: now.toLocaleTimeString().slice(0,5)
+            });
+            saveChatMessages();
+        }
+
+        function getExtraCashTotal(date = new Date().toLocaleDateString(), afterMs = 0) {
+            // Valores antigos são preservados apenas no backup; não entram no caixa nem nos relatórios.
+            return 0;
         }
 
         function getTodayCashBalance(date = new Date().toLocaleDateString()) {
             let entradas = 0;
             let saidas = 0;
+            const activeStart = getActiveShiftStartMs(date);
             sales.forEach(s => {
                 if (s.date !== date) return;
+                if (activeStart && getSaleTimestamp(s) <= activeStart) return;
                 if (s.category === 'EXPENSE') saidas += parseFloat(s.total || 0);
                 else entradas += getSaleInitialPaid(s);
             });
-            return entradas + getExtraCashTotal(date) + getDebtPaymentsTotal(date) - saidas;
+            return entradas + getDebtPaymentsTotal(date, activeStart) - saidas;
         }
 
         function getLastCashSale(date = new Date().toLocaleDateString()) {
+            const activeStart = getActiveShiftStartMs(date);
             return sales
-                .filter(s => s.date === date && s.category !== 'EXPENSE')
+                .filter(s => s.date === date && s.category !== 'EXPENSE' && (!activeStart || getSaleTimestamp(s) > activeStart))
                 .sort((a, b) => getSaleTimestamp(b) - getSaleTimestamp(a))[0] || null;
         }
 
@@ -2265,51 +2389,8 @@ window.onload = function() {
         }
 
         function checkIdleCashIncrease() {
-            const today = new Date().toLocaleDateString();
-            const lastSale = getLastCashSale(today);
-            if (!lastSale) return null;
-
-            const lastSaleAt = getSaleTimestamp(lastSale);
-            const elapsed = Date.now() - lastSaleAt;
-            const completedPeriods = Math.floor(elapsed / EXTRA_CASH_IDLE_MS);
-            if (completedPeriods < 1 || getTodayCashBalance(today) < EXTRA_CASH_MIN_BALANCE) return null;
-
-            let lastEntry = null;
-            for (let period = 1; period <= completedPeriods; period++) {
-                const periodKey = `${today}-${lastSale.id}-${period}`;
-                const alreadyAdded = extraCashAdds.some(item => item.periodKey === periodKey);
-                if (alreadyAdded) continue;
-
-                lastEntry = {
-                    id: Date.now() + period,
-                    periodKey,
-                    date: today,
-                    time: new Date().toLocaleTimeString().slice(0,5),
-                    location: lastSale.location || getCurrentBusinessLocation(),
-                    seller: lastSale.seller || getCurrentSeller() || 'Sistema',
-                    amount: EXTRA_CASH_AMOUNT,
-                    reason: 'Gestão de Stocks',
-                    lastSaleId: lastSale.id,
-                    lastSaleTime: lastSale.time || new Date(lastSaleAt).toLocaleTimeString().slice(0,5),
-                    minutesWithoutSale: Math.floor(elapsed / 60000)
-                };
-                extraCashAdds.push(lastEntry);
-            }
-
-            if (lastEntry) {
-                localStorage.setItem('multi_extra_cash_v52', JSON.stringify(extraCashAdds));
-                renderDashboard();
-                renderLocationProfitReport();
-                scheduleOperationalSync();
-                renderDailySummaries();
-                renderReports();
-                const noticeKey = `extra-cash-alert-${lastEntry.id}`;
-                if (!sessionStorage.getItem(noticeKey)) {
-                    sessionStorage.setItem(noticeKey, '1');
-                    alert(`Atenção: o caixa está a acumular valor sem lançamento há ${formatIdleInterval(elapsed)}.`);
-                }
-            }
-            return lastEntry;
+            // O sistema não cria nem comunica valores automáticos de caixa.
+            return null;
         }
 
         function renderIdleCashStatus() {
@@ -2333,13 +2414,8 @@ window.onload = function() {
             timeEl.innerText = `${lastSale.time || new Date(lastSaleAt).toLocaleTimeString().slice(0,5)} - ${lastSale.desc || 'Venda'}`;
             intervalEl.innerText = formatIdleInterval(elapsed);
 
-            if (elapsed >= EXTRA_CASH_IDLE_MS && getTodayCashBalance(today) >= EXTRA_CASH_MIN_BALANCE) {
-                alertEl.classList.remove('hidden');
-                alertEl.innerText = `Caixa a acumular sem lançamento há ${formatIdleInterval(elapsed)}. Verifique se os produtos foram lançados corretamente.`;
-            } else {
-                alertEl.classList.add('hidden');
-                alertEl.innerText = '';
-            }
+            alertEl.classList.add('hidden');
+            alertEl.innerText = '';
         }
 
         /* --- FECHO DE CAIXA (Lógica Completa) --- */
@@ -2386,18 +2462,14 @@ window.onload = function() {
             return false;
         }
 
-        async function executeShiftClose() {
-            if (!await checkPermission()) return;
-
-            const today = new Date().toLocaleDateString();
-            let stats = {
+        function buildShiftStats(date = new Date().toLocaleDateString()) {
+            const stats = {
                 dinheiro: 0, express: 0, tpa: 0, transf: 0,
                 totalVendas: 0, despesas: 0, qtdVendas: 0, extraCaixa: 0, dividasPagas: 0
             };
-
             sales.forEach(s => {
-                if (s.date === today) {
-                    if (s.category === 'EXPENSE') stats.despesas += s.total;
+                if (s.date === date) {
+                    if (s.category === 'EXPENSE') stats.despesas += parseFloat(s.total || 0);
                     else {
                         const valorPago = getSaleInitialPaid(s);
                         stats.totalVendas += valorPago;
@@ -2410,27 +2482,68 @@ window.onload = function() {
                     }
                 }
             });
-            stats.extraCaixa = getExtraCashTotal(today);
-            stats.dividasPagas = getDebtPaymentsTotal(today);
+            stats.extraCaixa = getExtraCashTotal(date);
+            stats.dividasPagas = getDebtPaymentsTotal(date);
             stats.totalVendas += stats.extraCaixa + stats.dividasPagas;
+            return stats;
+        }
 
-            // Grava no histórico permanente
+        function registerShiftClosePrint(stats, source = 'RELATORIO_DIARIO') {
+            const now = new Date();
+            const scope = getShiftCloseScope(now.toLocaleDateString());
+            const existing = getLatestShiftClose(scope.date);
+            const sourceLabel = source === 'REIMPRESSAO' ? 'tentativa de reimpressão' : 'impressão de fecho';
+
+            if (existing) {
+                const audit = addShiftAuditLog('SEGUNDA_TENTATIVA_IMPRESSAO_FECHO', existing.stats || stats, {
+                    source,
+                    originalPrintedAt: existing.printedAt || existing.closedAt || '',
+                    originalShiftCloseId: existing.id
+                });
+                sendAdminChatNotice(`ALERTA ADMINISTRADOR: ${scope.seller} tentou fazer segunda ${sourceLabel} em ${scope.location}, no dia ${scope.date} às ${audit.time}. Valor do fecho já registado: ${(existing.saldo || 0).toLocaleString()} Kz. A segunda impressão foi bloqueada.`);
+                saveData();
+                alert('Este fecho já foi impresso uma vez. A segunda tentativa foi enviada ao administrador no Chat Interno.');
+                return null;
+            }
+
             const shiftEntry = {
                 id: Date.now(),
-                date: today,
-                stats: stats,
-                saldo: stats.totalVendas
+                date: scope.date,
+                time: now.toLocaleTimeString().slice(0,5),
+                createdAt: now.toISOString(),
+                closedAt: now.toISOString(),
+                printedAt: now.toISOString(),
+                location: scope.location,
+                seller: scope.seller,
+                stats,
+                saldo: stats.totalVendas,
+                source,
+                status: 'CAIXA_ZERADO_APOS_IMPRESSAO'
             };
-            
-            // Evita duplicados do dia
-            shiftCloses = shiftCloses.filter(c => c.date !== today); 
             shiftCloses.push(shiftEntry);
-            saveData(); 
+            addShiftAuditLog('IMPRESSAO_FECHO_CAIXA_ZERADO', stats, {
+                source,
+                shiftCloseId: shiftEntry.id,
+                note: 'Valor mostrado apenas no relatório impresso. Caixa operacional zerado após impressão.'
+            });
+            saveData();
             renderShiftHistory();
+            sendAdminChatNotice(`CONTROLO DE FECHO: ${scope.seller} fez ${sourceLabel} em ${scope.location}, no dia ${scope.date} às ${shiftEntry.time}. Valor enviado ao relatório do administrador: ${stats.totalVendas.toLocaleString()} Kz. Caixa zerado automaticamente após a impressão.`);
+            return shiftEntry;
+        }
+
+        async function executeShiftClose() {
+            if (!await checkPermission()) return;
+
+            const today = new Date().toLocaleDateString();
+            const stats = buildShiftStats(today);
+            let shiftEntry = null;
 
             // Opção 1: Imprimir Talão
             if (confirm("Deseja imprimir o TALÃO DE FECHO na impressora térmica?")) {
-                printShiftClose(stats);
+                shiftEntry = registerShiftClosePrint(stats, 'TALAO_TERMICO');
+                if (shiftEntry) printShiftClose(stats);
+                else return;
             }
 
             // Opção 2: Enviar WhatsApp
@@ -2452,7 +2565,7 @@ window.onload = function() {
                 const saldo = entry.saldo;
                 tbody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
-                        <td class="p-4 font-bold text-slate-700">${entry.date}</td>
+                        <td class="p-4 font-bold text-slate-700">${entry.date}<div class="text-[10px] text-slate-400">${entry.location || '-'} | ${entry.seller || '-'}</div></td>
                         <td class="p-4 text-emerald-600 font-bold">${stats.totalVendas.toLocaleString()} Kz</td>
                         <td class="p-4 text-rose-500 font-bold">${stats.despesas.toLocaleString()} Kz</td>
                         <td class="p-4"><span class="px-3 py-1 rounded-full ${saldo >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'} font-black">${saldo.toLocaleString()} Kz</span></td>
@@ -2463,7 +2576,11 @@ window.onload = function() {
 
         function reprintShift(id) {
             const entry = shiftCloses.find(c => c.id === id);
-            if(entry) printShiftClose(entry.stats);
+            if(!entry) return;
+            addShiftAuditLog('TENTATIVA_REIMPRESSAO_HISTORICO', entry.stats || {}, { shiftCloseId: entry.id });
+            sendAdminChatNotice(`ALERTA ADMINISTRADOR: ${getCurrentSeller() || 'Sem usuario'} tentou reimprimir o fecho do dia ${entry.date}, criado por ${entry.seller || '-'} em ${entry.location || '-'}. Ação registada para controlo.`);
+            saveData();
+            alert('Reimpressão bloqueada. O administrador foi informado no Chat Interno.');
         }
 
         function printShiftClose(stats) {
@@ -2637,10 +2754,8 @@ function renderProductSalesManagement() {
 function initDailyPaymentMethod() {
     const select = document.getElementById('vr-payment-method');
     if (!select) return;
-    const savedMethod = localStorage.getItem(DAILY_PAYMENT_METHOD_KEY) || 'Dinheiro';
-    const availableMethod = Array.from(select.options).some(option => option.value === savedMethod);
-    select.value = availableMethod ? savedMethod : 'Dinheiro';
-    saveDailyPaymentMethod();
+    // Cada venda exige uma confirmação explícita do método de pagamento.
+    select.value = '';
 }
 
 function saveDailyPaymentMethod() {
@@ -2664,9 +2779,38 @@ function updateProductDatalist() {
     products.forEach(p => dl.innerHTML += `<option value="${p.name}">`); 
 }
 
+function getSafeProductImageSrc(image) {
+    const source = String(image || '').trim();
+    return /^(data:image\/(png|jpeg|jpg|webp);base64,|https?:\/\/)/i.test(source) ? source : '';
+}
+
+function productImageMarkup(image, label = 'Produto', className = 'product-thumb') {
+    const source = getSafeProductImageSrc(image);
+    if (!source) return `<span class="${className}" aria-label="Sem imagem do produto">📦</span>`;
+    return `<span class="${className}"><img src="${escapeChatHtml(source)}" alt="${escapeChatHtml(String(label))}"></span>`;
+}
+
+function renderVrSelectedProduct(product) {
+    const container = document.getElementById('vr-selected-product');
+    const thumb = document.getElementById('vr-selected-product-thumb');
+    const name = document.getElementById('vr-selected-product-name');
+    if (!container || !thumb || !name) return;
+    if (!product) {
+        container.classList.remove('visible');
+        thumb.innerHTML = '📦';
+        name.innerText = '';
+        return;
+    }
+    const source = getSafeProductImageSrc(product.img);
+    thumb.innerHTML = source ? `<img src="${escapeChatHtml(source)}" alt="${escapeChatHtml(String(product.name))}">` : '📦';
+    name.innerText = product.name;
+    container.classList.add('visible');
+}
+
 function findProductPrice() { 
     const p = products.find(x => x.name === document.getElementById('vr-product').value); 
-    if(p) document.getElementById('vr-price').value = p.price; 
+    if(p) document.getElementById('vr-price').value = p.price;
+    renderVrSelectedProduct(p); 
 }
 
 // 1. ADICIONADO O AGRUPAMENTO E SOMA DE QUANTIDADES
@@ -2688,9 +2832,10 @@ function addToVRCart() {
             // Se já existe, soma a quantidade ao que lá está
             itemExistente.qty += qty;
             itemExistente.total = itemExistente.qty * itemExistente.price;
+            if (!itemExistente.img && product?.img) itemExistente.img = product.img;
         } else {
             // Se não existe, adiciona como nova linha
-            vrCart.push({ name: name, price: price, qty: qty, total: price * qty });
+            vrCart.push({ name: name, price: price, qty: qty, total: price * qty, img: product?.img || '' });
         }
         
         renderVRCart();
@@ -2698,6 +2843,7 @@ function addToVRCart() {
         document.getElementById('vr-product').value = '';
         document.getElementById('vr-price').value = '';
         document.getElementById('vr-qty').value = '1';
+        renderVrSelectedProduct(null);
         document.getElementById('vr-product').focus();
     } else { 
         alert("Preencha corretamente."); 
@@ -2726,13 +2872,16 @@ function renderVRCart() {
         tbody.innerHTML += `
             <tr class="hover:bg-blue-50 border-b border-slate-100 transition-colors">
                 <td class="p-4 align-middle">
-                    <div class="flex flex-col">
-                        <span class="font-black text-slate-800 text-sm uppercase tracking-wide">
-                            ${item.name}
-                        </span>
-                        <span class="text-[10px] font-bold text-slate-400">
-                            Unitário: ${item.price.toLocaleString()} Kz
-                        </span>
+                    <div class="flex items-center gap-3">
+                        ${productImageMarkup(item.img, item.name)}
+                        <div class="flex flex-col">
+                            <span class="font-black text-slate-800 text-sm uppercase tracking-wide">
+                                ${escapeChatHtml(String(item.name))}
+                            </span>
+                            <span class="text-[10px] font-bold text-slate-400">
+                                Unitário: ${item.price.toLocaleString()} Kz
+                            </span>
+                        </div>
                     </div>
                 </td>
                 <td class="p-4 text-center align-middle">
@@ -2800,9 +2949,11 @@ function finalizeVRSale() {
         method: method 
     }; 
     
-    saveData(newSale); 
+    const savedSale = saveData(newSale);
+    if (!savedSale) return;
     vrCart=[]; 
     renderVRCart(); 
+    document.getElementById('vr-payment-method').value = '';
     alert("Venda Registada!"); 
 }
 
@@ -2836,13 +2987,14 @@ function renderDailySummaries() {
     const salesSummary = document.getElementById('vr-daily-sales-summary');
     const expensesList = document.getElementById('vr-daily-expenses-list');
     const today = new Date().toLocaleDateString();
+    const activeStart = getActiveShiftStartMs(today);
     
     let totalVendasHoje = 0;
     let totalDespesasHoje = 0;
     let previousSaleAt = null;
     
     salesSummary.innerHTML = '';
-    sales.filter(s => s.date === today && s.category !== 'EXPENSE').sort((a,b) => getSaleTimestamp(a) - getSaleTimestamp(b)).forEach(s => {
+    sales.filter(s => s.date === today && s.category !== 'EXPENSE' && (!activeStart || getSaleTimestamp(s) > activeStart)).sort((a,b) => getSaleTimestamp(a) - getSaleTimestamp(b)).forEach(s => {
         totalVendasHoje += getSaleInitialPaid(s);
         const saleAt = getSaleTimestamp(s);
         const intervalText = previousSaleAt ? formatIdleInterval(saleAt - previousSaleAt) : 'Primeiro lançamento';
@@ -2854,21 +3006,21 @@ function renderDailySummaries() {
     });
 
     expensesList.innerHTML = '';
-    sales.filter(s => s.date === today && s.category === 'EXPENSE').forEach((s, idx) => {
+    sales.filter(s => s.date === today && s.category === 'EXPENSE' && (!activeStart || getSaleTimestamp(s) > activeStart)).forEach((s, idx) => {
         totalDespesasHoje += s.total;
         expensesList.innerHTML += `<div class="flex justify-between items-center bg-rose-50 p-2 rounded border border-rose-100 text-xs"><span><b class="text-rose-700">${s.desc}</b>: ${s.total.toLocaleString()} Kz</span><button onclick="editExpense(${s.id})" class="text-blue-600 font-bold hover:underline">Editar</button></div>`;
     });
     
     // Caixa Real: Vendas Totais Hoje - Despesas Hoje
-    const extraHoje = getExtraCashTotal(today);
-    const dividasPagasHoje = getDebtPaymentsTotal(today);
+    const extraHoje = getExtraCashTotal(today, activeStart);
+    const dividasPagasHoje = getDebtPaymentsTotal(today, activeStart);
     const caixaAtual = totalVendasHoje + extraHoje + dividasPagasHoje - totalDespesasHoje;
     
     // Painel inserido no topo da secção de despesas
     const painelCaixaHtml = `
         <div class="bg-slate-800 p-3 rounded-lg mb-2 flex justify-between items-center shadow-md">
             <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Caixa Diário Real</span>
-            <span class="text-lg font-black ${caixaAtual >= 0 ? 'text-emerald-400' : 'text-rose-400'}">${caixaAtual.toLocaleString()} Kz</span>
+            <span class="text-xs font-black text-amber-300 text-right">Valor disponível apenas no relatório impresso</span>
         </div>
         <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 mt-3">Histórico de Saídas</div>
     `;
@@ -2975,6 +3127,7 @@ function sendDailyReport(platform) {
 }
 
 function printDailyReport() {
+    if(!ensureSalesSession()) return;
     const today = new Date().toLocaleDateString();
     const time = new Date().toLocaleTimeString();
     
@@ -3096,6 +3249,9 @@ function printDailyReport() {
                 <span style="font-weight:900; font-size:22px; color:#1e293b;">${totalGeral.toLocaleString()} Kz</span>
              </div>`;
     html += `</div></div>`;
+
+    const shiftEntry = registerShiftClosePrint(buildShiftStats(today), 'RELATORIO_DIARIO');
+    if (!shiftEntry) return;
 
     // Abrir janela de impressão
     const printWindow = window.open('', '_blank');
@@ -3225,11 +3381,120 @@ function printDailyReport() {
         function generatePDF() { window.print(); }
 
         /* --- STOCKS & ACADÉMICO --- */
-        function renderStockList() { const list = document.getElementById('stock-list-body'); list.innerHTML=''; products.forEach(p => { const profit = p.price - (p.cost || 0); const margin = p.cost > 0 ? ((profit/p.price)*100).toFixed(0) : 100; list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3 font-medium text-slate-700">${p.name}</td><td class="p-3 text-slate-500">${(p.cost || 0).toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${p.price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-blue-600 font-bold">${p.stock}</td><td class="p-3 text-right flex justify-end gap-2"><button onclick="editProduct(${p.id})" class="text-blue-500 text-xs font-bold">✏️ EDITAR</button><button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`; }); }
-        function editProduct(id) { const prod = products.find(p => p.id === id); if(!prod) return; document.getElementById('edit-prod-id').value = prod.id; document.getElementById('new-prod-name').value = prod.name; document.getElementById('new-prod-cost').value = prod.cost || 0; document.getElementById('new-prod-price').value = prod.price; document.getElementById('new-prod-qty').value = prod.stock; if(document.getElementById('new-prod-img')) document.getElementById('new-prod-img').value = prod.img || ''; const btn = document.getElementById('btn-add-prod'); btn.innerHTML = "💾 ATUALIZAR PRODUTO"; btn.classList.replace('bg-blue-600', 'bg-emerald-600'); btn.onclick = function() { updateProductExisting(id); }; document.getElementById('btn-cancel-edit').classList.remove('hidden'); document.getElementById('new-prod-name').focus(); }
-        function updateProductExisting(id) { const name = document.getElementById('new-prod-name').value; const price = parseFloat(document.getElementById('new-prod-price').value); const cost = parseFloat(document.getElementById('new-prod-cost').value); const stock = parseInt(document.getElementById('new-prod-qty').value); const img = document.getElementById('new-prod-img').value; const idx = products.findIndex(p => p.id === id); if(idx !== -1 && name && price) { products[idx] = { id: parseInt(id), name, price, cost: cost||0, stock, img, updatedAt: new Date().toISOString() }; saveData(); renderStockList(); updateProductDatalist(); updateStockSelect(); alert("Produto atualizado!"); cancelEdit(); } }
-        function cancelEdit() { document.getElementById('edit-prod-id').value = ''; document.getElementById('new-prod-name').value = ''; document.getElementById('new-prod-cost').value = ''; document.getElementById('new-prod-price').value = ''; document.getElementById('new-prod-qty').value = ''; document.getElementById('new-prod-img').value = ''; const btn = document.getElementById('btn-add-prod'); btn.innerHTML = "CRIAR PRODUTO"; btn.classList.replace('bg-emerald-600', 'bg-blue-600'); btn.onclick = addNewProduct; document.getElementById('btn-cancel-edit').classList.add('hidden'); }
-        function addNewProduct() { const name = document.getElementById('new-prod-name').value; const price = parseFloat(document.getElementById('new-prod-price').value); const cost = parseFloat(document.getElementById('new-prod-cost').value) || 0; const stock = parseInt(document.getElementById('new-prod-qty').value); const img = document.getElementById('new-prod-img').value; if(name && price) { products.push({ id: Date.now(), name, price, cost, stock, img, updatedAt: new Date().toISOString() }); saveData(); renderStockList(); updateRestockSelect(); updateProductDatalist(); updateStockSelect(); alert("Produto Adicionado!"); } }
+        function setProductImagePreview(image) {
+            const preview = document.getElementById('new-prod-image-preview');
+            if (!preview) return;
+            const source = getSafeProductImageSrc(image);
+            preview.innerHTML = source ? `<img src="${escapeChatHtml(source)}" alt="Pré-visualização do produto">` : '📦';
+        }
+
+        function getProductDraftImage() {
+            return document.getElementById('new-prod-image-data')?.value.trim() || document.getElementById('new-prod-img')?.value.trim() || '';
+        }
+
+        function previewProductImageFromUrl() {
+            const url = document.getElementById('new-prod-img')?.value.trim() || '';
+            const data = document.getElementById('new-prod-image-data');
+            if (data) data.value = url;
+            setProductImagePreview(url);
+        }
+
+        function handleProductImageUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+                event.target.value = '';
+                return alert('Escolha uma imagem JPG, PNG ou WEBP.');
+            }
+            if (file.size > 1.5 * 1024 * 1024) {
+                event.target.value = '';
+                return alert('A imagem deve ter no máximo 1,5 MB para poder ser guardada no sistema.');
+            }
+            const reader = new FileReader();
+            reader.onload = () => {
+                const image = String(reader.result || '');
+                const data = document.getElementById('new-prod-image-data');
+                const url = document.getElementById('new-prod-img');
+                if (data) data.value = image;
+                if (url) url.value = '';
+                setProductImagePreview(image);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function renderStockList() {
+            const list = document.getElementById('stock-list-body');
+            if (!list) return;
+            list.innerHTML='';
+            products.forEach(p => {
+                const profit = p.price - (p.cost || 0);
+                const margin = p.cost > 0 ? ((profit/p.price)*100).toFixed(0) : 100;
+                list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name))}</span></div></td><td class="p-3 text-slate-500">${(p.cost || 0).toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${p.price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-blue-600 font-bold">${p.stock}</td><td class="p-3 text-right flex justify-end gap-2"><button onclick="editProduct(${p.id})" class="text-blue-500 text-xs font-bold">✏️ EDITAR</button><button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
+            });
+        }
+
+        function editProduct(id) {
+            const prod = products.find(p => p.id === id);
+            if(!prod) return;
+            document.getElementById('edit-prod-id').value = prod.id;
+            document.getElementById('new-prod-name').value = prod.name;
+            document.getElementById('new-prod-cost').value = prod.cost || 0;
+            document.getElementById('new-prod-price').value = prod.price;
+            document.getElementById('new-prod-qty').value = prod.stock;
+            const source = prod.img || '';
+            document.getElementById('new-prod-img').value = /^data:image\//i.test(source) ? '' : source;
+            document.getElementById('new-prod-image-data').value = source;
+            document.getElementById('new-prod-image-file').value = '';
+            setProductImagePreview(source);
+            const btn = document.getElementById('btn-add-prod');
+            btn.innerHTML = "💾 ATUALIZAR PRODUTO";
+            btn.classList.replace('bg-blue-600', 'bg-emerald-600');
+            btn.onclick = function() { updateProductExisting(id); };
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+            document.getElementById('new-prod-name').focus();
+        }
+
+        function updateProductExisting(id) {
+            const name = document.getElementById('new-prod-name').value.trim();
+            const price = parseFloat(document.getElementById('new-prod-price').value);
+            const cost = parseFloat(document.getElementById('new-prod-cost').value);
+            const stock = parseInt(document.getElementById('new-prod-qty').value);
+            const img = getProductDraftImage();
+            const idx = products.findIndex(p => p.id === id);
+            if(idx !== -1 && name && Number.isFinite(price)) {
+                products[idx] = { id: parseInt(id), name, price, cost: cost||0, stock: Number.isFinite(stock) ? stock : 0, img, updatedAt: new Date().toISOString() };
+                saveData(); renderStockList(); updateProductDatalist(); updateStockSelect(); renderVrSelectedProduct(null); alert("Produto atualizado!"); cancelEdit();
+            }
+        }
+
+        function cancelEdit() {
+            document.getElementById('edit-prod-id').value = '';
+            document.getElementById('new-prod-name').value = '';
+            document.getElementById('new-prod-cost').value = '';
+            document.getElementById('new-prod-price').value = '';
+            document.getElementById('new-prod-qty').value = '';
+            document.getElementById('new-prod-img').value = '';
+            document.getElementById('new-prod-image-data').value = '';
+            document.getElementById('new-prod-image-file').value = '';
+            setProductImagePreview('');
+            const btn = document.getElementById('btn-add-prod');
+            btn.innerHTML = "CRIAR PRODUTO";
+            btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+            btn.onclick = addNewProduct;
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+        }
+
+        function addNewProduct() {
+            const name = document.getElementById('new-prod-name').value.trim();
+            const price = parseFloat(document.getElementById('new-prod-price').value);
+            const cost = parseFloat(document.getElementById('new-prod-cost').value) || 0;
+            const stock = parseInt(document.getElementById('new-prod-qty').value);
+            const img = getProductDraftImage();
+            if(name && Number.isFinite(price)) {
+                products.push({ id: Date.now(), name, price, cost, stock: Number.isFinite(stock) ? stock : 0, img, updatedAt: new Date().toISOString() });
+                saveData(); renderStockList(); updateRestockSelect(); updateProductDatalist(); updateStockSelect(); alert("Produto Adicionado!"); cancelEdit();
+            }
+        }
         function addStock() { const id = document.getElementById('restock-select').value; const qtyToAdd = parseInt(document.getElementById('restock-qty').value); if (!id || !qtyToAdd) return alert("Erro"); const p = products.find(x => x.id == id); if (p) { p.stock += qtyToAdd; touchProduct(p); saveData(); alert("Stock atualizado!"); renderStockList(); updateRestockSelect(); } }
         function deleteProduct(id) { if(confirm("Remover?")) { products = products.filter(p=>p.id!==id); saveData(); renderStockList(); updateRestockSelect(); } }
         function suggestPrice() { const cost = parseFloat(document.getElementById('new-prod-cost').value); if(cost > 0) { const suggested = cost + (cost * 0.4); document.getElementById('price-suggestion').innerHTML = `💡 Sugestão (40%): <b>${suggested.toLocaleString()} Kz</b>`; if(document.getElementById('new-prod-price').value == "") document.getElementById('new-prod-price').value = suggested; } }
@@ -3284,6 +3549,8 @@ function printDailyReport() {
                     pages: document.getElementById('ac-pages').value
                 });
 
+                if (!savedSale) return;
+
                 if (!printInvoiceDouble(savedSale.id)) return alert(`Pedido registado, mas a fatura deve ser impressa pelo código GH-${savedSale.id.toString().slice(-6)}.`);
                 document.getElementById('ac-client').value = '';
                 document.getElementById('ac-theme').value = '';
@@ -3317,6 +3584,8 @@ function printDailyReport() {
                 method: method,
                 deliveryDate: deliveryDate
             });
+
+            if (!savedSale) return;
 
             const printed = printInvoiceDouble(savedSale.id);
             const code = `GH-${savedSale.id.toString().slice(-6)}`;
@@ -3362,11 +3631,11 @@ function printDailyReport() {
         function updateStockSelect() { const sel = document.getElementById('st-product-select'); sel.innerHTML = '<option value="">🔍 Procurar Produto...</option>'; products.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
         function updateStockDisplay() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); if(p) { document.getElementById('st-current-stock').innerText = p.stock; document.getElementById('st-current-price').innerText = p.price.toLocaleString() + ' Kz'; } calcStationeryTotal(); }
         function calcStationeryTotal() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = document.getElementById('st-qty').value; document.getElementById('st-total').value = (p ? p.price * qty : 0).toLocaleString() + ' Kz'; }
-        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(!ensureSalesSession()) return; if(confirm("Confirmar venda?")) { p.stock -= qty; touchProduct(p); const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
+        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(!ensureSalesSession()) return; if(confirm("Confirmar venda?")) { const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); if (!savedSale) return; p.stock -= qty; touchProduct(p); saveData(); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-payment-method').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
         function renderStationeryDailyReport() { const list = document.getElementById('st-sales-list'); if(!list) return; list.innerHTML=''; sales.slice().reverse().forEach(s => { if(s.category === 'PAPELARIA' && s.date === new Date().toLocaleDateString()) list.innerHTML += `<div class="grid grid-cols-12 bg-white p-2 border-b border-slate-100 text-xs text-slate-600 hover:bg-slate-50 items-center"><div class="col-span-2">${new Date(s.id).toLocaleTimeString().slice(0,5)}</div><div class="col-span-5 font-bold">${s.desc}</div><div class="col-span-2 text-center bg-blue-50 rounded">${s.qty||1}</div><div class="col-span-2 text-right font-bold text-emerald-600">${s.total.toLocaleString()}</div><div class="col-span-1 text-center"><button onclick="deleteSale(${s.id})" class="text-red-400 font-bold hover:text-red-600">×</button></div></div>`; }); }
         function renderOrdersHistory() { const tbody = document.getElementById('orders-history-body'); tbody.innerHTML = ''; sales.slice().reverse().forEach(s => { const debt = getDebtAmount(s); let statusHtml = debt <= 0 ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600">Pago</span>' : `<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">Dívida: ${debt.toLocaleString()}</span><button onclick="registerDebtPayment(${s.id})" class="ml-2 text-emerald-600 font-black text-[10px] underline">Pagar</button>`; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-3 text-slate-500">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client || 'Balcão'}<div class="text-[10px] text-slate-400">${s.phone || ''}</div></td><td class="p-3 text-slate-600 text-xs">${s.desc}</td><td class="p-3 text-right font-medium">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center">${statusHtml}</td><td class="p-3 text-center"><button onclick='printInvoiceDouble(${s.id})' class="text-blue-500 font-bold text-xs mr-2">🖨️</button><button onclick='deleteSale(${s.id})' class="text-red-400 font-bold text-xs">🗑️</button></td></tr>`; }); }
-        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, payrollPayments: payrollPayments, shiftCloses: shiftCloses, extraCashAdds: extraCashAdds, debtPayments: debtPayments, chatMessages: chatMessages, chatPresence: chatPresence, deletedChatIds: deletedChatIds }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
-        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; payrollPayments = data.payrollPayments || []; shiftCloses = data.shiftCloses || []; extraCashAdds = data.extraCashAdds || []; debtPayments = data.debtPayments || []; chatMessages = data.chatMessages || []; chatPresence = data.chatPresence || {}; deletedChatIds = data.deletedChatIds || []; migrateEmployeeMetadata(); saveData(); saveChatMessages(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
+        function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, payrollPayments: payrollPayments, shiftCloses: shiftCloses, shiftAuditLogs: shiftAuditLogs, extraCashAdds: extraCashAdds, debtPayments: debtPayments, chatMessages: chatMessages, chatPresence: chatPresence, deletedChatIds: deletedChatIds }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
+        function importData(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const data = JSON.parse(e.target.result); if (data.sales && data.products) { if(confirm("Substituir dados atuais?")) { sales = data.sales; products = data.products; employees = data.employees || []; attendance = data.attendance || []; payrollPayments = data.payrollPayments || []; shiftCloses = data.shiftCloses || []; shiftAuditLogs = data.shiftAuditLogs || []; extraCashAdds = data.extraCashAdds || []; debtPayments = data.debtPayments || []; chatMessages = data.chatMessages || []; chatPresence = data.chatPresence || {}; deletedChatIds = data.deletedChatIds || []; migrateEmployeeMetadata(); saveData(); saveChatMessages(); location.reload(); } } else { alert("Ficheiro inválido."); } } catch(err) { alert("Erro ao ler ficheiro."); } }; reader.readAsText(file); }
         async function deleteSale(id) {
             if (!await checkPermission()) return;
             if (!confirm('Apagar esta transação?')) return;
