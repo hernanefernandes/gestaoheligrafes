@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-27T07:49:01.299Z",
+  "updatedAt": "2026-08-27T07:49:23.818Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 47,
+    "totalMessages": 48,
     "totalDeleted": 37
   },
   "messages": [
@@ -465,6 +465,15 @@
       "text": "C19RZRFV",
       "date": "22/08/2026",
       "time": "09:05"
+    },
+    {
+      "id": "admin-1787816951766-omahp7",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "CONTROLO DE FECHO: ERNESTO fez impressão de fecho em LOCAL 1, no dia 27/08/2026 às 08:49. Valor enviado ao relatório do administrador: 200 Kz. Caixa zerado automaticamente após a impressão.",
+      "date": "27/08/2026",
+      "time": "08:49"
     }
   ],
   "presence": {
@@ -473,7 +482,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1787816941186
+      "lastSeen": 1787816963768
     },
     "Buuh": {
       "user": "Buuh",
@@ -631,6 +640,7 @@
     }
   },
   "userColors": {
+    "Administrador": "#ca8a04",
     "Buuh": "#059669",
     "Ernesto": "#4f46e5",
     "H": "#db2777",
@@ -653,7 +663,8 @@
     "MAT": "#4f46e5",
     "MATI": "#ca8a04",
     "MATIA": "#059669",
-    "MATIAS": "#ca8a04"
+    "MATIAS": "#ca8a04",
+    "Sistema": "#059669"
   },
   "deletedIds": [
     "1780956026323-jk6una",
