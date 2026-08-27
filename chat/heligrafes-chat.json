@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-27T14:47:01.807Z",
+  "updatedAt": "2026-08-27T14:47:19.914Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 46,
+    "totalMessages": 47,
     "totalDeleted": 37
   },
   "messages": [
@@ -444,6 +444,15 @@
       "text": "ALERTA ADMINISTRADOR: Matias de Jesus tentou fazer segunda impressão de fecho em LOCAL 2, no dia 27/08/2026 às 16:05. Valor do fecho já registado: 450 Kz. A segunda impressão foi bloqueada.",
       "date": "27/08/2026",
       "time": "16:05"
+    },
+    {
+      "id": "admin-1787842026514-9yna0g",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "ALERTA ADMINISTRADOR: Matias de Jesus tentou fazer segunda impressão de fecho em LOCAL 2, no dia 27/08/2026 às 16:47. Valor do fecho já registado: 450 Kz. A segunda impressão foi bloqueada.",
+      "date": "27/08/2026",
+      "time": "16:47"
     }
   ],
   "presence": {
@@ -536,7 +545,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1787842017940
+      "lastSeen": 1787842039894
     },
     "Ernesto": {
       "user": "Ernesto",
