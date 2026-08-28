@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-28T15:15:12.973Z",
+  "updatedAt": "2026-08-28T15:16:10.176Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -545,7 +545,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1787930110175
+      "lastSeen": 1787930170175
     },
     "Ernesto": {
       "user": "Ernesto",
