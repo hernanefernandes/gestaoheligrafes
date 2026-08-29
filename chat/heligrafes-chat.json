@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-29T15:48:54.119Z",
+  "updatedAt": "2026-08-29T15:49:04.153Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 50,
+    "totalMessages": 52,
     "totalDeleted": 37
   },
   "messages": [
@@ -480,6 +480,24 @@
       "text": "CONTROLO DE FECHO: Matias de Jesus fez impressão de fecho em LOCAL 2, no dia 29/08/2026 às 13:04. Valor enviado ao relatório do administrador: 3.975 Kz. Caixa zerado automaticamente após a impressão.",
       "date": "29/08/2026",
       "time": "13:04"
+    },
+    {
+      "id": "admin-1788018535970-py6w85",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "ALERTA ADMINISTRADOR: Matias de Jesus tentou fazer segunda impressão de fecho em LOCAL 2, no dia 29/08/2026 às 17:48. Valor do fecho já registado: 3.975 Kz. A segunda impressão foi bloqueada.",
+      "date": "29/08/2026",
+      "time": "17:48"
+    },
+    {
+      "id": "admin-1788018540740-bsozod",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "ALERTA ADMINISTRADOR: Matias de Jesus tentou fazer segunda impressão de fecho em LOCAL 2, no dia 29/08/2026 às 17:49. Valor do fecho já registado: 3.975 Kz. A segunda impressão foi bloqueada.",
+      "date": "29/08/2026",
+      "time": "17:49"
     }
   ],
   "presence": {
@@ -572,7 +590,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1788018534118
+      "lastSeen": 1788018542228
     },
     "Ernesto": {
       "user": "Ernesto",
