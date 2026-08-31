@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-31T18:25:15.757Z",
+  "updatedAt": "2026-08-31T18:41:23.458Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 52,
+    "totalMessages": 53,
     "totalDeleted": 37
   },
   "messages": [
@@ -510,6 +510,15 @@
       "text": "CONTROLO DE FECHO: ERNESTO fez impressão de fecho em LOCAL 1, no dia 29/08/2026 às 18:54. Valor enviado ao relatório do administrador: 8450 Kz. Caixa zerado automaticamente após a impressão.",
       "date": "29/08/2026",
       "time": "18:54"
+    },
+    {
+      "id": "admin-1788200717659-1xjjgt",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "CONTROLO DE FECHO: ERNESTO fez impressão de fecho em LOCAL 1, no dia 31/08/2026 às 19:25. Valor enviado ao relatório do administrador: 8450 Kz. Caixa zerado automaticamente após a impressão.",
+      "date": "31/08/2026",
+      "time": "19:25"
     }
   ],
   "presence": {
@@ -518,7 +527,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1788200713324
+      "lastSeen": 1788201683457
     },
     "Buuh": {
       "user": "Buuh",
