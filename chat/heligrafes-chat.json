@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-31T22:51:45.398Z",
+  "updatedAt": "2026-08-31T22:51:48.774Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 37,
+    "totalMessages": 38,
     "totalDeleted": 37
   },
   "messages": [
@@ -345,6 +345,15 @@
     },
     {
       "id": "admin-1788216699118-s28589",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "ALERTA ADMINISTRADOR: k tentou fazer segunda impressão de fecho em LOCAL 1, no dia 01/09/2026 às 00:51. Valor do fecho já registado: 0 Kz. A segunda impressão foi bloqueada.",
+      "date": "01/09/2026",
+      "time": "00:51"
+    },
+    {
+      "id": "admin-1788216706630-7kqvqr",
       "room": "GERAL",
       "user": "Sistema",
       "to": "Administrador",
