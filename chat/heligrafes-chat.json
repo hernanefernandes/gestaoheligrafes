@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-31T22:51:48.774Z",
+  "updatedAt": "2026-08-31T22:51:51.180Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 38,
+    "totalMessages": 39,
     "totalDeleted": 37
   },
   "messages": [
@@ -360,6 +360,15 @@
       "text": "ALERTA ADMINISTRADOR: k tentou fazer segunda impressão de fecho em LOCAL 1, no dia 01/09/2026 às 00:51. Valor do fecho já registado: 0 Kz. A segunda impressão foi bloqueada.",
       "date": "01/09/2026",
       "time": "00:51"
+    },
+    {
+      "id": "admin-1788216709353-7blahd",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "ALERTA ADMINISTRADOR: k tentou fazer segunda impressão de fecho em LOCAL 1, no dia 01/09/2026 às 00:51. Valor do fecho já registado: 0 Kz. A segunda impressão foi bloqueada.",
+      "date": "01/09/2026",
+      "time": "00:51"
     }
   ],
   "presence": {
@@ -431,7 +440,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1788216705383
+      "lastSeen": 1788216710415
     },
     "HR": {
       "user": "HR",
