@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-31T22:51:30.170Z",
+  "updatedAt": "2026-08-31T22:51:37.096Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 35,
+    "totalMessages": 36,
     "totalDeleted": 37
   },
   "messages": [
@@ -333,6 +333,15 @@
       "text": "TENS COMO ENTRAR EM COMUNICACAO COM O VALDMIRO",
       "date": "05/08/2026",
       "time": "10:37"
+    },
+    {
+      "id": "admin-1788216697008-19u3l1",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "CONTROLO DE FECHO: k fez impressão de fecho em LOCAL 1, no dia 01/09/2026 às 00:51. Valor enviado ao relatório do administrador: 0 Kz. Caixa zerado automaticamente após a impressão.",
+      "date": "01/09/2026",
+      "time": "00:51"
     }
   ],
   "presence": {
@@ -404,7 +413,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1788216690063
+      "lastSeen": 1788216697075
     },
     "HR": {
       "user": "HR",
@@ -499,6 +508,7 @@
     }
   },
   "userColors": {
+    "Administrador": "#ca8a04",
     "Buuh": "#059669",
     "Ernesto": "#4f46e5",
     "H": "#db2777",
@@ -521,7 +531,8 @@
     "MAT": "#4f46e5",
     "MATI": "#ca8a04",
     "MATIA": "#059669",
-    "MATIAS": "#ca8a04"
+    "MATIAS": "#ca8a04",
+    "Sistema": "#059669"
   },
   "deletedIds": [
     "1780956026323-jk6una",
