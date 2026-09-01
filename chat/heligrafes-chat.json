@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-01T21:54:26.085Z",
+  "updatedAt": "2026-09-01T21:55:26.080Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -440,7 +440,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1788299666084
+      "lastSeen": 1788299726078
     },
     "HR": {
       "user": "HR",
