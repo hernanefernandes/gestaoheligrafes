@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-04T18:46:13.882Z",
+  "updatedAt": "2026-09-04T18:49:34.918Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 61,
+    "totalMessages": 62,
     "totalDeleted": 37
   },
   "messages": [
@@ -591,6 +591,15 @@
       "text": "ALERTA ADMINISTRADOR: ERNESTO tentou fazer segunda impressão de fecho em LOCAL 1, no dia 03/09/2026 às 20:53. Valor do fecho já registado: 11 450 Kz. A segunda impressão foi bloqueada.",
       "date": "03/09/2026",
       "time": "20:53"
+    },
+    {
+      "id": "admin-1788547638213-6psuwo",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "CONTROLO DE FECHO: ERNESTO fez impressão de fecho em LOCAL 1, no dia 04/09/2026 às 19:47. Valor enviado ao relatório do administrador: 9000 Kz. Caixa zerado automaticamente após a impressão.",
+      "date": "04/09/2026",
+      "time": "19:47"
     }
   ],
   "presence": {
@@ -599,7 +608,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1788547571901
+      "lastSeen": 1788547772466
     },
     "Buuh": {
       "user": "Buuh",
