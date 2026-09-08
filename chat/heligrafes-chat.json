@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-08T16:50:17.018Z",
+  "updatedAt": "2026-09-08T16:50:49.074Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 68,
+    "totalMessages": 69,
     "totalDeleted": 37
   },
   "messages": [
@@ -642,6 +642,15 @@
       "text": "CONTROLO DE FECHO: Matias de Jesus fez impressão de fecho em LOCAL 2, no dia 05/09/2026 às 17:29. Valor enviado ao relatório do administrador: 1.700 Kz. Caixa zerado automaticamente após a impressão.",
       "date": "05/09/2026",
       "time": "17:29"
+    },
+    {
+      "id": "admin-1788886223845-1epqfb",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "CONTROLO DE FECHO: Matias de Jesus fez impressão de fecho em LOCAL 2, no dia 08/09/2026 às 18:50. Valor enviado ao relatório do administrador: 7.600 Kz. Caixa zerado automaticamente após a impressão.",
+      "date": "08/09/2026",
+      "time": "18:50"
     }
   ],
   "presence": {
@@ -734,7 +743,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1788886216261
+      "lastSeen": 1788886221890
     },
     "Ernesto": {
       "user": "Ernesto",
