@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-24T15:22:59.167Z",
+  "updatedAt": "2026-09-24T16:44:32.568Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 86,
+    "totalMessages": 91,
     "totalDeleted": 37
   },
   "messages": [
@@ -804,6 +804,51 @@
       "text": "CONTROLO DE FECHO: JORGE fez impressão de fecho em LOCAL 2, no dia 22/09/2026 às 18:38. Valor enviado ao relatório do administrador: 5.640 Kz. Caixa zerado automaticamente após a impressão.",
       "date": "22/09/2026",
       "time": "18:38"
+    },
+    {
+      "id": "admin-1790267793297-d24qwi",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "CONTROLO DE FECHO: JORGE MANUEL fez impressão de fecho em LOCAL 2, no dia 24/09/2026 às 18:36. Valor enviado ao relatório do administrador: 9.250 Kz. Caixa zerado automaticamente após a impressão.",
+      "date": "24/09/2026",
+      "time": "18:36"
+    },
+    {
+      "id": "admin-1790267886220-cipa8t",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "ALERTA ADMINISTRADOR: JORGE MANUEL tentou fazer segunda impressão de fecho em LOCAL 2, no dia 24/09/2026 às 18:38. Valor do fecho já registado: 9.250 Kz. A segunda impressão foi bloqueada.",
+      "date": "24/09/2026",
+      "time": "18:38"
+    },
+    {
+      "id": "admin-1790268099190-oq9wpb",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "ALERTA ADMINISTRADOR: JORGE MANUEL tentou fazer segunda impressão de fecho em LOCAL 2, no dia 24/09/2026 às 18:41. Valor do fecho já registado: 9.250 Kz. A segunda impressão foi bloqueada.",
+      "date": "24/09/2026",
+      "time": "18:41"
+    },
+    {
+      "id": "admin-1790268188984-rvtge1",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "ALERTA ADMINISTRADOR: JORGE MANUEL tentou fazer segunda impressão de fecho em LOCAL 2, no dia 24/09/2026 às 18:43. Valor do fecho já registado: 9.250 Kz. A segunda impressão foi bloqueada.",
+      "date": "24/09/2026",
+      "time": "18:43"
+    },
+    {
+      "id": "admin-1790268198057-9vaylf",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "ALERTA ADMINISTRADOR: JORGE MANUEL tentou fazer segunda impressão de fecho em LOCAL 2, no dia 24/09/2026 às 18:43. Valor do fecho já registado: 9.250 Kz. A segunda impressão foi bloqueada.",
+      "date": "24/09/2026",
+      "time": "18:43"
     }
   ],
   "presence": {
@@ -896,7 +941,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1790263379166
+      "lastSeen": 1790268272566
     },
     "Ernesto": {
       "user": "Ernesto",
