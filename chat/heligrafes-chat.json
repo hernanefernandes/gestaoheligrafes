@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-24T16:44:32.568Z",
+  "updatedAt": "2026-09-24T16:44:49.799Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 91,
+    "totalMessages": 92,
     "totalDeleted": 37
   },
   "messages": [
@@ -849,6 +849,15 @@
       "text": "ALERTA ADMINISTRADOR: JORGE MANUEL tentou fazer segunda impressão de fecho em LOCAL 2, no dia 24/09/2026 às 18:43. Valor do fecho já registado: 9.250 Kz. A segunda impressão foi bloqueada.",
       "date": "24/09/2026",
       "time": "18:43"
+    },
+    {
+      "id": "admin-1790268278054-cys67x",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "CONTROLO DE FECHO: JORGE fez impressão de fecho em LOCAL 2, no dia 24/09/2026 às 18:44. Valor enviado ao relatório do administrador: 18.500 Kz. Caixa zerado automaticamente após a impressão.",
+      "date": "24/09/2026",
+      "time": "18:44"
     }
   ],
   "presence": {
@@ -941,7 +950,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1790268272566
+      "lastSeen": 1790268277875
     },
     "Ernesto": {
       "user": "Ernesto",
