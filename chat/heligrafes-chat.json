@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-08T16:06:01.635Z",
+  "updatedAt": "2026-10-09T06:41:26.243Z",
   "settings": {
     "mode": "rapido",
     "syncIntervalMs": 100,
@@ -9,7 +9,7 @@
   "status": {
     "onlineWindowMs": 90000,
     "typingWindowMs": 2500,
-    "totalMessages": 104,
+    "totalMessages": 105,
     "totalDeleted": 37
   },
   "messages": [
@@ -966,6 +966,15 @@
       "text": "CONTROLO DE FECHO: jorge manuel fez impressão de fecho em LOCAL 2, no dia 07/10/2026 às 18:30. Valor enviado ao relatório do administrador: 4.030 Kz. Caixa zerado automaticamente após a impressão.",
       "date": "07/10/2026",
       "time": "18:30"
+    },
+    {
+      "id": "admin-1791477223702-4envlt",
+      "room": "GERAL",
+      "user": "Sistema",
+      "to": "Administrador",
+      "text": "CONTROLO DE FECHO: jeremy fez impressão de fecho em LOCAL 2, no dia 08/10/2026 às 18:33. Valor enviado ao relatório do administrador: 11.650 Kz. Caixa zerado automaticamente após a impressão.",
+      "date": "08/10/2026",
+      "time": "18:33"
     }
   ],
   "presence": {
@@ -1058,7 +1067,7 @@
       "room": "GERAL",
       "to": "TODOS",
       "typing": false,
-      "lastSeen": 1791475558168
+      "lastSeen": 1791528086239
     },
     "Ernesto": {
       "user": "Ernesto",
