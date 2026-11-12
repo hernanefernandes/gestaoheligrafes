@@ -1,0 +1,93 @@
+(() => {
+'use strict';
+const $=id=>document.getElementById(id), db=()=>window.heliSupabase;
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=v=>(Number(v)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz';
+let selectedLocation='', range='today', channel=null;
+const org=()=>window.HELI_ORG?.id, locations=()=>window.HELI_ALLOWED_LOCATIONS||[];
+function admin(){return !!window.HELI_HAS_ROLE?.('owner','admin');}
+function status(t,bad=false){const n=$('heli-admin-status');if(n){n.textContent=t;n.style.color=bad?'#b91c1c':'#166534';}}
+function inject(){
+ if($('heli-admin-style'))return;
+ const s=document.createElement('style');s.id='heli-admin-style';s.textContent=
+'#heli-admin-launch{position:fixed;right:18px;bottom:78px;z-index:10000;background:#f4b51c;color:#12315c;border:0;border-radius:12px;padding:12px 16px;font-weight:900;box-shadow:0 8px 24px #063b8f33;cursor:pointer}'+
+'#heli-admin{position:fixed;inset:0;z-index:10002;background:#f2f6fc;color:#183451;display:none;overflow:auto;font-family:Inter,system-ui,sans-serif}'+
+'#heli-admin.open{display:block}#heli-admin .wrap{max-width:1440px;margin:auto;padding:22px}'+
+'#heli-admin .head{display:flex;justify-content:space-between;align-items:center;gap:16px;background:linear-gradient(120deg,#062c70,#0755ad);color:white;padding:22px;border-radius:18px}'+
+'#heli-admin .head h2{font-size:22px;font-weight:900}#heli-admin .head p{font-size:12px;color:#cde5ff;margin-top:5px}'+
+'#heli-admin button,#heli-admin select,#heli-admin input{font:inherit}#heli-admin button{cursor:pointer}'+
+'#heli-admin .close{background:#fff;color:#12315c;border-radius:9px;padding:9px 13px;font-weight:900}'+
+'#heli-admin .toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}'+
+'#heli-admin select,#heli-admin input{background:white;border:1px solid #cad8e8;border-radius:9px;padding:10px;color:#17324d}'+
+'#heli-admin .tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}'+
+'#heli-admin .tab{background:#e4edf8;color:#315579;border-radius:9px;padding:10px 14px;font-weight:800;font-size:12px}'+
+'#heli-admin .tab.active{background:#0755ad;color:white}'+
+'#heli-admin .cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}'+
+'#heli-admin .card{background:white;border:1px solid #dce7f3;border-radius:15px;padding:16px;box-shadow:0 6px 18px #1c47710c}'+
+'#heli-admin .card small{color:#6b829b;font-size:11px;font-weight:800;text-transform:uppercase}'+
+'#heli-admin .card strong{display:block;color:#063b8f;font-size:24px;font-weight:900;margin-top:8px}'+
+'#heli-admin h3{font-size:15px;font-weight:900;margin:20px 0 10px}'+
+'#heli-admin .tablebox{overflow:auto;background:white;border:1px solid #dce7f3;border-radius:14px}'+
+'#heli-admin table{width:100%;border-collapse:collapse;min-width:620px;font-size:12px}'+
+'#heli-admin th,#heli-admin td{padding:12px;text-align:left;border-bottom:1px solid #edf2f8}'+
+'#heli-admin th{color:#607993;background:#f6f9fd;font-size:10px;text-transform:uppercase}'+
+'#heli-admin .low{color:#b91c1c;font-weight:900}#heli-admin .good{color:#047857;font-weight:800}'+
+'#heli-admin .formgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;background:white;border:1px solid #dce7f3;border-radius:14px;padding:14px}'+
+'#heli-admin .formgrid button{background:#0755ad;color:white;border-radius:9px;padding:10px;font-weight:900}'+
+'#heli-admin .muted{color:#6b829b;font-size:12px}#heli-admin .hidden{display:none!important}'+
+'@media(max-width:800px){#heli-admin .cards{grid-template-columns:repeat(2,minmax(0,1fr))}#heli-admin .formgrid{grid-template-columns:1fr 1fr}#heli-admin .wrap{padding:12px}#heli-admin .head h2{font-size:18px}}'+
+'@media(max-width:460px){#heli-admin .cards{grid-template-columns:1fr 1fr}#heli-admin .formgrid{grid-template-columns:1fr}#heli-admin-launch{right:10px;bottom:70px}}';
+ document.head.append(s);
+ const root=document.createElement('section');root.id='heli-admin';root.innerHTML=
+'<div class="wrap"><header class="head"><div><h2>Painel de Administração</h2><p>GRUPO HELIGRAFES · controlo de vendas, stock e equipa</p></div><button class="close" id="heli-admin-close">Fechar ✕</button></header>'+
+'<div class="toolbar"><select id="heli-admin-location"><option value="">Todos os locais autorizados</option></select><select id="heli-admin-range"><option value="today">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select><button class="tab active" id="heli-admin-refresh">Actualizar dados ↻</button></div>'+
+'<div class="cards"><div class="card"><small>Vendas recebidas</small><strong id="ha-sales">—</strong></div><div class="card"><small>Número de vendas</small><strong id="ha-count">—</strong></div><div class="card"><small>Produtos cadastrados</small><strong id="ha-products">—</strong></div><div class="card"><small>Produtos com stock baixo</small><strong id="ha-low">—</strong></div></div>'+
+'<nav class="tabs"><button class="tab active" data-tab="overview">Resumo</button><button class="tab" data-tab="stock">Stock e reposição</button><button class="tab" data-tab="products">Produtos</button><button class="tab" data-tab="team">Funcionários</button><button class="tab" data-tab="sales">Vendas</button></nav>'+
+'<section id="ha-overview"><h3>Alertas de stock</h3><div id="ha-alerts" class="tablebox"></div><h3>Últimas vendas</h3><div id="ha-recent" class="tablebox"></div></section>'+
+'<section id="ha-stock" class="hidden"><h3>Repor stock</h3><p class="muted">A reposição actualiza o saldo do local e cria um movimento de stock.</p><div class="formgrid"><select id="ha-restock-product"></select><select id="ha-restock-location"></select><input id="ha-restock-qty" type="number" min="0.01" step="0.01" placeholder="Quantidade a adicionar"><input id="ha-restock-cost" type="number" min="0" step="0.01" placeholder="Custo unitário (Kz)"><input id="ha-restock-note" placeholder="Nota / fornecedor"><button id="ha-restock-submit">Registar reposição</button></div><h3>Saldo por local</h3><div id="ha-stock-table" class="tablebox"></div><h3>Movimentos recentes</h3><div id="ha-movements" class="tablebox"></div></section>'+
+'<section id="ha-products" class="hidden"><h3>Cadastrar produto</h3><div class="formgrid"><input id="ha-new-sku" placeholder="Código / SKU"><input id="ha-new-name" placeholder="Nome do produto"><input id="ha-new-price" type="number" min="0" placeholder="Preço de venda (Kz)"><input id="ha-new-cost" type="number" min="0" placeholder="Custo (Kz)"><input id="ha-new-min" type="number" min="0" placeholder="Stock mínimo"><button id="ha-product-submit">Guardar produto</button></div><h3>Catálogo</h3><div id="ha-products-table" class="tablebox"></div></section>'+
+'<section id="ha-team" class="hidden"><h3>Registar funcionário</h3><div class="formgrid"><input id="ha-emp-name" placeholder="Nome completo"><input id="ha-emp-role" placeholder="Função / cargo"><input id="ha-emp-phone" placeholder="Telefone"><select id="ha-emp-location"></select><button id="ha-emp-submit">Guardar funcionário</button></div><p class="muted" style="margin-top:9px">Este formulário regista o funcionário no cadastro de RH. A conta de acesso exige convite seguro pelo serviço de autenticação; não será criada com palavra-passe exposta no navegador.</p><h3>Equipa registada</h3><div id="ha-team-table" class="tablebox"></div></section>'+
+'<section id="ha-sales" class="hidden"><h3>Vendas no período</h3><div id="ha-sales-table" class="tablebox"></div></section><p id="heli-admin-status" class="muted" role="status" style="margin:14px 2px">A preparar painel...</p></div>';
+ document.body.append(root);
+ const launch=document.createElement('button');launch.id='heli-admin-launch';launch.textContent='Painel Admin';document.body.append(launch);
+ launch.onclick=()=>open();$('heli-admin-close').onclick=()=>root.classList.remove('open');
+ $('heli-admin-refresh').onclick=()=>loadAll();
+ $('heli-admin-location').onchange=e=>{selectedLocation=e.target.value;loadAll();};
+ $('heli-admin-range').onchange=e=>{range=e.target.value;loadAll();};
+ root.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+ $('ha-restock-submit').onclick=restock;$('ha-product-submit').onclick=addProduct;$('ha-emp-submit').onclick=addEmployee;
+}
+function tab(name){['overview','stock','products','team','sales'].forEach(x=>$('ha-'+x).classList.toggle('hidden',x!==name));document.querySelectorAll('#heli-admin [data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));}
+function table(headers,rows,empty='Sem registos.'){return '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+(rows.length?rows.join(''):'<tr><td colspan="'+headers.length+'" class="muted">'+empty+'</td></tr>')+'</tbody></table>';}
+function since(){const d=new Date();d.setHours(0,0,0,0);if(range!=='today')d.setDate(d.getDate()-Number(range)+1);return d.toISOString();}
+async function getRows(name,select,extra={}){let q=db().from(name).select(select).eq('organization_id',org());if(extra.location)q=q.eq('location_id',extra.location);if(extra.order)q=q.order(extra.order,{ascending:false});if(extra.limit)q=q.limit(extra.limit);if(extra.since)q=q.gte(extra.since[0],extra.since[1]);const r=await q;if(r.error)throw r.error;return r.data||[];}
+function populateLocations(){const opts=locations().map(l=>'<option value="'+esc(l.id)+'">'+esc(l.name)+'</option>').join('');['ha-restock-location','ha-emp-location'].forEach(id=>$(id).innerHTML=opts||'<option value="">Sem locais permitidos</option>');$('heli-admin-location').innerHTML='<option value="">Todos os locais autorizados</option>'+opts;}
+async function open(){if(!admin())return alert('Acesso reservado a proprietário ou administrador.');if(window.HELI_OFFLINE_MODE)return alert('Ligue-se à internet para abrir o painel administrativo.');inject();populateLocations();$('heli-admin').classList.add('open');$('heli-admin-location').value=selectedLocation;await loadAll();}
+async function loadAll(){
+ try{
+  status('A carregar dados...');
+  const filter={location:selectedLocation||undefined};
+  const results=await Promise.all([getRows('pos_sales_events','id,location_id,total,paid,seller_name,seller_email,occurred_at,sale_payload',{...filter,order:'occurred_at',limit:500,since:['occurred_at',since()]}),getRows('products','id,sku,name,unit,cost_price,sale_price,track_stock,min_stock,is_active',{}),getRows('stock_balances','id,location_id,product_id,quantity',filter),getRows('employees','id,full_name,role_title,phone,is_active,created_at',{})]);
+  const sales=results[0].filter(s=>!selectedLocation||s.location_id===selectedLocation),products=results[1],balances=results[2],employees=results[3],locs=locations(),pmap=new Map(products.map(p=>[p.id,p]));
+  $('ha-sales').textContent=money(sales.reduce((a,x)=>a+Number(x.paid||0),0));$('ha-count').textContent=String(sales.length);$('ha-products').textContent=String(products.length);
+  const low=products.filter(p=>p.track_stock!==false&&balances.filter(b=>b.product_id===p.id).reduce((a,b)=>a+Number(b.quantity||0),0)<=Number(p.min_stock||0));$('ha-low').textContent=String(low.length);
+  $('ha-alerts').innerHTML=table(['Produto','Stock disponível','Mínimo','Estado'],low.map(p=>{const n=balances.filter(b=>b.product_id===p.id).reduce((a,b)=>a+Number(b.quantity||0),0);return '<tr><td>'+esc(p.name)+'</td><td class="low">'+n+'</td><td>'+Number(p.min_stock||0)+'</td><td class="low">REPOR</td></tr>'; }));
+  const recent=sales.slice(0,12).map(x=>'<tr><td>'+new Date(x.occurred_at).toLocaleString('pt-PT')+'</td><td>'+esc(x.seller_email||x.seller_name||'—')+'</td><td>'+esc(locs.find(l=>l.id===x.location_id)?.name||'—')+'</td><td>'+money(x.paid||0)+'</td></tr>');
+  $('ha-recent').innerHTML=table(['Data','Funcionário','Local','Recebido'],recent);
+  $('ha-sales-table').innerHTML=table(['Data','Funcionário','Local','Total','Recebido'],sales.map(x=>'<tr><td>'+new Date(x.occurred_at).toLocaleString('pt-PT')+'</td><td>'+esc(x.seller_email||x.seller_name)+'</td><td>'+esc(locs.find(l=>l.id===x.location_id)?.name||'—')+'</td><td>'+money(x.total)+'</td><td>'+money(x.paid)+'</td></tr>'));
+  $('ha-restock-product').innerHTML=products.filter(p=>p.is_active).map(p=>'<option value="'+p.id+'">'+esc(p.name)+'</option>').join('')||'<option value="">Sem produtos</option>';
+  $('ha-products-table').innerHTML=table(['SKU','Produto','Preço','Custo','Stock mínimo','Estado'],products.map(p=>'<tr><td>'+esc(p.sku||'—')+'</td><td>'+esc(p.name)+'</td><td>'+money(p.sale_price)+'</td><td>'+money(p.cost_price)+'</td><td>'+Number(p.min_stock||0)+'</td><td>'+(p.is_active?'Activo':'Inactivo')+'</td></tr>'));
+  $('ha-stock-table').innerHTML=table(['Produto','Local','Quantidade'],balances.map(b=>'<tr><td>'+esc(pmap.get(b.product_id)?.name||'Produto')+'</td><td>'+esc(locs.find(l=>l.id===b.location_id)?.name||'—')+'</td><td><b>'+Number(b.quantity||0)+'</b></td></tr>'));
+  const movements=await getRows('stock_movements','id,location_id,product_id,movement_type,quantity,unit_cost,notes,created_at',{...filter,order:'created_at',limit:30});
+  $('ha-movements').innerHTML=table(['Data','Produto','Local','Tipo','Quantidade','Custo unitário'],movements.map(m=>'<tr><td>'+new Date(m.created_at).toLocaleString('pt-PT')+'</td><td>'+esc(pmap.get(m.product_id)?.name||'—')+'</td><td>'+esc(locs.find(l=>l.id===m.location_id)?.name||'—')+'</td><td>'+esc(m.movement_type)+'</td><td>'+Number(m.quantity)+'</td><td>'+money(m.unit_cost)+'</td></tr>'));
+  $('ha-team-table').innerHTML=table(['Funcionário','Função','Telefone','Estado'],employees.map(e=>'<tr><td>'+esc(e.full_name)+'</td><td>'+esc(e.role_title||'—')+'</td><td>'+esc(e.phone||'—')+'</td><td>'+(e.is_active?'Activo':'Inactivo')+'</td></tr>'));
+  status('Dados actualizados. Vendas: '+sales.length+' · produtos: '+products.length+' · alertas: '+low.length);
+ }catch(e){console.error('[Heligrafes Admin]',e);status('Erro ao carregar: '+e.message,true);}
+}
+async function restock(){try{const product=$('ha-restock-product').value,location=$('ha-restock-location').value,qty=Number($('ha-restock-qty').value),cost=Number($('ha-restock-cost').value||0),notes=$('ha-restock-note').value;if(!product||!location||!(qty>0))return status('Escolha produto, local e quantidade superior a zero.',true);if(!confirm('Confirmar reposição de '+qty+' unidade(s) neste local?'))return;const r=await db().rpc('heli_admin_restock',{p_product_id:product,p_location_id:location,p_quantity:qty,p_unit_cost:cost,p_notes:notes});if(r.error)throw r.error;$('ha-restock-qty').value='';$('ha-restock-note').value='';status('Reposição registada. Novo saldo: '+r.data.new_quantity);await loadAll();}catch(e){status('Não foi possível repor stock: '+e.message,true);}}
+async function addProduct(){try{const name=$('ha-new-name').value.trim(),sku=$('ha-new-sku').value.trim(),sale=Number($('ha-new-price').value),cost=Number($('ha-new-cost').value||0),min=Number($('ha-new-min').value||0);if(!name||sale<0||cost<0||min<0)return status('Preencha nome e valores válidos.',true);const r=await db().from('products').insert({organization_id:org(),name,sku:sku||null,sale_price:sale,cost_price:cost,min_stock:min,track_stock:true,is_active:true});if(r.error)throw r.error;['ha-new-name','ha-new-sku','ha-new-price','ha-new-cost','ha-new-min'].forEach(id=>$(id).value='');status('Produto cadastrado.');await loadAll();}catch(e){status('Não foi possível cadastrar produto: '+e.message,true);}}
+async function addEmployee(){try{const name=$('ha-emp-name').value.trim(),role=$('ha-emp-role').value.trim(),phone=$('ha-emp-phone').value.trim(),location=$('ha-emp-location').value;if(!name)return status('Indique o nome do funcionário.',true);const r=await db().from('employees').insert({organization_id:org(),full_name:name,role_title:role||null,phone:phone||null,is_active:true}).select('id').single();if(r.error)throw r.error;if(location){const a=await db().from('employee_locations').insert({organization_id:org(),employee_id:r.data.id,location_id:location});if(a.error)throw a.error;}['ha-emp-name','ha-emp-role','ha-emp-phone'].forEach(id=>$(id).value='');status('Funcionário registado no cadastro de RH.');await loadAll();}catch(e){status('Não foi possível registar funcionário: '+e.message,true);}}
+function start(){if(!admin()||!db()||window.HELI_OFFLINE_MODE)return;inject();if(!channel){channel=db().channel('heli-admin-dashboard-'+org()).on('postgres_changes',{event:'*',schema:'public',table:'pos_sales_events',filter:'organization_id=eq.'+org()},()=>{if($('heli-admin')?.classList.contains('open'))loadAll();}).subscribe();}}
+const wait=setInterval(()=>{if(window.HELI_USER&&window.HELI_ORG){clearInterval(wait);start();}},250);
+window.HeligrafesAdmin={open,refresh:loadAll};
+})();
