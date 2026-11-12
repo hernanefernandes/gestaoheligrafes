@@ -35,7 +35,8 @@ async function loadIdentity(user){
   try{localStorage.setItem('heli_identity_cache_v1',JSON.stringify({user_id:user.id,profile:p.data,assignments:a.data,roles:r.data||[],organization:o.data,locations:l.data||[],cached_at:new Date().toISOString()}));}catch(_){}
  }catch(err){
   let cached=null;try{cached=JSON.parse(localStorage.getItem('heli_identity_cache_v1')||'null');}catch(_){}
-  if(!cached||cached.user_id!==user.id)throw err;
+  const networkFailure=!navigator.onLine||err instanceof TypeError||/failed to fetch|network|offline|load failed/i.test(String(err?.message||''));
+  if(!networkFailure||!cached||cached.user_id!==user.id)throw err;
   identity={user:user,profile:cached.profile,assignments:cached.assignments||[],roles:cached.roles||[],organization:cached.organization,locations:cached.locations||[]};
   window.HELI_OFFLINE_MODE=true;
  }
