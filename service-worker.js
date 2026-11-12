@@ -14,7 +14,7 @@ self.addEventListener('fetch',event=>{
  event.respondWith(caches.match(req).then(hit=>{
   if(hit)return hit;
   return fetch(req).then(res=>{
-   if(res&&res.ok){const copy=res.clone();caches.open(CACHE).then(c=>c.put(req,copy)).catch(()=>{});}
+   if(res&&(res.ok||res.type==='opaque')){const copy=res.clone();caches.open(CACHE).then(c=>c.put(req,copy)).catch(()=>{});}
    return res;
   }).catch(()=>{
    if(req.mode==='navigate')return caches.match('./index.html');
