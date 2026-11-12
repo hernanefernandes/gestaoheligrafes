@@ -2171,6 +2171,9 @@ window.onload = function() {
                     initialPaid: newSale.initialPaid !== undefined ? newSale.initialPaid : (parseFloat(newSale.paid || 0) || 0)
                 };
                 sales.push(savedSale);
+                if (savedSale && savedSale.category !== 'EXPENSE' && window.HeligrafesSalesLive) {
+                    window.HeligrafesSalesLive.enqueue(savedSale);
+                }
             }
             localStorage.setItem('multi_sales_v52', JSON.stringify(sales));
             localStorage.setItem('multi_products_v52', JSON.stringify(products));
@@ -4070,5 +4073,6 @@ function selectAcademicPage(value) {
 <!-- Autenticação obrigatória: scripts carregados após o código principal -->
 <script src="./js/supabase-config.js"></script>
 <script src="./js/heligrafes-cloud.js"></script>
+<script src="./js/heligrafes-sales-live.js"></script>
 </body>
 </html>
