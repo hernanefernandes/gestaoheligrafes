@@ -193,6 +193,21 @@
         @media (max-width: 1024px) { .app-sidebar { width: 15.5rem; } .app-topbar { padding: 16px 22px; } .workspace-scroll { padding: 22px; } }
         @media (max-width: 760px) { .app-sidebar { width: 4.75rem; } .app-brand { margin: 12px 8px; padding: 6px; } .app-brand-logo { height: 48px; padding: 3px; } .app-sidebar nav { padding: 12px 8px; } .app-sidebar nav > p, .app-sidebar .sidebar-link span:last-child, .app-sidebar > div:last-child > div > div { display: none; } .app-sidebar .sidebar-link { justify-content: center; padding: 12px 4px; } .app-sidebar .sidebar-link span:first-child { margin-right: 0; } .app-sidebar > div:last-child { padding: 8px; } .app-sidebar > div:last-child > div { justify-content: center; padding: 10px; } .app-topbar { padding: 12px 14px; } .topbar-company { display: none; } .topbar-session { padding: 8px 10px; gap: 10px !important; } .topbar-session > div:nth-child(2) { display: none; } .clock-toggle button { padding: 5px 6px; font-size: 9px; } .workspace-scroll { padding: 16px; } .pos-screen .pos-heading { align-items: flex-start; gap: 12px; } .pos-screen .pos-heading > div:last-child { flex-wrap: wrap; justify-content: flex-end; } }
     </style>
+<style id="heli-supabase-auth-style">
+html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
+#heli-auth-root{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:24px;background:linear-gradient(135deg,#061d46,#0757c9 58%,#16a6d9);font-family:Inter,system-ui,sans-serif}
+.heli-auth-card{width:min(100%,420px);background:#fff;padding:34px;border-radius:22px;box-shadow:0 25px 80px #00143a66;color:#14213d}
+.heli-auth-mark{width:52px;height:52px;border-radius:15px;background:#0757c9;color:white;display:grid;place-items:center;font-size:28px;font-weight:900;margin-bottom:18px}
+.heli-auth-eyebrow{font-size:11px;letter-spacing:.18em;font-weight:900;color:#0757c9}.heli-auth-card h1{font-size:26px;font-weight:900;margin:7px 0}
+.heli-auth-subtitle{font-size:13px;color:#64748b;margin-bottom:24px}.heli-auth-card label{display:block;font-size:12px;font-weight:800;margin:13px 0 6px}
+.heli-auth-card input{width:100%;border:1px solid #cbd5e1;border-radius:10px;padding:12px;color:#0f172a;outline:none}
+#heli-auth-submit{width:100%;margin-top:20px;border:0;border-radius:10px;background:#0757c9;color:#fff;font-weight:800;padding:13px;cursor:pointer}
+.heli-auth-link{display:block;margin:13px auto 0;background:none;border:0;color:#0757c9;font-size:12px;font-weight:700;cursor:pointer}
+#heli-auth-message{min-height:22px;margin-top:15px;font-size:12px;text-align:center}.heli-auth-card small{display:block;text-align:center;color:#94a3b8;font-size:10px;margin-top:10px}
+#heli-session-bar{position:fixed;right:12px;top:10px;z-index:10000;display:flex;align-items:center;gap:10px;background:#0b2c59ee;color:#fff;border-radius:12px;padding:7px 10px;font:600 11px Inter,system-ui,sans-serif}
+#heli-session-bar #heli-cloud-status{color:#a7f3d0}#heli-signout{background:#fff;color:#12315c;border:0;border-radius:7px;padding:6px 9px;font-weight:800;cursor:pointer}
+@media(max-width:600px){#heli-session-bar{left:8px;right:8px;top:8px;justify-content:space-between;gap:5px}.heli-session-user{max-width:35%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
+</style><script>document.documentElement.classList.add('heli-auth-lock');</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="flex h-screen overflow-hidden main-container">
 
@@ -2578,7 +2593,9 @@ window.onload = function() {
             const time = new Date().toLocaleTimeString();
             const saldoCaixa = stats.totalVendas;
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<html><head><title>Fecho</title><style>body{font-family:'Courier New';width:80mm;font-size:12px;}.item{display:flex;justify-content:space-between;margin:5px 0;}</style></head><body><center><strong>RELATÓRIO DE FECHO</strong><br>${today} ${time}</center><hr><div class="item"><span>Entradas:</span><span>${stats.totalVendas} Kz</span></div><div class="item"><span>Despesas registadas:</span><span>${stats.despesas} Kz</span></div><hr><div class="item"><strong>SALDO DE CAIXA:</strong><strong>${saldoCaixa} Kz</strong></div><script>window.print();window.close();<\/script></body></html>`);
+            printWindow.document.write(`<html><head><title>Fecho</title><style>body{font-family:'Courier New';width:80mm;font-size:12px;}.item{display:flex;justify-content:space-between;margin:5px 0;}</style></head><body><center><strong>RELATÓRIO DE FECHO</strong><br>${today} ${time}</center><hr><div class="item"><span>Entradas:</span><span>${stats.totalVendas} Kz</span></div><div class="item"><span>Despesas registadas:</span><span>${stats.despesas} Kz</span></div><hr><div class="item"><strong>SALDO DE CAIXA:</strong><strong>${saldoCaixa} Kz</strong></div><script>window.print();window.close();<\/script><script src="js/supabase-config.js"></script>
+<script src="js/heligrafes-cloud.js"></script>
+</body></html>`);
             printWindow.document.close();
         }
 
