@@ -74,10 +74,15 @@ async function launch(user){
   await loadIdentity(user);await restoreCloudState();
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
   started=true;document.documentElement.classList.remove('heli-auth-lock');el('heli-auth-root')?.remove();addSessionBar();
-  if(typeof window.saveData==='function'&&!window.__heliSaveWrapped){
-   const originalSave=window.saveData;
-   window.saveData=function(){const result=originalSave.apply(this,arguments);scheduleCloudSave();return result;};
-   window.__heliSaveWrapped=true;
+  if(!window.__heliStorageWrapped){
+   const originalSetItem=Storage.prototype.setItem;
+   const cloudKeys=new Set(STATE_KEYS);
+   Storage.prototype.setItem=function(key,value){
+    const result=originalSetItem.call(this,key,value);
+    if(this===window.localStorage&&cloudKeys.has(String(key)))scheduleCloudSave();
+    return result;
+   };
+   window.__heliStorageWrapped=true;
   }
   if(typeof originalOnload==='function')originalOnload.call(window,new Event('load'));
   setCloudStatus(window.HELI_CAN_CLOUD_SYNC()?'Cloud ligada • sincronização automática':'Sessão activa • acesso cloud restrito');
