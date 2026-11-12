@@ -113,5 +113,5 @@ async function boot(){
  if(q.data.session?.user)await launch(q.data.session.user);else message('Introduza o e-mail e a palavra-passe para entrar.');
 }
 window.checkPermission=async function(text){if(!identity)return false;const ok=window.HELI_HAS_ROLE('owner','admin','manager','hr');if(!ok)alert(text||'Não tem permissão para esta operação.');return ok;};
-originalOnload=window.onload;window.onload=()=>boot();
+originalOnload=window.onload;window.onload=null;boot();
 })();
