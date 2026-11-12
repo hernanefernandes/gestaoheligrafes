@@ -28,7 +28,7 @@ function saleRow(sale){
  const occurred=sale.createdAt||new Date().toISOString();
  return {
   id:sale._heliCloudId||uuid(),organization_id:org.id,location_id:loc.id,
-  local_sale_id:String(sale.id||sale._heliCloudId||uuid()),
+  local_sale_id:String(sale.id||sale._heliCloudId||uuid())+':'+String(occurred),
   sale_payload:sale,total:Number(sale.total)||0,paid:Number(sale.initialPaid!==undefined?sale.initialPaid:sale.paid)||0,
   category:String(sale.category||'OTHER'),seller_name:String(sale.seller||'Sem utilizador'),
   created_by:user.id,occurred_at:new Date(occurred).toISOString()
@@ -93,7 +93,7 @@ function subscribe(){
  channel=db().channel('heli-pos-sales-'+window.HELI_ORG.id)
  .on('postgres_changes',{event:'INSERT',schema:'public',table:'pos_sales_events',filter:'organization_id=eq.'+window.HELI_ORG.id},payload=>{
   const row=payload.new||{};
-  if(row.created_by!==window.HELI_USER?.id)notifySale(row);
+  notifySale(row);
   if(panelOpen)loadDashboard();
  }).subscribe(s=>status(s==='SUBSCRIBED'?'Ligação em tempo real activa':'Realtime: '+s));
 }
