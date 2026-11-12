@@ -42,6 +42,10 @@ async function loadIdentity(user){
  }
  window.HELI_USER=user;window.HELI_PROFILE=identity.profile;window.HELI_ORG=identity.organization;window.HELI_ROLES=identity.roles;window.HELI_LOCATIONS=identity.locations;
  window.HELI_HAS_ROLE=(...codes)=>identity.roles.some(role=>codes.includes(role.code));
+ const globalAccess=window.HELI_HAS_ROLE('owner','admin')&&identity.assignments.some(a=>!a.location_id);
+ const assignedIds=[...new Set(identity.assignments.map(a=>a.location_id).filter(Boolean))];
+ window.HELI_ALLOWED_LOCATIONS=globalAccess?identity.locations:identity.locations.filter(l=>assignedIds.includes(l.id));
+ window.HELI_DEFAULT_LOCATION_ID=window.HELI_ALLOWED_LOCATIONS.length===1?window.HELI_ALLOWED_LOCATIONS[0].id:null;
  window.HELI_CAN_CLOUD_SYNC=()=>window.HELI_HAS_ROLE('owner','admin');
 }
 async function pushCloudState(keys=STATE_KEYS){
