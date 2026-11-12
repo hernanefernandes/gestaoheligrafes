@@ -49,15 +49,21 @@ async function restoreCloudState(){
  if(!window.HELI_CAN_CLOUD_SYNC())return;
  const q=await client.from('app_state_snapshots').select('state_key,snapshot,updated_at').eq('organization_id',identity.organization.id);
  if(q.error)throw q.error;
- const cloud=new Map((q.data||[]).map(row=>[row.state_key,row.snapshot]));const missing=[];
+ const cloud=new Map((q.data||[]).map(row=>[row.state_key,row.snapshot]));const missing=[];let changed=false;
  for(const key of STATE_KEYS){
   if(cloud.has(key)){
+   const remote=JSON.stringify(cloud.get(key));
    const local=localStorage.getItem(key);
-   if(local!==null){try{localStorage.setItem('heli_backup_before_cloud_'+key+'_'+Date.now(),local);}catch(_){}}
-   localStorage.setItem(key,JSON.stringify(cloud.get(key)));
+   let localNormalized=local;
+   try{if(local!==null)localNormalized=JSON.stringify(JSON.parse(local));}catch(_){}
+   if(localNormalized!==remote){
+    if(local!==null){try{localStorage.setItem('heli_backup_before_cloud_'+key+'_'+Date.now(),local);}catch(_){}}
+    localStorage.setItem(key,remote);changed=true;
+   }
   }else if(localStorage.getItem(key)!==null)missing.push(key);
  }
  if(missing.length)await pushCloudState(missing);
+ return changed;
 }
 function setCloudStatus(t){const n=el('heli-cloud-status');if(n)n.textContent=t;}
 function scheduleCloudSave(){if(!identity||!window.HELI_CAN_CLOUD_SYNC())return;clearTimeout(timer);timer=setTimeout(()=>pushCloudState(),1500);}
@@ -71,7 +77,7 @@ function addSessionBar(){
 async function launch(user){
  if(started)return;
  try{
-  await loadIdentity(user);await restoreCloudState();
+  await loadIdentity(user);const restored=await restoreCloudState();if(restored){window.location.reload();return;}
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
   started=true;document.documentElement.classList.remove('heli-auth-lock');el('heli-auth-root')?.remove();addSessionBar();
   if(!window.__heliStorageWrapped){
