@@ -38,7 +38,7 @@ create policy pos_sales_events_insert on public.pos_sales_events
     public.can_access_location(organization_id, location_id)
     and created_by = (select auth.uid())
   );
-grant select, insert on public.pos_sales_events to authenticated;
+revoke all on table public.pos_sales_events from anon;\nrevoke all on table public.pos_sales_events from authenticated;\ngrant select, insert on table public.pos_sales_events to authenticated;
 do $$
 begin
   if exists (select 1 from pg_publication where pubname = 'supabase_realtime')
