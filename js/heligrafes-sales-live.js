@@ -78,7 +78,7 @@ async function loadDashboard(){
  const total=rows.reduce((a,x)=>a+(Number(x.paid)||0),0);
  const totalEl=$('heli-live-total'),countEl=$('heli-live-count');if(totalEl)totalEl.textContent=money(total);if(countEl)countEl.textContent=String(rows.length);
  const byLoc=locations.map(l=>({name:l.name,amount:rows.filter(x=>x.location_id===l.id).reduce((a,x)=>a+(Number(x.paid)||0),0),count:rows.filter(x=>x.location_id===l.id).length,users:assignedCounts.get(l.id)?.size||0}));
- const locEl=$('heli-live-locations');if(locEl)locEl.innerHTML=byLoc.map(x=>'<div class="heli-live-location"><span>'+esc(x.name)+'</span><b>'+money(x.amount)+'</b><small>'+x.count+' venda(s)</small></div>').join('');
+ const locEl=$('heli-live-locations');if(locEl)locEl.innerHTML=byLoc.map(x=>'<div class="heli-live-location"><span>'+esc(x.name)+'</span><b>'+money(x.amount)+'</b><small>'+x.users+' utilizador(es) autorizado(s) · '+x.count+' venda(s)</small></div>').join('');
  root.innerHTML=rows.length?rows.map(x=>'<div class="heli-live-row"><div><b>'+esc(x.sale_payload?.desc||x.category||'Venda')+'</b><small>'+esc(locations.find(l=>l.id===x.location_id)?.name||'Local')+' · '+esc(x.seller_email||x.seller_name)+' · '+new Date(x.occurred_at).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})+'</small></div><strong>'+money(x.paid)+'</strong></div>').join(''):'<p class="heli-muted">Ainda não existem vendas sincronizadas hoje.</p>';
 }
 function buildPanel(){
