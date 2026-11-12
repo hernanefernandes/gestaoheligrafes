@@ -10,6 +10,7 @@ create table if not exists public.pos_sales_events (
   paid numeric(14,2) not null default 0 check (paid >= 0),
   category text not null default 'OTHER',
   seller_name text not null default 'Sem utilizador',
+  seller_email text not null default '',
   created_by uuid references auth.users(id) on delete set null,
   occurred_at timestamptz not null,
   received_at timestamptz not null default now(),
