@@ -2593,9 +2593,7 @@ window.onload = function() {
             const time = new Date().toLocaleTimeString();
             const saldoCaixa = stats.totalVendas;
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<html><head><title>Fecho</title><style>body{font-family:'Courier New';width:80mm;font-size:12px;}.item{display:flex;justify-content:space-between;margin:5px 0;}</style></head><body><center><strong>RELATÓRIO DE FECHO</strong><br>${today} ${time}</center><hr><div class="item"><span>Entradas:</span><span>${stats.totalVendas} Kz</span></div><div class="item"><span>Despesas registadas:</span><span>${stats.despesas} Kz</span></div><hr><div class="item"><strong>SALDO DE CAIXA:</strong><strong>${saldoCaixa} Kz</strong></div><script>window.print();window.close();<\/script><script src="js/supabase-config.js"></script>
-<script src="js/heligrafes-cloud.js"></script>
-</body></html>`);
+            printWindow.document.write(`<html><head><title>Fecho</title><style>body{font-family:'Courier New';width:80mm;font-size:12px;}.item{display:flex;justify-content:space-between;margin:5px 0;}</style></head><body><center><strong>RELATÓRIO DE FECHO</strong><br>${today} ${time}</center><hr><div class="item"><span>Entradas:</span><span>${stats.totalVendas} Kz</span></div><div class="item"><span>Despesas registadas:</span><span>${stats.despesas} Kz</span></div><hr><div class="item"><strong>SALDO DE CAIXA:</strong><strong>${saldoCaixa} Kz</strong></div><script>window.print();window.close();<\/script></body></html>`);
             printWindow.document.close();
         }
 
