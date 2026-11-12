@@ -21,16 +21,25 @@ function showLogin(t=''){
  message(t);
 }
 async function loadIdentity(user){
- const p=await client.from('user_profiles').select('user_id,organization_id,full_name,is_active').eq('user_id',user.id).maybeSingle();
- if(p.error)throw p.error;if(!p.data||!p.data.is_active)throw new Error('A conta não tem perfil activo no Grupo Heligrafes.');
- const a=await client.from('user_role_assignments').select('role_id,location_id,organization_id').eq('user_id',user.id).eq('organization_id',p.data.organization_id);
- if(a.error)throw a.error;if(!a.data?.length)throw new Error('A conta ainda não tem função atribuída.');
- const ids=[...new Set(a.data.map(x=>x.role_id))];
- const r=await client.from('roles').select('id,code,name').in('id',ids);if(r.error)throw r.error;
- const o=await client.from('organizations').select('id,name,legal_name,currency_code,timezone').eq('id',p.data.organization_id).single();if(o.error)throw o.error;
- const l=await client.from('locations').select('id,code,name').eq('organization_id',p.data.organization_id).eq('is_active',true).order('code');if(l.error)throw l.error;
- identity={user:user,profile:p.data,assignments:a.data,roles:r.data||[],organization:o.data,locations:l.data||[]};
- window.HELI_USER=user;window.HELI_PROFILE=p.data;window.HELI_ORG=o.data;window.HELI_ROLES=r.data||[];window.HELI_LOCATIONS=l.data||[];
+ try{
+  const p=await client.from('user_profiles').select('user_id,organization_id,full_name,is_active').eq('user_id',user.id).maybeSingle();
+  if(p.error)throw p.error;if(!p.data||!p.data.is_active)throw new Error('A conta não tem perfil activo no Grupo Heligrafes.');
+  const a=await client.from('user_role_assignments').select('role_id,location_id,organization_id').eq('user_id',user.id).eq('organization_id',p.data.organization_id);
+  if(a.error)throw a.error;if(!a.data?.length)throw new Error('A conta ainda não tem função atribuída.');
+  const ids=[...new Set(a.data.map(x=>x.role_id))];
+  const r=await client.from('roles').select('id,code,name').in('id',ids);if(r.error)throw r.error;
+  const o=await client.from('organizations').select('id,name,legal_name,currency_code,timezone').eq('id',p.data.organization_id).single();if(o.error)throw o.error;
+  const l=await client.from('locations').select('id,code,name').eq('organization_id',p.data.organization_id).eq('is_active',true).order('code');if(l.error)throw l.error;
+  identity={user:user,profile:p.data,assignments:a.data,roles:r.data||[],organization:o.data,locations:l.data||[]};
+  window.HELI_OFFLINE_MODE=false;
+  try{localStorage.setItem('heli_identity_cache_v1',JSON.stringify({user_id:user.id,profile:p.data,assignments:a.data,roles:r.data||[],organization:o.data,locations:l.data||[],cached_at:new Date().toISOString()}));}catch(_){}
+ }catch(err){
+  let cached=null;try{cached=JSON.parse(localStorage.getItem('heli_identity_cache_v1')||'null');}catch(_){}
+  if(!cached||cached.user_id!==user.id)throw err;
+  identity={user:user,profile:cached.profile,assignments:cached.assignments||[],roles:cached.roles||[],organization:cached.organization,locations:cached.locations||[]};
+  window.HELI_OFFLINE_MODE=true;
+ }
+ window.HELI_USER=user;window.HELI_PROFILE=identity.profile;window.HELI_ORG=identity.organization;window.HELI_ROLES=identity.roles;window.HELI_LOCATIONS=identity.locations;
  window.HELI_HAS_ROLE=(...codes)=>identity.roles.some(role=>codes.includes(role.code));
  window.HELI_CAN_CLOUD_SYNC=()=>window.HELI_HAS_ROLE('owner','admin');
 }
@@ -77,7 +86,7 @@ function addSessionBar(){
 async function launch(user){
  if(started)return;
  try{
-  await loadIdentity(user);const restored=await restoreCloudState();if(restored){window.location.reload();return;}
+  await loadIdentity(user);const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
   started=true;document.documentElement.classList.remove('heli-auth-lock');el('heli-auth-root')?.remove();addSessionBar();
   if(!window.__heliStorageWrapped){
@@ -91,8 +100,8 @@ async function launch(user){
    window.__heliStorageWrapped=true;
   }
   if(typeof originalOnload==='function')originalOnload.call(window,new Event('load'));
-  setCloudStatus(window.HELI_CAN_CLOUD_SYNC()?'Cloud ligada • sincronização automática':'Sessão activa • acesso cloud restrito');
-  if(window.HELI_CAN_CLOUD_SYNC())await pushCloudState();
+  setCloudStatus(window.HELI_OFFLINE_MODE?'Modo offline • vendas serão guardadas neste dispositivo':(window.HELI_CAN_CLOUD_SYNC()?'Cloud ligada • sincronização automática':'Sessão activa • acesso cloud restrito'));
+  if(!window.HELI_OFFLINE_MODE&&window.HELI_CAN_CLOUD_SYNC())await pushCloudState();
  }catch(err){console.error('[Heligrafes] Erro de arranque:',err);showLogin(err.message||'Não foi possível iniciar a aplicação.');}
 }
 async function signIn(event){
