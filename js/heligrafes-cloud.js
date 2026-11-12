@@ -94,6 +94,10 @@ async function launch(user){
   await loadIdentity(user);const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
   started=true;document.documentElement.classList.remove('heli-auth-lock');el('heli-auth-root')?.remove();addSessionBar();
+  const canAdmin=window.HELI_HAS_ROLE('owner','admin');
+  if(!canAdmin){
+   ['heli-admin-nav-heading','btn-gestao-produtos','btn-stocks','btn-relatorios','btn-historico'].forEach(id=>{const n=el(id);if(n)n.style.display='none';});
+  }
   if(!window.__heliStorageWrapped){
    const originalSetItem=Storage.prototype.setItem;
    const cloudKeys=new Set(STATE_KEYS);
@@ -126,6 +130,6 @@ async function boot(){
  const q=await client.auth.getSession();if(q.error)return message(q.error.message,true);
  if(q.data.session?.user)await launch(q.data.session.user);else message('Introduza o e-mail e a palavra-passe para entrar.');
 }
-window.checkPermission=async function(text){if(!identity)return false;const ok=window.HELI_HAS_ROLE('owner','admin','manager','hr');if(!ok)alert(text||'Não tem permissão para esta operação.');return ok;};
+window.checkPermission=async function(text){if(!identity)return false;const ok=window.HELI_HAS_ROLE('owner','admin');if(!ok)alert(text||'Não tem permissão para esta operação.');return ok;};
 originalOnload=window.onload;window.onload=null;boot();
 })();
