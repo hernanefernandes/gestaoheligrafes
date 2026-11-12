@@ -17,12 +17,12 @@ async function getQueue(){const d=await openDB();return new Promise((resolve,rej
 async function removeQueue(id){const d=await openDB();return new Promise((resolve,reject)=>{const tx=d.transaction(STORE,'readwrite');tx.objectStore(STORE).delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});}
 function uuid(){return crypto.randomUUID?crypto.randomUUID():([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g,c=>(c^crypto.getRandomValues(new Uint8Array(1))[0]&15>>c/4).toString(16));}
 function locate(value){
- const list=window.HELI_LOCATIONS||[],v=String(value||'').trim().toLowerCase();
+ const list=window.HELI_ALLOWED_LOCATIONS||[],v=String(value||'').trim().toLowerCase();
  return list.find(x=>[x.code,x.name,('LOCAL '+String(x.code||'').replace('LOCAL_',''))].some(y=>String(y||'').trim().toLowerCase()===v))
    || list.find(x=>v&&String(x.code||'').toLowerCase().replace('_',' ' )===v);
 }
 function saleRow(sale){
- const loc=locate(sale.location||sessionStorage.getItem('multi_business_location_v52')||localStorage.getItem('multi_business_location_v52'));
+ const loc=(window.HELI_DEFAULT_LOCATION_ID&&(window.HELI_ALLOWED_LOCATIONS||[]).length===1?(window.HELI_ALLOWED_LOCATIONS||[]).find(x=>x.id===window.HELI_DEFAULT_LOCATION_ID):locate(sale.location||sessionStorage.getItem('multi_business_location_v52')||localStorage.getItem('multi_business_location_v52')));
  if(!loc)throw new Error('O local desta venda não está associado a um local activo no Supabase.');
  const user=window.HELI_USER,org=window.HELI_ORG;
  const occurred=sale.createdAt||new Date().toISOString();
@@ -30,7 +30,7 @@ function saleRow(sale){
   id:sale._heliCloudId||uuid(),organization_id:org.id,location_id:loc.id,
   local_sale_id:String(sale.id||sale._heliCloudId||uuid())+':'+String(occurred),
   sale_payload:sale,total:Number(sale.total)||0,paid:Number(sale.initialPaid!==undefined?sale.initialPaid:sale.paid)||0,
-  category:String(sale.category||'OTHER'),seller_name:String(sale.seller||'Sem utilizador'),
+  category:String(sale.category||'OTHER'),seller_name:String(sale.seller||'Sem utilizador'),seller_email:String(user.email||'').toLowerCase(),
   created_by:user.id,occurred_at:new Date(occurred).toISOString()
  };
 }
@@ -70,19 +70,21 @@ async function notifySale(row){
 async function loadDashboard(){
  const root=$('heli-live-rows');if(!root||!db())return;
  const from=new Date();from.setHours(0,0,0,0);
- const q=await db().from('pos_sales_events').select('id,location_id,local_sale_id,total,paid,category,seller_name,occurred_at,sale_payload').gte('occurred_at',from.toISOString()).order('occurred_at',{ascending:false}).limit(250);
+ const q=await db().from('pos_sales_events').select('id,location_id,local_sale_id,total,paid,category,seller_name,seller_email,occurred_at,sale_payload').gte('occurred_at',from.toISOString()).order('occurred_at',{ascending:false}).limit(250);
  if(q.error){root.innerHTML='<p class="heli-muted">Não foi possível carregar as vendas: '+esc(q.error.message)+'</p>';return;}
- const locations=window.HELI_LOCATIONS||[],rows=q.data||[];
+ const locations=window.HELI_ALLOWED_LOCATIONS||[],rows=q.data||[];
+ const access=await db().from('user_role_assignments').select('user_id,location_id').eq('organization_id',window.HELI_ORG.id);
+ const assignedCounts=new Map();(access.data||[]).forEach(a=>{if(a.location_id)assignedCounts.set(a.location_id,(assignedCounts.get(a.location_id)||new Set()).add(a.user_id));});
  const total=rows.reduce((a,x)=>a+(Number(x.paid)||0),0);
  const totalEl=$('heli-live-total'),countEl=$('heli-live-count');if(totalEl)totalEl.textContent=money(total);if(countEl)countEl.textContent=String(rows.length);
- const byLoc=locations.map(l=>({name:l.name,amount:rows.filter(x=>x.location_id===l.id).reduce((a,x)=>a+(Number(x.paid)||0),0),count:rows.filter(x=>x.location_id===l.id).length}));
+ const byLoc=locations.map(l=>({name:l.name,amount:rows.filter(x=>x.location_id===l.id).reduce((a,x)=>a+(Number(x.paid)||0),0),count:rows.filter(x=>x.location_id===l.id).length,users:assignedCounts.get(l.id)?.size||0}));
  const locEl=$('heli-live-locations');if(locEl)locEl.innerHTML=byLoc.map(x=>'<div class="heli-live-location"><span>'+esc(x.name)+'</span><b>'+money(x.amount)+'</b><small>'+x.count+' venda(s)</small></div>').join('');
- root.innerHTML=rows.length?rows.map(x=>'<div class="heli-live-row"><div><b>'+esc(x.sale_payload?.desc||x.category||'Venda')+'</b><small>'+esc(locations.find(l=>l.id===x.location_id)?.name||'Local')+' · '+esc(x.seller_name)+' · '+new Date(x.occurred_at).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})+'</small></div><strong>'+money(x.paid)+'</strong></div>').join(''):'<p class="heli-muted">Ainda não existem vendas sincronizadas hoje.</p>';
+ root.innerHTML=rows.length?rows.map(x=>'<div class="heli-live-row"><div><b>'+esc(x.sale_payload?.desc||x.category||'Venda')+'</b><small>'+esc(locations.find(l=>l.id===x.location_id)?.name||'Local')+' · '+esc(x.seller_email||x.seller_name)+' · '+new Date(x.occurred_at).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})+'</small></div><strong>'+money(x.paid)+'</strong></div>').join(''):'<p class="heli-muted">Ainda não existem vendas sincronizadas hoje.</p>';
 }
 function buildPanel(){
  if($('heli-live-panel'))return;
  const btn=document.createElement('button');btn.id='heli-live-open';btn.type='button';btn.innerHTML='▣ Vendas em tempo real';btn.onclick=()=>{panelOpen=true;$('heli-live-panel').classList.add('open');loadDashboard();};
- const panel=document.createElement('section');panel.id='heli-live-panel';panel.innerHTML='<header><div><b>Central de vendas</b><small>Grupo Heligrafes · todos os locais autorizados</small></div><button id="heli-live-close" type="button" aria-label="Fechar">×</button></header><div class="heli-live-body"><div class="heli-live-cards"><div><small>Total recebido hoje</small><strong id="heli-live-total">—</strong></div><div><small>Vendas sincronizadas</small><strong id="heli-live-count">—</strong></div></div><h3>Movimento por local</h3><div id="heli-live-locations"></div><h3>Últimas vendas</h3><div id="heli-live-rows"></div><div class="heli-live-tools"><button id="heli-live-sound" type="button">Activar alertas sonoros</button><button id="heli-live-notify" type="button">Activar notificações</button></div><p id="heli-live-status" role="status">A ligar...</p></div>';
+ const panel=document.createElement('section');panel.id='heli-live-panel';panel.innerHTML='<header><div><b>Central de vendas</b><small>Grupo Heligrafes · locais associados aos e-mails autorizados</small></div><button id="heli-live-close" type="button" aria-label="Fechar">×</button></header><div class="heli-live-body"><div class="heli-live-cards"><div><small>Total recebido hoje</small><strong id="heli-live-total">—</strong></div><div><small>Vendas sincronizadas</small><strong id="heli-live-count">—</strong></div></div><h3>Movimento por local</h3><div id="heli-live-locations"></div><h3>Últimas vendas</h3><div id="heli-live-rows"></div><div class="heli-live-tools"><button id="heli-live-sound" type="button">Activar alertas sonoros</button><button id="heli-live-notify" type="button">Activar notificações</button></div><p id="heli-live-status" role="status">A ligar...</p></div>';
  document.body.append(btn,panel);
  $('heli-live-close').onclick=()=>{panelOpen=false;panel.classList.remove('open');};
  $('heli-live-sound').onclick=()=>{soundEnabled=!soundEnabled;$('heli-live-sound').textContent=soundEnabled?'Alertas sonoros activos':'Activar alertas sonoros';if(soundEnabled)playAlert();};
