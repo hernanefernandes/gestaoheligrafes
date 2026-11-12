@@ -2,7 +2,7 @@
 'use strict';
 const db=()=>window.heliSupabase;
 const DB_NAME='heli-sales-offline-v1', STORE='outbox', QUEUE_KEY='heli_sales_queue_v1';
-let idb=null, channel=null, soundEnabled=false, panelOpen=false, notificationPermission='default';
+let idb=null, channel=null, soundEnabled=false, panelOpen=false, notificationPermission=('Notification' in window?Notification.permission:'default');
 const $=id=>document.getElementById(id);
 const money=n=>(Number(n)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
