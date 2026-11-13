@@ -147,10 +147,20 @@ async function resetPassword(){
  const q=await client.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
  message(q.error?q.error.message:'Se a conta existir, receberá um link de recuperação.');
 }
+function showSetPassword(user){
+ document.documentElement.classList.add('heli-auth-lock');
+ let root=el('heli-auth-root');if(!root){root=document.createElement('div');root.id='heli-auth-root';document.body.appendChild(root);}
+ root.innerHTML='<main class="heli-auth-card"><div class="heli-auth-mark">H</div><p class="heli-auth-eyebrow">GRUPO HELIGRAFES</p><h1>Definir palavra-passe</h1><p class="heli-auth-subtitle">Crie uma palavra-passe pessoal para concluir a activação da sua conta.</p><form id="heli-set-password-form"><label for="heli-new-password">Nova palavra-passe</label><input id="heli-new-password" type="password" autocomplete="new-password" minlength="8" required placeholder="Mínimo de 8 caracteres"><label for="heli-confirm-password">Confirmar palavra-passe</label><input id="heli-confirm-password" type="password" autocomplete="new-password" minlength="8" required placeholder="Repita a palavra-passe"><button id="heli-set-password-submit" type="submit">Guardar palavra-passe</button></form><p id="heli-auth-message" role="status"></p><small>Depois de guardar, poderá entrar com o seu e-mail.</small></main>';
+ root.querySelector('#heli-set-password-form').addEventListener('submit',async e=>{e.preventDefault();const p=el('heli-new-password').value,confirm=el('heli-confirm-password').value,btn=el('heli-set-password-submit');if(p.length<8)return message('Use pelo menos 8 caracteres.',true);if(p!==confirm)return message('As palavras-passe não coincidem.',true);btn.disabled=true;btn.textContent='A guardar...';const result=await client.auth.updateUser({password:p});if(result.error){message(result.error.message,true);btn.disabled=false;btn.textContent='Guardar palavra-passe';return;}history.replaceState({},document.title,window.location.pathname);message('Palavra-passe definida. A abrir a aplicação...');await launch(result.data.user||user);});
+}
 async function boot(){
  showLogin('A verificar a sessão...');
  const q=await client.auth.getSession();if(q.error)return message(q.error.message,true);
- if(q.data.session?.user)await launch(q.data.session.user);else message('Introduza o e-mail e a palavra-passe para entrar.');
+ const session=q.data.session;
+ const flow=new URLSearchParams(window.location.search).get('flow');
+ const hashType=new URLSearchParams(window.location.hash.replace(/^#/,'')).get('type');
+ if(session?.user&&(flow==='invite'||hashType==='invite'||hashType==='recovery')){showSetPassword(session.user);return;}
+ if(session?.user)await launch(session.user);else message('Introduza o e-mail e a palavra-passe para entrar.');
 }
 window.checkPermission=async function(text){if(!identity)return false;const ok=window.HELI_HAS_ROLE('owner','admin');if(!ok)alert(text||'Não tem permissão para esta operação.');return ok;};
 originalOnload=window.onload;window.onload=null;boot();
