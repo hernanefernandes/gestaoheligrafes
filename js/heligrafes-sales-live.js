@@ -112,7 +112,7 @@ async function loadDashboard(){
  const locEl=$('heli-live-locations');if(locEl)locEl.innerHTML=byLoc.map(x=>'<div class="heli-live-location"><span>'+esc(x.name)+'</span><b>'+money(x.amount)+'</b><small>'+x.users+' utilizador(es) autorizado(s) · '+x.count+' venda(s)</small></div>').join('');
  root.innerHTML=rows.length?rows.map(x=>'<div class="heli-live-row"><div><b>'+esc(x.sale_payload?.desc||x.category||'Venda')+'</b><small>'+esc(locations.find(l=>l.id===x.location_id)?.name||'Local')+' · '+esc(x.seller_email||x.seller_name)+' · '+new Date(x.occurred_at).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})+'</small></div><strong>'+money(x.paid)+'</strong></div>').join(''):'<p class="heli-muted">Ainda não existem vendas sincronizadas hoje.</p>';
 }
-function open(){if(!$('heli-live-panel'))buildPanel();panelOpen=true;$('heli-live-panel').classList.add('open');loadDashboard();}
+function open(){if(!window.HELI_HAS_ROLE?.('owner','admin'))return alert('Acesso reservado a proprietário ou administrador.');if(!db()||!window.HELI_ORG)return alert('A sessão ainda não está pronta. Actualize a página e tente novamente.');installStyles();buildPanel();subscribe();panelOpen=true;$('heli-live-panel').classList.add('open');loadDashboard();}
 function buildPanel(){
  if($('heli-live-panel'))return;
  const btn=document.createElement('button');btn.id='heli-live-open';btn.type='button';btn.innerHTML='▣ Vendas em tempo real';btn.onclick=()=>open();
