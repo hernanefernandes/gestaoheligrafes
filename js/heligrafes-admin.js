@@ -59,7 +59,7 @@ function inject(){
  $('heli-admin-refresh').onclick=()=>loadAll();
  $('heli-admin-location').onchange=e=>{selectedLocation=e.target.value;loadAll();};
  $('heli-admin-range').onchange=e=>{range=e.target.value;loadAll();};
- root.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+ $('heli-admin').querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
  $('ha-restock-submit').onclick=restock;$('ha-product-submit').onclick=addProduct;$('ha-emp-submit').onclick=addEmployee;$('ha-account-submit').onclick=createAccount;
 }
 function tab(name){['overview','stock','products','team','access','performance','sales'].forEach(x=>$('ha-'+x).classList.toggle('hidden',x!==name));document.querySelectorAll('#heli-admin [data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));if(name==='access')loadAccess().catch(e=>status('Falha ao carregar acessos: '+e.message,true));if(name==='performance')loadPerformance().catch(e=>status('Falha ao carregar desempenho: '+e.message,true));}
