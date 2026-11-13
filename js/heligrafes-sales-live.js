@@ -112,11 +112,12 @@ async function loadDashboard(){
  const locEl=$('heli-live-locations');if(locEl)locEl.innerHTML=byLoc.map(x=>'<div class="heli-live-location"><span>'+esc(x.name)+'</span><b>'+money(x.amount)+'</b><small>'+x.users+' utilizador(es) autorizado(s) · '+x.count+' venda(s)</small></div>').join('');
  root.innerHTML=rows.length?rows.map(x=>'<div class="heli-live-row"><div><b>'+esc(x.sale_payload?.desc||x.category||'Venda')+'</b><small>'+esc(locations.find(l=>l.id===x.location_id)?.name||'Local')+' · '+esc(x.seller_email||x.seller_name)+' · '+new Date(x.occurred_at).toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'})+'</small></div><strong>'+money(x.paid)+'</strong></div>').join(''):'<p class="heli-muted">Ainda não existem vendas sincronizadas hoje.</p>';
 }
+function open(){if(!$('heli-live-panel'))buildPanel();panelOpen=true;$('heli-live-panel').classList.add('open');loadDashboard();}
 function buildPanel(){
  if($('heli-live-panel'))return;
- const btn=document.createElement('button');btn.id='heli-live-open';btn.type='button';btn.innerHTML='▣ Vendas em tempo real';btn.onclick=()=>{panelOpen=true;$('heli-live-panel').classList.add('open');loadDashboard();};
+ const btn=document.createElement('button');btn.id='heli-live-open';btn.type='button';btn.innerHTML='▣ Vendas em tempo real';btn.onclick=()=>open();
  const panel=document.createElement('section');panel.id='heli-live-panel';panel.innerHTML='<header><div><b>Central de vendas</b><small>Grupo Heligrafes · locais associados aos e-mails autorizados</small></div><button id="heli-live-close" type="button" aria-label="Fechar">×</button></header><div class="heli-live-body"><div class="heli-live-cards"><div><small>Total recebido hoje</small><strong id="heli-live-total">—</strong></div><div><small>Vendas sincronizadas</small><strong id="heli-live-count">—</strong></div></div><h3>Movimento por local</h3><div id="heli-live-locations"></div><h3>Últimas vendas</h3><div id="heli-live-rows"></div><div class="heli-live-tools"><button id="heli-live-sound" type="button">Activar alertas sonoros</button><button id="heli-live-notify" type="button">Activar notificações</button></div><p id="heli-live-status" role="status">A ligar...</p></div>';
- document.body.append(btn,panel);
+ document.body.append(btn,panel);btn.style.display='none';
  $('heli-live-close').onclick=()=>{panelOpen=false;panel.classList.remove('open');};
  $('heli-live-sound').onclick=()=>{soundEnabled=!soundEnabled;$('heli-live-sound').textContent=soundEnabled?'Alertas sonoros activos':'Activar alertas sonoros';if(soundEnabled)playAlert();};
  $('heli-live-notify').onclick=async()=>{if(!('Notification'in window))return alert('Este navegador não suporta notificações.');notificationPermission=await Notification.requestPermission();$('heli-live-notify').textContent=notificationPermission==='granted'?'Notificações activas':'Notificações não autorizadas';};
@@ -159,6 +160,6 @@ async function start(){
  await flushQueue();
  if('serviceWorker'in navigator){navigator.serviceWorker.register('./service-worker.js').catch(e=>console.warn('[Heligrafes] SW não registado',e));}
 }
-window.HeligrafesSalesLive={enqueue,flushQueue,getPending:getQueue};
+window.HeligrafesSalesLive={enqueue,flushQueue,getPending:getQueue,open};
 const wait=setInterval(()=>{if(window.HELI_USER&&window.HELI_ORG){clearInterval(wait);start();}},250);
 })();
