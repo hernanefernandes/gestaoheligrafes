@@ -8,7 +8,7 @@ const org=()=>window.HELI_ORG?.id, locations=()=>window.HELI_ALLOWED_LOCATIONS||
 function admin(){return !!window.HELI_HAS_ROLE?.('owner','admin');}
 function status(t,bad=false){const n=$('heli-admin-status');if(n){n.textContent=t;n.style.color=bad?'#b91c1c':'#166534';}}
 function inject(){
- if($('heli-admin-style'))return;
+ if(!$('heli-admin-style')){
  const s=document.createElement('style');s.id='heli-admin-style';s.textContent=
 '#heli-admin-launch{position:fixed;right:18px;bottom:78px;z-index:2147483000!important;display:block;visibility:visible;opacity:1;background:#f4b51c;color:#12315c;border:0;border-radius:12px;padding:12px 16px;font-weight:900;box-shadow:0 8px 24px #063b8f33;cursor:pointer}'+
 '#heli-admin{position:fixed;inset:0;z-index:10002;background:#f2f6fc;color:#183451;display:none;overflow:auto;font-family:Inter,system-ui,sans-serif}'+
@@ -38,6 +38,8 @@ function inject(){
 '@media(max-width:800px){#heli-admin .cards{grid-template-columns:repeat(2,minmax(0,1fr))}#heli-admin .formgrid{grid-template-columns:1fr 1fr}#heli-admin .wrap{padding:12px}#heli-admin .head h2{font-size:18px}}'+
 '@media(max-width:460px){#heli-admin .cards{grid-template-columns:1fr 1fr}#heli-admin .formgrid{grid-template-columns:1fr}#heli-admin-launch{right:10px;bottom:70px}}';
  document.head.append(s);
+ }
+ if(!$('heli-admin')){
  const root=document.createElement('section');root.id='heli-admin';root.innerHTML=
 '<div class="wrap"><header class="head"><div><h2>Painel de Administração</h2><p>GRUPO HELIGRAFES · controlo de vendas, stock e equipa</p></div><button class="close" id="heli-admin-close">Fechar ✕</button></header>'+
 '<div class="toolbar"><select id="heli-admin-location"><option value="">Todos os locais autorizados</option></select><select id="heli-admin-range"><option value="today">Hoje</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select><button class="tab active" id="heli-admin-refresh">Actualizar dados ↻</button></div>'+
@@ -49,8 +51,11 @@ function inject(){
 '<section id="ha-team" class="hidden"><h3>Registar funcionário</h3><div class="formgrid"><input id="ha-emp-name" placeholder="Nome completo"><input id="ha-emp-role" placeholder="Função / cargo"><input id="ha-emp-phone" placeholder="Telefone"><select id="ha-emp-location"></select><button id="ha-emp-submit">Guardar funcionário</button></div><p class="muted" style="margin-top:9px">Este formulário regista o funcionário no cadastro de RH. A conta de acesso exige convite seguro pelo serviço de autenticação; não será criada com palavra-passe exposta no navegador.</p><h3>Equipa registada</h3><div id="ha-team-table" class="tablebox"></div></section>'+
 '<section id="ha-access" class="hidden"><h3>Criar conta de acesso</h3><p class="muted">Cria a conta, o perfil, a função e o local. O funcionário recebe um link seguro por e-mail para criar a sua própria palavra-passe. Não introduza nem partilhe palavras-passe.</p><div class="formgrid"><input id="ha-account-name" placeholder="Nome completo"><input id="ha-account-email" type="email" placeholder="E-mail do funcionário"><input id="ha-account-phone" type="tel" placeholder="Telefone (opcional)"><select id="ha-account-role"><option value="cashier">Caixa / Vendedor</option><option value="production">Produção</option><option value="hr">Recursos Humanos</option><option value="auditor">Auditoria</option><option value="manager">Gerente</option></select><select id="ha-account-location"></select><button id="ha-account-submit">Criar conta e enviar link seguro</button></div><h3>Contas e permissões existentes</h3><p class="muted">Ajuste a função e o local das contas já confirmadas.</p><div id="ha-access-table" class="tablebox"></div></section><section id="ha-performance" class="hidden"><h3>Metas, horários e desempenho por funcionário</h3><p class="muted">Define a meta semanal e mensal e o horário permitido para registar vendas. As vendas fora do horário serão assinaladas para análise.</p><div id="ha-performance-table" class="tablebox"></div><h3>Entradas recentes no sistema</h3><div id="ha-attendance-table" class="tablebox"></div><h3>Produtos mais vendidos</h3><div id="ha-best-products" class="tablebox"></div></section><section id="ha-sales" class="hidden"><h3>Vendas por funcionário (e-mail)</h3><div id="ha-sales-by-user" class="tablebox"></div><h3>Vendas no período</h3><div id="ha-sales-table" class="tablebox"></div></section><p id="heli-admin-status" class="muted" role="status" style="margin:14px 2px">A preparar painel...</p></div>';
  document.body.append(root);
- const launch=document.createElement('button');launch.id='heli-admin-launch';launch.textContent='Painel Admin';document.body.append(launch);
- launch.onclick=()=>open();$('heli-admin-close').onclick=()=>root.classList.remove('open');
+ }
+ let launch=$('heli-admin-launch');
+ if(!launch){launch=document.createElement('button');launch.id='heli-admin-launch';launch.textContent='Painel Admin';document.body.append(launch);}
+ launch.style.cssText='position:fixed;right:18px;bottom:78px;z-index:2147483000;display:block;visibility:visible;opacity:1;background:#f4b51c;color:#12315c;border:0;border-radius:12px;padding:12px 16px;font-weight:900;box-shadow:0 8px 24px #063b8f33;cursor:pointer';
+ launch.onclick=()=>open();if($('heli-admin-close'))$('heli-admin-close').onclick=()=> $('heli-admin')?.classList.remove('open');
  $('heli-admin-refresh').onclick=()=>loadAll();
  $('heli-admin-location').onchange=e=>{selectedLocation=e.target.value;loadAll();};
  $('heli-admin-range').onchange=e=>{range=e.target.value;loadAll();};
