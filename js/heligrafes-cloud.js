@@ -90,6 +90,23 @@ function addSessionBar(){
  document.body.appendChild(bar);
  el('heli-signout').addEventListener('click',async()=>{if(!confirm('Pretende terminar a sessão?'))return;await client.auth.signOut();window.location.reload();});
 }
+let productChannel=null;
+async function syncProductCatalog(){
+ if(!window.heliSupabase||!window.HELI_ORG)return;
+ const q=await client.from('products').select('id,sku,name,sale_price,cost_price,min_stock,unit,category_id,is_active').eq('organization_id',window.HELI_ORG.id).eq('is_active',true);
+ if(q.error){console.warn('[Heligrafes] Catálogo cloud:',q.error.message);return;}
+ (q.data||[]).forEach(p=>window.HeligrafesApplyCloudProduct?.(p));
+}
+function subscribeProductCatalog(){
+ if(productChannel)return;
+ productChannel=client.channel('heli-product-catalog-'+window.HELI_ORG.id)
+ .on('postgres_changes',{event:'*',schema:'public',table:'products',filter:'organization_id=eq.'+window.HELI_ORG.id},payload=>{
+  const p=payload.new||payload.old;
+  if(payload.eventType==='DELETE'){return;}
+  if(p?.is_active===false)return;
+  window.HeligrafesApplyCloudProduct?.(p);
+ }).subscribe();
+}
 async function launch(user){
  if(started)return;
  try{
@@ -98,6 +115,7 @@ async function launch(user){
   const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
   started=true;document.documentElement.classList.remove('heli-auth-lock');el('heli-auth-root')?.remove();addSessionBar();
+  if(!window.HELI_OFFLINE_MODE){await syncProductCatalog();subscribeProductCatalog();}
   const canAdmin=window.HELI_HAS_ROLE('owner','admin');
   if(!canAdmin){
    ['heli-admin-nav-heading','btn-gestao-produtos','btn-stocks','btn-relatorios','btn-historico'].forEach(id=>{const n=el(id);if(n)n.style.display='none';});
