@@ -908,7 +908,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                             <h3 class="text-xl font-bold text-slate-700 mb-4 flex items-center gap-2">💬 Chat Interno</h3>
                             <div class="space-y-4">
                                 <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Seu nome / posto</label>
+                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Funcionário autenticado</label>
                                     <input type="text" id="chat-user" class="big-input" placeholder="Ex: Balcão, Produção, Gerência" oninput="saveChatProfile()">
                                 </div>
                                 <div>
@@ -1523,141 +1523,73 @@ window.onload = function() {
         }
 
         /* --- CHAT INTERNO --- */
-        function initInternalChat() {
-            const userInput = document.getElementById('chat-user');
-            if (userInput) userInput.value = localStorage.getItem('multi_chat_user_v52') || '';
-            loadGitHubChatConfig();
-            renderEmojiPicker();
-            if ('BroadcastChannel' in window) {
-                chatChannel = new BroadcastChannel('heligrafes_chat_v52');
-                chatChannel.onmessage = function(event) {
-                    if (event.data && event.data.type === 'CHAT_SYNC') {
-                        chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
-                        chatPresence = JSON.parse(localStorage.getItem('multi_chat_presence_v52')) || {};
-                        deletedChatIds = JSON.parse(localStorage.getItem('multi_chat_deleted_v52')) || [];
-                        renderChatMessages();
-                        renderChatPeople();
-                    }
-                };
-            }
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
-            window.addEventListener('storage', function(event) {
-                if (event.key === 'multi_chat_messages_v52') {
-                    const beforeLatest = chatMessages[chatMessages.length - 1]?.id || '';
-                    chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
-                    chatPresence = JSON.parse(localStorage.getItem('multi_chat_presence_v52')) || {};
-                    deletedChatIds = JSON.parse(localStorage.getItem('multi_chat_deleted_v52')) || [];
-                    renderChatMessages();
-                    renderChatPeople();
-                    notifyNewChatMessages(beforeLatest);
-                }
-            });
-            updateOwnChatPresence(false);
-            if (chatPresenceTimer) clearInterval(chatPresenceTimer);
-            chatPresenceTimer = setInterval(() => {
-                updateOwnChatPresence(false);
-                syncChatToGitHub();
-            }, 5000);
-            startGitHubChatSync();
-            renderChatMessages();
-            renderChatPeople();
+        let heliChatDbChannel=null,heliChatRooms={},heliChatRecipients=[],heliChatLocations=[],heliChatReady=false;
+        function initInternalChat(){window.addEventListener('heli-auth-ready',startSupabaseInternalChat);if(window.HELI_USER&&window.heliSupabase)startSupabaseInternalChat();}
+        async function startSupabaseInternalChat(){
+          if(heliChatReady||!window.heliSupabase||!window.HELI_USER)return;
+          const db=window.heliSupabase,user=window.HELI_USER,profile=window.HELI_PROFILE||{},nameInput=document.getElementById('chat-user');
+          if(nameInput){nameInput.value=profile.full_name||user.email||'Funcionário';nameInput.readOnly=true;nameInput.title='Nome associado à conta autenticada';}
+          const githubBox=document.getElementById('chat-github-status')?.closest('.rounded-xl.border.border-slate-200');
+          if(githubBox)githubBox.innerHTML='<div class="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-bold text-emerald-800">● Chat online ligado ao Supabase Realtime.</div>';
+          try{
+            const [rooms,people,locations]=await Promise.all([
+              db.from('chat_rooms').select('id,code,name').eq('organization_id',window.HELI_ORG.id).order('name'),
+              db.from('user_profiles').select('user_id,full_name,email').eq('organization_id',window.HELI_ORG.id).eq('is_active',true).order('full_name'),
+              db.from('locations').select('id,name,code').eq('organization_id',window.HELI_ORG.id).eq('is_active',true).order('code')
+            ]);
+            for(const q of [rooms,people,locations])if(q.error)throw q.error;
+            heliChatRooms=Object.fromEntries((rooms.data||[]).map(r=>[r.code,r]));heliChatRecipients=people.data||[];heliChatLocations=locations.data||[];
+            const roomSelect=document.getElementById('chat-room'),wanted=roomSelect?.value||'GERAL';
+            if(roomSelect){roomSelect.innerHTML=(rooms.data||[]).map(r=>'<option value="'+escapeChatHtml(r.code)+'">'+escapeChatHtml(r.name)+'</option>').join('');roomSelect.value=heliChatRooms[wanted]?wanted:(rooms.data?.[0]?.code||'GERAL');}
+            const recipient=document.getElementById('chat-recipient'),old=recipient?.value||'TODOS';
+            if(recipient){recipient.innerHTML='<option value="TODOS">Todos</option>'+heliChatRecipients.filter(p=>p.user_id!==user.id).map(p=>'<option value="'+p.user_id+'">'+escapeChatHtml(p.full_name||p.email||'Funcionário')+'</option>').join('');recipient.value=heliChatRecipients.some(p=>p.user_id===old)?old:'TODOS';}
+            const latest=await loadSupabaseChatMessages();lastChatNotificationId=latest||'';
+            if(heliChatDbChannel)db.removeChannel(heliChatDbChannel);
+            heliChatDbChannel=db.channel('heli-chat-live-'+window.HELI_ORG.id)
+              .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:'organization_id=eq.'+window.HELI_ORG.id},async payload=>{
+                const before=chatMessages[chatMessages.length-1]?.id||'';await loadSupabaseChatMessages();renderChatMessages();renderChatPeople();notifyNewChatMessages(before);
+              }).subscribe(st=>setGitHubChatStatus(st==='SUBSCRIBED'?'● Online · mensagens em tempo real':'Chat: '+st));
+            heliChatReady=true;renderChatMessages();renderChatPeople();updateOwnChatPresence(false);
+          }catch(err){console.error('[Heligrafes Chat] Realtime:',err);setGitHubChatStatus('Falha ao ligar chat online: '+(err.message||err));}
+        }
+        async function loadSupabaseChatMessages(){
+          const db=window.heliSupabase,user=window.HELI_USER;if(!db||!user||!window.HELI_ORG)return '';
+          const q=await db.from('chat_messages').select('id,room_id,sender_id,recipient_id,body,attachment_path,sender_name,location_id,created_at').eq('organization_id',window.HELI_ORG.id).order('created_at',{ascending:true}).limit(300);
+          if(q.error)throw q.error;
+          const rooms=Object.fromEntries(Object.values(heliChatRooms).map(r=>[r.id,r.code])),names=Object.fromEntries(heliChatRecipients.map(p=>[p.user_id,p.full_name||p.email||'Funcionário']));
+          chatMessages=(q.data||[]).map(row=>{let file={};try{if(row.attachment_path)file=JSON.parse(row.attachment_path);}catch(_){}const d=new Date(row.created_at);return{id:row.id,dbId:row.id,room:rooms[row.room_id]||'GERAL',senderId:row.sender_id,recipientId:row.recipient_id||null,user:row.sender_name||names[row.sender_id]||'Funcionário',to:row.recipient_id?(names[row.recipient_id]||'Mensagem privada'):'TODOS',text:row.body||'',date:d.toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'}),time:d.toLocaleTimeString('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'}),location_id:row.location_id,...file};});
+          deletedChatIds=[];return chatMessages[chatMessages.length-1]?.id||'';
         }
 
-        function saveChatProfile() {
-            localStorage.setItem('multi_chat_user_v52', document.getElementById('chat-user').value || '');
-            updateOwnChatPresence(false);
-            renderChatPeople();
-        }
+        function saveChatProfile(){const n=document.getElementById('chat-user');if(n&&window.HELI_PROFILE)n.value=window.HELI_PROFILE.full_name||window.HELI_USER?.email||'Funcionário';}
 
-        function saveChatMessages() {
-            localStorage.setItem('multi_chat_messages_v52', JSON.stringify(chatMessages));
-            localStorage.setItem('multi_chat_presence_v52', JSON.stringify(chatPresence));
-            localStorage.setItem('multi_chat_deleted_v52', JSON.stringify(deletedChatIds));
-            if (chatChannel) chatChannel.postMessage({ type: 'CHAT_SYNC' });
-            syncChatToGitHub();
-        }
+        function saveChatMessages(){renderChatMessages();}
 
-        function renderChatMessages() {
-            const list = document.getElementById('chat-messages');
-            const counter = document.getElementById('chat-count');
-            const room = document.getElementById('chat-room') ? document.getElementById('chat-room').value : 'GERAL';
-            const recipient = document.getElementById('chat-recipient') ? document.getElementById('chat-recipient').value : 'TODOS';
-            const currentUser = (document.getElementById('chat-user')?.value || '').trim();
-            if (!list) return;
-            const roomMessages = chatMessages
-                .filter(msg => msg.room === room && !deletedChatIds.includes(String(msg.id)))
-                .filter(msg => {
-                    if (recipient === 'TODOS') return !msg.to || msg.to === 'TODOS' || msg.user === currentUser || msg.to === currentUser;
-                    return msg.user === recipient || msg.to === recipient || msg.user === currentUser && msg.to === recipient;
-                })
-                .slice(-200);
-            list.innerHTML = roomMessages.length ? roomMessages.map(msg => {
-                const fileHtml = renderChatFilePreview(msg);
-                const userColor = getChatUserColor(msg.user || 'Sistema');
-                const isMine = currentUser && msg.user === currentUser;
-                const toText = msg.to && msg.to !== 'TODOS' ? ` → ${escapeChatHtml(msg.to)}` : '';
-                return `<div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm ${isMine ? 'ml-10' : 'mr-10'}" style="border-left: 6px solid ${userColor};">
-                    <div class="flex justify-between gap-3 text-[10px] font-bold text-slate-400 uppercase">
-                        <span style="color:${userColor};">${escapeChatHtml(msg.user || 'Sistema')}${toText}</span><span>${msg.date || ''} ${msg.time || ''}</span>
-                    </div>
-                    <p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">${escapeChatHtml(msg.text || '')}</p>
-                    ${fileHtml}
-                    <div class="mt-2 flex justify-end">
-                        <button onclick="deleteChatMessage('${msg.id}')" class="text-[10px] font-black text-rose-500 hover:underline">Apagar</button>
-                    </div>
-                </div>`;
-            }).join('') : '<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
-            if (counter) counter.innerText = `${roomMessages.length} mensagem(ns)`;
-            list.scrollTop = list.scrollHeight;
-            renderChatTypingStatus();
+        function renderChatMessages(){
+          const list=document.getElementById('chat-messages'),counter=document.getElementById('chat-count'),room=document.getElementById('chat-room')?.value||'GERAL',recipient=document.getElementById('chat-recipient')?.value||'TODOS',me=window.HELI_USER?.id||'';
+          if(!list)return;
+          const rows=chatMessages.filter(m=>m.room===room&&(m.senderId===me||!m.recipientId||m.recipientId===me)&&(recipient==='TODOS'||m.senderId===recipient||m.recipientId===recipient||m.senderId===me&&m.recipientId===recipient)).slice(-200);
+          list.innerHTML=rows.length?rows.map(m=>{const file=renderChatFilePreview(m),color=getChatUserColor(m.user||'Sistema'),mine=m.senderId===me,loc=heliChatLocations.find(x=>x.id===m.location_id)?.name||'Local não atribuído',to=m.to&&m.to!=='TODOS'?' → '+escapeChatHtml(m.to):'';return '<div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm '+(mine?'ml-10':'mr-10')+'" style="border-left:6px solid '+color+'"><div class="flex justify-between gap-3 text-[10px] font-bold text-slate-400 uppercase"><span style="color:'+color+'">'+escapeChatHtml(m.user||'Funcionário')+to+'</span><span>'+m.date+' '+m.time+'</span></div><div class="text-[10px] text-slate-500 mt-1">📍 '+escapeChatHtml(loc)+'</div><p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">'+escapeChatHtml(m.text||'')+'</p>'+file+'</div>';}).join(''):'<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
+          if(counter)counter.innerText=rows.length+' mensagem(ns)';list.scrollTop=list.scrollHeight;renderChatTypingStatus();
         }
 
         function escapeChatHtml(text) {
             return text.replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
         }
 
-        function sendChatMessage() {
-            const user = (document.getElementById('chat-user').value || '').trim();
-            const room = document.getElementById('chat-room').value;
-            const to = document.getElementById('chat-recipient') ? document.getElementById('chat-recipient').value : 'TODOS';
-            const text = (document.getElementById('chat-message').value || '').trim();
-            const file = document.getElementById('chat-file').files[0];
-            if (!user) return alert('Informe o seu nome ou posto antes de enviar.');
-            if (!text && !file) return alert('Escreva uma mensagem ou selecione um ficheiro.');
-            if (file && file.size > 750000) return alert('O ficheiro é grande para guardar no GitHub. Use ficheiros até 750 KB.');
-
-            const finishSend = (filePayload = {}) => {
-                const now = new Date();
-                chatMessages.push({
-                    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                    room,
-                    user,
-                    to,
-                    text,
-                    date: now.toLocaleDateString(),
-                    time: now.toLocaleTimeString().slice(0,5),
-                    ...filePayload
-                });
-                document.getElementById('chat-message').value = '';
-                document.getElementById('chat-file').value = '';
-                clearSelectedChatFilePreview();
-                saveChatProfile();
-                updateOwnChatPresence(false);
-                saveChatMessages();
-                renderChatMessages();
-            };
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    finishSend({ fileName: file.name, fileType: file.type || 'application/octet-stream', fileData: event.target.result });
-                };
-                reader.readAsDataURL(file);
-            } else {
-                finishSend();
-            }
+        async function sendChatMessage(){
+          const db=window.heliSupabase,user=window.HELI_USER,code=document.getElementById('chat-room')?.value||'GERAL',to=document.getElementById('chat-recipient')?.value||'TODOS',text=(document.getElementById('chat-message')?.value||'').trim(),file=document.getElementById('chat-file')?.files?.[0];
+          if(!db||!user||!window.HELI_ORG)return alert('Inicie sessão para utilizar o chat online.');
+          if(!text&&!file)return alert('Escreva uma mensagem ou seleccione um ficheiro.');
+          if(file&&file.size>750000)return alert('O ficheiro deve ter até 750 KB.');
+          const room=heliChatRooms[code];if(!room)return alert('Sala não encontrada. Actualize a página.');
+          const btn=document.querySelector('button[onclick="sendChatMessage()"]');if(btn){btn.disabled=true;btn.textContent='A enviar...';}
+          try{
+            let attachment=null;if(file){const data=await new Promise((ok,no)=>{const r=new FileReader();r.onload=e=>ok(e.target.result);r.onerror=no;r.readAsDataURL(file);});attachment=JSON.stringify({fileName:file.name,fileType:file.type||'application/octet-stream',fileData:data});}
+            const q=await db.from('chat_messages').insert({organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:to==='TODOS'?null:to,body:text,attachment_path:attachment}).select('id').single();if(q.error)throw q.error;
+            document.getElementById('chat-message').value='';document.getElementById('chat-file').value='';clearSelectedChatFilePreview();await loadSupabaseChatMessages();renderChatMessages();
+          }catch(err){console.error('[Heligrafes Chat] Envio:',err);alert('Não foi possível enviar: '+(err.message||err));}
+          finally{if(btn){btn.disabled=false;btn.textContent='Enviar';}}
         }
 
         async function clearChatRoom() {
@@ -1678,32 +1610,11 @@ window.onload = function() {
             return colors[Math.abs(hash) % colors.length];
         }
 
-        function getChatPeople() {
-            const names = new Set();
-            chatMessages.forEach(msg => {
-                if (msg.user) names.add(msg.user);
-                if (msg.to && msg.to !== 'TODOS') names.add(msg.to);
-            });
-            Object.keys(chatPresence).forEach(name => names.add(name));
-            return Array.from(names).sort((a, b) => a.localeCompare(b));
-        }
-
-        function renderChatPeople() {
-            const recipient = document.getElementById('chat-recipient');
-            const onlineList = document.getElementById('chat-online-list');
-            const onlineCount = document.getElementById('chat-online-count');
-            const currentRecipient = recipient ? recipient.value : 'TODOS';
-            const people = getChatPeople();
-            if (recipient) {
-                recipient.innerHTML = '<option value="TODOS">Todos</option>' + people.map(name => `<option value="${escapeChatHtml(name)}">${escapeChatHtml(name)}</option>`).join('');
-                recipient.value = people.includes(currentRecipient) ? currentRecipient : 'TODOS';
-            }
-            const now = Date.now();
-            const onlinePeople = people.filter(name => chatPresence[name] && now - (chatPresence[name].lastSeen || 0) < CHAT_ONLINE_MS);
-            if (onlineCount) onlineCount.innerText = `${onlinePeople.length} online`;
-            if (onlineList) {
-                onlineList.innerHTML = onlinePeople.length ? onlinePeople.map(name => `<button onclick="selectChatRecipientByEncoded('${encodeURIComponent(name)}')" class="px-2 py-1 rounded-full bg-white border border-emerald-200 font-bold text-emerald-700"><span style="color:${getChatUserColor(name)};">●</span> ${escapeChatHtml(name)}</button>`).join('') : '<span class="text-slate-400 font-bold">Ninguém online agora.</span>';
-            }
+        function getChatPeople(){return heliChatRecipients.map(p=>p.full_name||p.email||'Funcionário');}
+        function renderChatPeople(){
+          const list=document.getElementById('chat-online-list'),count=document.getElementById('chat-online-count');
+          if(count)count.textContent=String(heliChatRecipients.length);
+          if(list)list.innerHTML=heliChatRecipients.map(p=>'<span class="px-2 py-1 rounded-full bg-white border border-emerald-200 font-bold text-emerald-700">'+escapeChatHtml(p.full_name||p.email||'Funcionário')+'</span>').join('')||'<span class="text-slate-400">Sem utilizadores activos.</span>';
         }
 
         function selectChatRecipientByEncoded(value) {
@@ -1816,14 +1727,7 @@ window.onload = function() {
             clearSelectedChatFilePreview();
         }
 
-        function deleteChatMessage(id) {
-            if (!confirm('Apagar esta mensagem ou ficheiro da conversa?')) return;
-            const stringId = String(id);
-            if (!deletedChatIds.includes(stringId)) deletedChatIds.push(stringId);
-            chatMessages = chatMessages.filter(msg => String(msg.id) !== stringId);
-            saveChatMessages();
-            renderChatMessages();
-        }
+        function deleteChatMessage(){alert('A eliminação de mensagens não está disponível no chat online.');}
 
         function renderChatFilePreview(msg) {
             if (!msg.fileName || !msg.fileData) return '';
@@ -2115,19 +2019,17 @@ window.onload = function() {
             };
         }
 
-        function notifyNewChatMessages(previousLatestId) {
-            const currentUser = (document.getElementById('chat-user')?.value || '').trim();
-            const latest = chatMessages[chatMessages.length - 1];
-            if (!latest || latest.id === previousLatestId || latest.id === lastChatNotificationId || latest.user === currentUser) return;
-            if (latest.to && latest.to !== 'TODOS' && latest.to !== currentUser) return;
-            lastChatNotificationId = latest.id;
-            localStorage.setItem('multi_chat_last_notification_v52', latest.id);
-            const text = `${latest.user || 'Utilizador'} enviou uma mensagem no chat.`;
-            if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification('Chat Heligrafes', { body: text });
-            } else {
-                alert(text);
-            }
+        function notifyNewChatMessages(previousLatestId){
+          const me=window.HELI_USER?.id||'',latest=chatMessages[chatMessages.length-1];
+          if(!latest||latest.id===previousLatestId||latest.id===lastChatNotificationId||latest.senderId===me)return;
+          if(latest.recipientId&&latest.recipientId!==me)return;
+          lastChatNotificationId=latest.id;
+          const loc=heliChatLocations.find(x=>x.id===latest.location_id)?.name||'Local não atribuído';
+          let popup=document.getElementById('heli-chat-live-popup');
+          if(!popup){popup=document.createElement('div');popup.id='heli-chat-live-popup';popup.style.cssText='position:fixed;right:20px;top:90px;z-index:2147483646;width:min(390px,calc(100vw - 32px));background:#fff;border:1px solid #cbd5e1;border-left:6px solid #0755ad;border-radius:14px;box-shadow:0 14px 45px #0f172a33;padding:14px;color:#17324d';document.body.appendChild(popup);}
+          popup.innerHTML='<div style="display:flex;justify-content:space-between;gap:12px"><div><strong style="font-size:13px">💬 Nova mensagem · '+escapeChatHtml(latest.user)+'</strong><div style="font-size:11px;color:#64748b;margin-top:3px">📍 '+escapeChatHtml(loc)+' · '+escapeChatHtml(latest.date+' '+latest.time)+'</div></div><button id="heli-chat-popup-close" style="border:0;background:#f1f5f9;border-radius:7px;padding:3px 8px">✕</button></div><p style="font-size:13px;white-space:pre-wrap;margin:10px 0">'+escapeChatHtml(latest.text||latest.fileName||'Nova mensagem')+'</p><div style="font-size:11px;color:#64748b">'+escapeChatHtml(heliChatRooms[latest.room]?.name||latest.room||'Chat interno')+'</div>';
+          document.getElementById('heli-chat-popup-close').onclick=()=>popup.remove();
+          if('Notification'in window&&Notification.permission==='granted')new Notification('Chat Heligrafes · '+latest.user,{body:latest.text||'Nova mensagem recebida'});
         }
 
         /* --- NAVEGAÇÃO --- */
