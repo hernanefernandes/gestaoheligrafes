@@ -17,14 +17,14 @@ function showLogin(t=''){
   document.body.appendChild(root);
   el('heli-auth-form').addEventListener('submit',signIn);
   el('heli-auth-reset').addEventListener('click',resetPassword);
-  el('heli-auth-create').addEventListener('click',showCreateAccountInfo);
+  el('heli-auth-create').addEventListener('click',showCreateAccountForm);
  }
  message(t);
 }
 async function loadIdentity(user){
  try{
   const p=await client.from('user_profiles').select('user_id,organization_id,full_name,email,is_active').eq('user_id',user.id).maybeSingle();
-  if(p.error)throw p.error;if(!p.data||!p.data.is_active)throw new Error('A conta não tem perfil activo no Grupo Heligrafes.');
+  if(p.error)throw p.error;if(!p.data){const rq=await client.from('employee_access_requests').select('status').eq('user_id',user.id).maybeSingle();if(rq.data?.status==='pending')throw new Error('Pedido enviado. Aguarde a aprovação do administrador.');if(rq.data?.status==='rejected')throw new Error('Pedido rejeitado. Contacte o administrador.');throw new Error('A conta ainda não foi autorizada pelo administrador.');}if(!p.data.is_active)throw new Error('A conta não está activa no Grupo Heligrafes.');
   const a=await client.from('user_role_assignments').select('role_id,location_id,organization_id').eq('user_id',user.id).eq('organization_id',p.data.organization_id);
   if(a.error)throw a.error;if(!a.data?.length)throw new Error('A conta ainda não tem função atribuída.');
   const ids=[...new Set(a.data.map(x=>x.role_id))];
@@ -142,10 +142,11 @@ async function signIn(event){
  catch(err){message(err.message||'Falha no início de sessão.',true);}
  finally{if(btn.isConnected){btn.disabled=false;btn.textContent='Entrar';}}
 }
-function showCreateAccountInfo(){
- message('O registo é reservado a funcionários autorizados. Solicite ao administrador que crie a sua conta e envie um convite para este e-mail. Depois, abra o link recebido para definir a sua palavra-passe.');
- const email=el('heli-auth-email')?.value.trim();
- if(!email){message('Introduza primeiro o e-mail que o administrador deverá autorizar. Depois, solicite o convite ao administrador.',true);return;}
+function showCreateAccountForm(){
+ const root=el('heli-auth-root');
+ root.innerHTML='<main class="heli-auth-card"><div class="heli-auth-mark">H</div><p class="heli-auth-eyebrow">GRUPO HELIGRAFES</p><h1>Criar conta</h1><p class="heli-auth-subtitle">Crie a sua conta. O acesso será activado após aprovação do administrador.</p><form id="heli-signup-form"><label for="heli-signup-name">Nome completo</label><input id="heli-signup-name" required autocomplete="name"><label for="heli-signup-email">E-mail</label><input id="heli-signup-email" type="email" required autocomplete="email" value="'+esc(el('heli-auth-email')?.value||'')+'"><label for="heli-signup-phone">Telefone (opcional)</label><input id="heli-signup-phone" type="tel" autocomplete="tel"><label for="heli-signup-password">Palavra-passe</label><input id="heli-signup-password" type="password" minlength="8" required autocomplete="new-password"><button id="heli-signup-submit" type="submit">Criar conta</button></form><button id="heli-signup-back" class="heli-auth-link" type="button">Voltar ao login</button><p id="heli-auth-message" role="status"></p><small>Sem convite. O administrador aprova o acesso.</small></main>';
+ el('heli-signup-back').onclick=()=>showLogin('');
+ el('heli-signup-form').addEventListener('submit',async e=>{e.preventDefault();const btn=el('heli-signup-submit');btn.disabled=true;btn.textContent='A criar conta...';try{const full_name=el('heli-signup-name').value.trim(),email=el('heli-signup-email').value.trim().toLowerCase(),phone=el('heli-signup-phone').value.trim(),password=el('heli-signup-password').value;if(full_name.length<3||password.length<8)throw new Error('Informe o nome completo e uma palavra-passe com pelo menos 8 caracteres.');const q=await client.auth.signUp({email,password,options:{data:{full_name,phone}}});if(q.error)throw q.error;if(q.data.session)await client.auth.signOut();message('Conta criada. O pedido foi enviado ao administrador. Aguarde a aprovação antes de entrar.');btn.textContent='Conta criada';}catch(err){message(err.message||'Não foi possível criar a conta.',true);btn.disabled=false;btn.textContent='Criar conta';}});
 }
 async function resetPassword(){
  const email=el('heli-auth-email').value.trim();if(!email)return message('Introduza o seu e-mail.',true);
