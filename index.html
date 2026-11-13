@@ -2781,6 +2781,17 @@ function promptDailyPaymentMethod() {
     }
 }
 
+window.HeligrafesApplyCloudProduct = function(p) {
+    if (!p || !p.id || !p.name) return;
+    const item = { id: p.id, name: p.name, price: Number(p.sale_price || 0), cost: Number(p.cost_price || 0), stock: 0, replenishmentLevel: Number(p.min_stock || 0), category: p.category || 'Geral', img: '' };
+    const index = products.findIndex(x => String(x.id) === String(p.id) || normalizeProductName(x.name) === normalizeProductName(p.name));
+    if (index >= 0) products[index] = { ...products[index], ...item };
+    else products.push(item);
+    localStorage.setItem('multi_products_v52', JSON.stringify(products));
+    updateProductDatalist();
+    if (typeof renderStockList === 'function') renderStockList();
+    if (typeof renderProductSalesManagement === 'function') renderProductSalesManagement();
+};
 function updateProductDatalist() { 
     const dl = document.getElementById('vr-products'); 
     dl.innerHTML = ''; 
