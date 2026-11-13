@@ -240,7 +240,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
             <div onclick="showTab('tabacaria')" class="sidebar-link active" id="btn-tabacaria"><span class="text-xl mr-3 opacity-90">⚡</span> <span>VENDA DIÁRIA</span></div>
             <div onclick="showTab('outros')" class="sidebar-link" id="btn-outros"><span class="text-xl mr-3 opacity-90">📦</span> <span>Papelaria & Decoração</span></div>
             
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-4 mt-8 mb-3">Administração</p>
+            <p id="heli-admin-nav-heading" class="text-xs font-bold text-slate-400 uppercase tracking-wider px-4 mt-8 mb-3">Administração</p>
             <div onclick="verificarAdmin('gestao-produtos')" class="sidebar-link" id="btn-gestao-produtos"><span class="text-xl mr-3 opacity-90">🛍️</span> <span>Gestão & Venda de Produtos</span></div>
             <div onclick="showTab('impressao')" class="sidebar-link" id="btn-impressao"><span class="text-xl mr-3 opacity-90">🖨️</span> <span>Área de Impressão</span></div>
             <div onclick="showTab('rh')" class="sidebar-link" id="btn-rh"><span class="text-xl mr-3 opacity-90">👥</span> <span>RH & Salários</span></div>
@@ -4074,5 +4074,6 @@ function selectAcademicPage(value) {
 <script src="./js/supabase-config.js"></script>
 <script src="./js/heligrafes-cloud.js"></script>
 <script src="./js/heligrafes-sales-live.js"></script>
+<script src="./js/heligrafes-admin.js"></script>
 </body>
 </html>
