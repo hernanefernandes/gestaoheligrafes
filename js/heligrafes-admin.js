@@ -122,11 +122,10 @@ async function loadAccess(){
  const pendingRows=requests.map(p=>{
   const roleOptions=staffRoles.map(r=>'<option value="'+esc(r.code)+'">'+esc(r.name)+'</option>').join('');
   const locationOptions=locs.map(l=>'<option value="'+l.id+'">'+esc(l.name)+'</option>').join('');
-  return '<tr><td><b>'+esc(p.full_name)+'</b><br><small>'+esc(p.email)+'</small><br><small>'+esc(p.phone||'')+'</small></td><td>'+new Date(p.requested_at).toLocaleString('pt-PT',{timeZone:'Africa/Luanda'})+'</td><td><select data-request-role="'+p.id+'">'+roleOptions+'</select></td><td><select data-request-location="'+p.id+'">'+locationOptions+'</select></td><td><button data-request-approve="'+p.id+'">Aprovar</button> <button data-request-reject="'+p.id+'">Rejeitar</button></td></tr>';
+  return '<tr><td><b>'+esc(p.full_name)+'</b><br><small>'+esc(p.email)+'</small><br><small>'+esc(p.phone||'')+'</small></td><td>'+new Date(p.requested_at).toLocaleString('pt-PT',{timeZone:'Africa/Luanda'})+'</td><td><select data-request-role="'+p.id+'">'+roleOptions+'</select></td><td><select data-request-location="'+p.id+'">'+locationOptions+'</select></td><td><button data-request-approve="'+p.id+'">Aprovar</button></td></tr>';
  });
  $('ha-pending-requests').innerHTML=table(['Nome / e-mail','Pedido','Função','Local','Acção'],pendingRows,'Não existem pedidos pendentes.');
- document.querySelectorAll('[data-request-approve]').forEach(b=>b.onclick=()=>reviewAccessRequest(b.dataset.requestApprove,true));
- document.querySelectorAll('[data-request-reject]').forEach(b=>b.onclick=()=>reviewAccessRequest(b.dataset.requestReject,false));
+ document.querySelectorAll('[data-request-approve]').forEach(b=>b.onclick=()=>reviewAccessRequest(b.dataset.requestApprove));
  const accountRows=profiles.map(p=>{
   const a=assignments.find(x=>x.user_id===p.user_id);
   const roleOptions=roles.map(r=>'<option value="'+r.id+'" '+(a?.role_id===r.id?'selected':'')+'>'+esc(r.name)+'</option>').join('');
@@ -136,17 +135,15 @@ async function loadAccess(){
  $('ha-access-table').innerHTML=table(['Conta / funcionário','Função','Local autorizado','Acção'],accountRows,'Ainda não existem contas autorizadas.');
  document.querySelectorAll('[data-save-access]').forEach(b=>b.onclick=()=>saveAccess(b.dataset.saveAccess,assignments,roles));
 }
-async function reviewAccessRequest(id,approve){
+async function reviewAccessRequest(id){
  try{
-  if(!approve&&!confirm('Rejeitar este pedido de acesso?'))return;
-  const payload={request_id:id};
-  if(approve){payload.role_code=document.querySelector('[data-request-role="'+id+'"]').value;payload.location_id=document.querySelector('[data-request-location="'+id+'"]').value;}
-  const result=await db().functions.invoke(approve?'approve-employee-access':'reject-employee-access',{body:payload});
+  const payload={request_id:id,role_code:document.querySelector('[data-request-role="'+id+'"]').value,location_id:document.querySelector('[data-request-location="'+id+'"]').value};
+  const result=await db().functions.invoke('approve-employee-access',{body:payload});
   if(result.error)throw result.error;
   if(result.data?.error)throw new Error(result.data.error);
-  status(approve?'Pedido aprovado. O funcionário já pode entrar.':'Pedido rejeitado.');
+  status('Pedido aprovado. O funcionário já pode entrar com a palavra-passe que criou.');
   await loadAccess();
- }catch(e){status('Falha ao analisar pedido: '+(e.message||e),true);}
+ }catch(e){status('Falha ao aprovar pedido: '+(e.message||e),true);}
 }
 
 async function saveAccess(uid,assignments,roles){try{const roleId=Number(document.querySelector('[data-role="'+uid+'"]').value),locId=document.querySelector('[data-location="'+uid+'"]').value||null,existing=assignments.find(a=>a.user_id===uid);if(!locId&&!['owner','admin'].includes(roles.find(r=>r.id===roleId)?.code))return status('Funcionário precisa de um local autorizado.',true);if(existing){const q=await db().from('user_role_assignments').update({role_id:roleId,location_id:locId}).eq('id',existing.id);if(q.error)throw q.error;}else{const q=await db().from('user_role_assignments').insert({organization_id:org(),user_id:uid,role_id:roleId,location_id:locId});if(q.error)throw q.error;}status('Permissão guardada. O utilizador deve voltar a iniciar sessão para actualizar o acesso.');await loadAccess();}catch(e){status('Falha ao guardar permissão: '+e.message,true);}}
