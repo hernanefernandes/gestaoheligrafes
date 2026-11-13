@@ -2,7 +2,7 @@
 'use strict';
 const db=()=>window.heliSupabase;
 const DB_NAME='heli-sales-offline-v1', STORE='outbox', QUEUE_KEY='heli_sales_queue_v1';
-let idb=null, channel=null, soundEnabled=false, panelOpen=false, notificationPermission=('Notification' in window?Notification.permission:'default');
+let idb=null, channel=null, soundEnabled=false, panelOpen=false, employeeSettings=null, notificationPermission=('Notification' in window?Notification.permission:'default');
 const $=id=>document.getElementById(id);
 const money=n=>(Number(n)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -29,10 +29,41 @@ function saleRow(sale){
  return {
   id:sale._heliCloudId||uuid(),organization_id:org.id,location_id:loc.id,
   local_sale_id:String(sale.id||sale._heliCloudId||uuid())+':'+String(occurred),
-  sale_payload:sale,total:Number(sale.total)||0,paid:Number(sale.initialPaid!==undefined?sale.initialPaid:sale.paid)||0,
+  sale_payload:sale,outside_schedule:isOutsideSchedule(occurred),total:Number(sale.total)||0,paid:Number(sale.initialPaid!==undefined?sale.initialPaid:sale.paid)||0,
   category:String(sale.category||'OTHER'),seller_name:String(sale.seller||'Sem utilizador'),seller_email:String(user.email||'').toLowerCase(),
   created_by:user.id,occurred_at:new Date(occurred).toISOString()
  };
+}
+function isOutsideSchedule(occurred){
+ const s=employeeSettings;if(!s?.sales_start||!s?.sales_end)return false;
+ const date=new Date(occurred),time=date.toLocaleTimeString('en-GB',{timeZone:s.timezone||'Africa/Luanda',hour:'2-digit',minute:'2-digit',hour12:false});
+ return time<s.sales_start.slice(0,5)||time>s.sales_end.slice(0,5);
+}
+async function loadEmployeeSettings(){
+ if(!db()||!window.HELI_USER)return;
+ const r=await db().from('employee_sales_settings').select('weekly_target,monthly_target,sales_start,sales_end,timezone').eq('organization_id',window.HELI_ORG.id).eq('user_id',window.HELI_USER.id).maybeSingle();
+ if(!r.error)employeeSettings=r.data;
+}
+function showEmployeePerformance(){
+ if(!window.HELI_USER||$('heli-my-performance'))return;
+ const bar=$('heli-session-bar');if(!bar)return;
+ const card=document.createElement('div');card.id='heli-my-performance';
+ card.innerHTML='<span><b>Entrada registada:</b> '+new Date().toLocaleString('pt-PT',{timeZone:'Africa/Luanda'})+'</span><span id="heli-my-target">A carregar metas...</span><span id="heli-my-sales">A carregar vendas...</span>';
+ bar.insertAdjacentElement('afterend',card);
+ loadMyPerformance();
+}
+async function loadMyPerformance(){
+ if(!db()||!window.HELI_USER)return;
+ const now=new Date(),monthStart=new Date(now.getFullYear(),now.getMonth(),1),weekStart=new Date(now);weekStart.setDate(now.getDate()-((now.getDay()+6)%7));weekStart.setHours(0,0,0,0);
+ const [settings,sales]=await Promise.all([db().from('employee_sales_settings').select('weekly_target,monthly_target,sales_start,sales_end,timezone').eq('organization_id',window.HELI_ORG.id).eq('user_id',window.HELI_USER.id).maybeSingle(),db().from('pos_sales_events').select('paid,occurred_at,outside_schedule').eq('organization_id',window.HELI_ORG.id).eq('created_by',window.HELI_USER.id).gte('occurred_at',monthStart.toISOString()).order('occurred_at',{ascending:false}).limit(1000)]);
+ if(settings.error||sales.error)return;
+ employeeSettings=settings.data;
+ const rows=sales.data||[],week=rows.filter(x=>new Date(x.occurred_at)>=weekStart).reduce((a,x)=>a+Number(x.paid||0),0),month=rows.reduce((a,x)=>a+Number(x.paid||0),0),daily=new Map();
+ rows.forEach(x=>{const k=new Date(x.occurred_at).toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'});daily.set(k,(daily.get(k)||0)+Number(x.paid||0));});
+ const dailyHtml=[...daily.entries()].sort((a,b)=>b[0].localeCompare(a[0])).slice(0,7).map(([d,v])=>d+': '+money(v)).join(' · ');
+ const t=$('heli-my-target'),s=$('heli-my-sales');
+ if(t)t.textContent='Meta semanal: '+money(settings.data?.weekly_target||0)+' · realizada: '+money(week)+' | Meta mensal: '+money(settings.data?.monthly_target||0)+' · realizada: '+money(month);
+ if(s)s.textContent='Vendas diárias: '+(dailyHtml||'Sem vendas registadas');
 }
 function status(t){const n=$('heli-live-status');if(n)n.textContent=t;}
 async function enqueue(sale){
