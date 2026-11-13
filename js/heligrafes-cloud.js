@@ -116,6 +116,7 @@ async function launch(user){
   const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
   started=true;document.documentElement.classList.remove('heli-auth-lock');el('heli-auth-root')?.remove();addSessionBar();
+  window.dispatchEvent(new CustomEvent('heli-auth-ready'));
   if(!window.HELI_OFFLINE_MODE){await syncProductCatalog();subscribeProductCatalog();}
   const canAdmin=window.HELI_HAS_ROLE('owner','admin');
   if(!canAdmin){
