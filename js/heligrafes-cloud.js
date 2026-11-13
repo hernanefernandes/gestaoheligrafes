@@ -22,7 +22,7 @@ function showLogin(t=''){
 }
 async function loadIdentity(user){
  try{
-  const p=await client.from('user_profiles').select('user_id,organization_id,full_name,is_active').eq('user_id',user.id).maybeSingle();
+  const p=await client.from('user_profiles').select('user_id,organization_id,full_name,email,is_active').eq('user_id',user.id).maybeSingle();
   if(p.error)throw p.error;if(!p.data||!p.data.is_active)throw new Error('A conta não tem perfil activo no Grupo Heligrafes.');
   const a=await client.from('user_role_assignments').select('role_id,location_id,organization_id').eq('user_id',user.id).eq('organization_id',p.data.organization_id);
   if(a.error)throw a.error;if(!a.data?.length)throw new Error('A conta ainda não tem função atribuída.');
@@ -30,6 +30,8 @@ async function loadIdentity(user){
   const r=await client.from('roles').select('id,code,name').in('id',ids);if(r.error)throw r.error;
   const o=await client.from('organizations').select('id,name,legal_name,currency_code,timezone').eq('id',p.data.organization_id).single();if(o.error)throw o.error;
   const l=await client.from('locations').select('id,code,name').eq('organization_id',p.data.organization_id).eq('is_active',true).order('code');if(l.error)throw l.error;
+  const emailSync=await client.rpc('heli_sync_my_email');if(emailSync.error)throw emailSync.error;
+  p.data.email=String(user.email||'').toLowerCase();
   identity={user:user,profile:p.data,assignments:a.data,roles:r.data||[],organization:o.data,locations:l.data||[]};
   window.HELI_OFFLINE_MODE=false;
   try{localStorage.setItem('heli_identity_cache_v1',JSON.stringify({user_id:user.id,profile:p.data,assignments:a.data,roles:r.data||[],organization:o.data,locations:l.data||[],cached_at:new Date().toISOString()}));}catch(_){}
@@ -84,16 +86,36 @@ function scheduleCloudSave(){if(!identity||!window.HELI_CAN_CLOUD_SYNC())return;
 function addSessionBar(){
  if(el('heli-session-bar'))return;
  const bar=document.createElement('div');bar.id='heli-session-bar';
- bar.innerHTML='<span class="heli-session-user">'+esc(identity.profile.full_name||identity.user.email)+'</span><span id="heli-cloud-status">Cloud ligada</span><button id="heli-signout" type="button">Terminar sessão</button>';
+ bar.innerHTML='<span class="heli-session-user">'+esc(identity.profile.full_name||identity.user.email)+'</span><span class="heli-session-time">Entrada: '+new Date().toLocaleString("pt-PT",{timeZone:"Africa/Luanda"})+'</span><span id="heli-cloud-status">Cloud ligada</span><button id="heli-signout" type="button">Terminar sessão</button>';
  document.body.appendChild(bar);
  el('heli-signout').addEventListener('click',async()=>{if(!confirm('Pretende terminar a sessão?'))return;await client.auth.signOut();window.location.reload();});
+}
+let productChannel=null;
+async function syncProductCatalog(){
+ if(!window.heliSupabase||!window.HELI_ORG)return;
+ const q=await client.from('products').select('id,sku,name,sale_price,cost_price,min_stock,unit,category_id,is_active').eq('organization_id',window.HELI_ORG.id).eq('is_active',true);
+ if(q.error){console.warn('[Heligrafes] Catálogo cloud:',q.error.message);return;}
+ (q.data||[]).forEach(p=>window.HeligrafesApplyCloudProduct?.(p));
+}
+function subscribeProductCatalog(){
+ if(productChannel)return;
+ productChannel=client.channel('heli-product-catalog-'+window.HELI_ORG.id)
+ .on('postgres_changes',{event:'*',schema:'public',table:'products',filter:'organization_id=eq.'+window.HELI_ORG.id},payload=>{
+  const p=payload.new||payload.old;
+  if(payload.eventType==='DELETE'){return;}
+  if(p?.is_active===false)return;
+  window.HeligrafesApplyCloudProduct?.(p);
+ }).subscribe();
 }
 async function launch(user){
  if(started)return;
  try{
-  await loadIdentity(user);const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
+  await loadIdentity(user);
+  if(!window.HELI_OFFLINE_MODE){const login=await client.rpc('heli_register_login');if(login.error)console.warn('[Heligrafes] Registo de entrada:',login.error.message);else window.HELI_LOGIN_SESSION_ID=login.data;}
+  const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
   started=true;document.documentElement.classList.remove('heli-auth-lock');el('heli-auth-root')?.remove();addSessionBar();
+  if(!window.HELI_OFFLINE_MODE){await syncProductCatalog();subscribeProductCatalog();}
   const canAdmin=window.HELI_HAS_ROLE('owner','admin');
   if(!canAdmin){
    ['heli-admin-nav-heading','btn-gestao-produtos','btn-stocks','btn-relatorios','btn-historico'].forEach(id=>{const n=el(id);if(n)n.style.display='none';});
