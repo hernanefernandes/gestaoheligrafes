@@ -238,11 +238,11 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
             <div onclick="showTab('academico')" class="sidebar-link" id="btn-academico"><span class="text-xl mr-3 opacity-90">🎓</span> <span>Trabalho Académico</span></div>
             <div onclick="showTab('tshirts')" class="sidebar-link" id="btn-tshirts"><span class="text-xl mr-3 opacity-90">👕</span> <span>T-Shirts & Brindes</span></div>
             <div onclick="showTab('tabacaria')" class="sidebar-link active" id="btn-tabacaria"><span class="text-xl mr-3 opacity-90">⚡</span> <span>VENDA DIÁRIA</span></div>
+            <div onclick="window.HeligrafesAdmin && window.HeligrafesAdmin.open()" class="sidebar-link" id="btn-admin-panel" style="display:none"><span class="text-xl mr-3 opacity-90">🛡️</span> <span>Painel de Administração</span></div>
+            <div onclick="window.HeligrafesSalesLive && window.HeligrafesSalesLive.open()" class="sidebar-link" id="btn-live-sales" style="display:none"><span class="text-xl mr-3 opacity-90">📡</span> <span>Vendas em tempo real</span></div>
             <div onclick="showTab('outros')" class="sidebar-link" id="btn-outros"><span class="text-xl mr-3 opacity-90">📦</span> <span>Papelaria & Decoração</span></div>
             
             <p id="heli-admin-nav-heading" class="text-xs font-bold text-slate-400 uppercase tracking-wider px-4 mt-8 mb-3">Administração</p>
-            <div onclick="window.HeligrafesAdmin?.open()" class="sidebar-link" id="btn-admin-panel" style="display:none"><span class="text-xl mr-3 opacity-90">🛡️</span> <span>Painel de Administração</span></div>
-            <div onclick="window.HeligrafesSalesLive?.open()" class="sidebar-link" id="btn-live-sales" style="display:none"><span class="text-xl mr-3 opacity-90">📡</span> <span>Vendas em tempo real</span></div>
             <div onclick="verificarAdmin('gestao-produtos')" class="sidebar-link" id="btn-gestao-produtos"><span class="text-xl mr-3 opacity-90">🛍️</span> <span>Gestão & Venda de Produtos</span></div>
             <div onclick="showTab('impressao')" class="sidebar-link" id="btn-impressao"><span class="text-xl mr-3 opacity-90">🖨️</span> <span>Área de Impressão</span></div>
             <div onclick="showTab('rh')" class="sidebar-link" id="btn-rh"><span class="text-xl mr-3 opacity-90">👥</span> <span>RH & Salários</span></div>
@@ -4087,6 +4087,6 @@ function selectAcademicPage(value) {
 <script src="./js/supabase-config.js"></script>
 <script src="./js/heligrafes-cloud.js?v=20261113-3"></script>
 <script src="./js/heligrafes-sales-live.js?v=20261113-3"></script>
-<script src="./js/heligrafes-admin.js?v=20261113-5"></script>
+<script src="./js/heligrafes-admin.js?v=20261113-6"></script>
 </body>
 </html>
