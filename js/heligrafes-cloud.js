@@ -13,10 +13,11 @@ function showLogin(t=''){
  document.documentElement.classList.add('heli-auth-lock');
  if(!el('heli-auth-root')){
   const root=document.createElement('div');root.id='heli-auth-root';
-  root.innerHTML='<main class="heli-auth-card"><div class="heli-auth-mark">H</div><p class="heli-auth-eyebrow">GRUPO HELIGRAFES</p><h1>Gestão Heligrafes</h1><p class="heli-auth-subtitle">Acesso seguro à plataforma de gestão</p><form id="heli-auth-form"><label for="heli-auth-email">E-mail</label><input id="heli-auth-email" type="email" autocomplete="username" required value="hernanelimas88@gmail.com"><label for="heli-auth-password">Palavra-passe</label><input id="heli-auth-password" type="password" autocomplete="current-password" required placeholder="A tua palavra-passe"><button id="heli-auth-submit" type="submit">Entrar</button></form><button id="heli-auth-reset" class="heli-auth-link" type="button">Recuperar palavra-passe</button><p id="heli-auth-message" role="status"></p><small>Autenticação protegida pelo Supabase</small></main>';
+  root.innerHTML='<main class="heli-auth-card"><div class="heli-auth-mark">H</div><p class="heli-auth-eyebrow">GRUPO HELIGRAFES</p><h1>Gestão Heligrafes</h1><p class="heli-auth-subtitle">Acesso seguro à plataforma de gestão</p><form id="heli-auth-form"><label for="heli-auth-email">E-mail</label><input id="heli-auth-email" type="email" autocomplete="username" required value="hernanelimas88@gmail.com"><label for="heli-auth-password">Palavra-passe</label><input id="heli-auth-password" type="password" autocomplete="current-password" required placeholder="A tua palavra-passe"><button id="heli-auth-submit" type="submit">Entrar</button></form><button id="heli-auth-reset" class="heli-auth-link" type="button">Recuperar palavra-passe</button><button id="heli-auth-create" class="heli-auth-link" type="button">Criar conta</button><p id="heli-auth-message" role="status"></p><small>Autenticação protegida pelo Supabase</small></main>';
   document.body.appendChild(root);
   el('heli-auth-form').addEventListener('submit',signIn);
   el('heli-auth-reset').addEventListener('click',resetPassword);
+  el('heli-auth-create').addEventListener('click',showCreateAccountInfo);
  }
  message(t);
 }
@@ -140,6 +141,11 @@ async function signIn(event){
  try{const q=await client.auth.signInWithPassword({email:el('heli-auth-email').value.trim(),password:el('heli-auth-password').value});if(q.error)throw q.error;await launch(q.data.user);}
  catch(err){message(err.message||'Falha no início de sessão.',true);}
  finally{if(btn.isConnected){btn.disabled=false;btn.textContent='Entrar';}}
+}
+function showCreateAccountInfo(){
+ message('O registo é reservado a funcionários autorizados. Solicite ao administrador que crie a sua conta e envie um convite para este e-mail. Depois, abra o link recebido para definir a sua palavra-passe.');
+ const email=el('heli-auth-email')?.value.trim();
+ if(!email){message('Introduza primeiro o e-mail que o administrador deverá autorizar. Depois, solicite o convite ao administrador.',true);return;}
 }
 async function resetPassword(){
  const email=el('heli-auth-email').value.trim();if(!email)return message('Introduza o seu e-mail.',true);
