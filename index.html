@@ -3162,10 +3162,9 @@ async function finalizeVRSale() {
     
     const savedSale = saveData(newSale);
     if (!savedSale) return;
-    vrCart=[]; 
-    renderVRCart(); 
-    document.getElementById('vr-payment-method').value = '';
-    alert("Venda Registada!"); 
+    vrCart=[];
+    renderVRCart();
+    saveDailyPaymentMethod();
 }
 
 // 2. ADICIONADA A LIMPEZA DE CAMPOS APÓS REGISTAR DESPESA
