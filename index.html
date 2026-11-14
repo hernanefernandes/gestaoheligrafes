@@ -3193,52 +3193,73 @@ function addExpense() {
 }
 
 // 3. ADICIONADO O PAINEL DE CAIXA DIÁRIO (VENDAS - DESPESAS)
+function getSaleProductLines(sale) {
+    if (Array.isArray(sale.items) && sale.items.length) {
+        return sale.items.map(item => ({
+            name: String(item.name || item.product_name || 'Produto não identificado').trim(),
+            qty: Math.max(0, Number(item.qty) || 0),
+            total: Math.max(0, Number(item.total) || ((Number(item.price) || 0) * (Number(item.qty) || 0)))
+        })).filter(item => item.name && item.qty > 0);
+    }
+    const description = String(sale.desc || 'Produto não identificado');
+    const match = description.match(/^\s*(\d+(?:[.,]\d+)?)\s*[x×]\s*(.+)$/i);
+    const qty = match ? Math.max(0, Number(match[1].replace(',', '.')) || 0) : Math.max(1, Number(sale.qty) || 1);
+    return [{ name: (match ? match[2] : description).trim(), qty, total: Math.max(0, Number(sale.total) || 0) }];
+}
+
+function groupSalesProducts(saleRows) {
+    const grouped = new Map();
+    saleRows.forEach(sale => getSaleProductLines(sale).forEach(item => {
+        const key = item.name.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase();
+        const current = grouped.get(key) || { name: item.name, qty: 0, total: 0 };
+        current.qty += item.qty;
+        current.total += item.total;
+        grouped.set(key, current);
+    }));
+    return [...grouped.values()].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
+}
+
+function escapeReportText(value) {
+    return String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
 function renderDailySummaries() {
     const salesSummary = document.getElementById('vr-daily-sales-summary');
     const expensesList = document.getElementById('vr-daily-expenses-list');
     const today = new Date().toLocaleDateString();
     const activeStart = getActiveShiftStartMs(today);
-    
-    let totalVendasHoje = 0;
-    let totalDespesasHoje = 0;
-    let previousSaleAt = null;
-    
-    salesSummary.innerHTML = '';
-    sales.filter(s => s.date === today && s.category !== 'EXPENSE' && (!activeStart || getSaleTimestamp(s) > activeStart)).sort((a,b) => getSaleTimestamp(a) - getSaleTimestamp(b)).forEach(s => {
-        totalVendasHoje += getSaleInitialPaid(s);
-        const saleAt = getSaleTimestamp(s);
-        const intervalText = previousSaleAt ? formatIdleInterval(saleAt - previousSaleAt) : 'Primeiro lançamento';
-        previousSaleAt = saleAt;
-        salesSummary.innerHTML += `<div class="bg-slate-50 p-2 rounded border border-slate-100">
-            <div class="flex justify-between"><span class="font-bold text-slate-700 text-xs">${s.desc}</span><span class="text-slate-400 text-[10px]">${s.time || new Date(saleAt).toLocaleTimeString().slice(0,5)}</span></div>
-            <div class="text-[10px] font-bold text-amber-600 mt-1">Intervalo sem lançamento: ${intervalText}</div>
-        </div>`;
-    });
+    const todaySales = sales.filter(s => s.date === today && s.category !== 'EXPENSE' && (!activeStart || getSaleTimestamp(s) > activeStart));
+    const todayExpenses = sales.filter(s => s.date === today && s.category === 'EXPENSE' && (!activeStart || getSaleTimestamp(s) > activeStart));
+    const groupedProducts = groupSalesProducts(todaySales);
 
-    expensesList.innerHTML = '';
-    sales.filter(s => s.date === today && s.category === 'EXPENSE' && (!activeStart || getSaleTimestamp(s) > activeStart)).forEach((s, idx) => {
-        totalDespesasHoje += s.total;
-        expensesList.innerHTML += `<div class="flex justify-between items-center bg-rose-50 p-2 rounded border border-rose-100 text-xs"><span><b class="text-rose-700">${s.desc}</b>: ${s.total.toLocaleString()} Kz</span><button onclick="editExpense(${s.id})" class="text-blue-600 font-bold hover:underline">Editar</button></div>`;
-    });
-    
-    // Caixa Real: vendas e dívidas efetivamente pagas - despesas
-    const dividasPagasHoje = getDebtPaymentsTotal(today, activeStart);
-    const caixaAtual = totalVendasHoje + dividasPagasHoje - totalDespesasHoje;
+    const totalVendasHoje = todaySales.reduce((sum, sale) => sum + getSaleInitialPaid(sale), 0);
+    const totalDespesasHoje = todayExpenses.reduce((sum, expense) => sum + (Number(expense.total) || 0), 0);
+
+    if (salesSummary) {
+        salesSummary.innerHTML = groupedProducts.length ? groupedProducts.map(item => `
+            <div class="bg-slate-50 p-2 rounded border border-slate-100 flex justify-between items-center gap-3">
+                <span class="font-bold text-slate-700 text-xs min-w-0">${escapeReportText(item.name)}</span>
+                <span class="text-slate-500 text-[10px] font-black whitespace-nowrap">${item.qty.toLocaleString('pt-PT')} un.</span>
+            </div>`).join('') : '<div class="text-xs text-slate-400 text-center p-3">Sem vendas registadas neste período.</div>';
+    }
+
+    if (expensesList) {
+        expensesList.innerHTML = '';
+        todayExpenses.forEach(expense => {
+            expensesList.innerHTML += `<div class="flex justify-between items-center bg-rose-50 p-2 rounded border border-rose-100 text-xs"><span><b class="text-rose-700">${escapeReportText(expense.desc)}</b>: ${(Number(expense.total) || 0).toLocaleString()} Kz</span><button onclick="editExpense(${Number(expense.id)})" class="text-blue-600 font-bold hover:underline">Editar</button></div>`;
+        });
+        const painelCaixaHtml = `
+            <div class="bg-slate-800 p-3 rounded-lg mb-2 flex justify-between items-center shadow-md">
+                <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Caixa Diário Real</span>
+                <span class="text-xs font-black text-amber-300 text-right">Valor disponível apenas no relatório impresso</span>
+            </div>
+            <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 mt-3">Histórico de Saídas</div>`;
+        expensesList.innerHTML = painelCaixaHtml + (expensesList.innerHTML || '<div class="text-xs text-slate-400">Sem saídas registadas.</div>');
+    }
+
     const dailyTotal = document.getElementById('vr-daily-total');
     if (dailyTotal) dailyTotal.innerText = `${totalVendasHoje.toLocaleString()} Kz`;
-    
-    // Painel inserido no topo da secção de despesas
-    const painelCaixaHtml = `
-        <div class="bg-slate-800 p-3 rounded-lg mb-2 flex justify-between items-center shadow-md">
-            <span class="text-xs font-bold text-slate-300 uppercase tracking-wider">Caixa Diário Real</span>
-            <span class="text-xs font-black text-amber-300 text-right">Valor disponível apenas no relatório impresso</span>
-        </div>
-        <div class="text-[10px] font-bold text-slate-400 uppercase mb-2 mt-3">Histórico de Saídas</div>
-    `;
-    
-    expensesList.innerHTML = painelCaixaHtml + expensesList.innerHTML;
 }
-
 async function editExpense(id) {
     const exp = sales.find(s => s.id === id);
     if (exp && await checkPermission()) {
@@ -3339,144 +3360,101 @@ function sendDailyReport(platform) {
 }
 
 function printDailyReport(copies = 1) {
-    if(!ensureSalesSession()) return;
+    if (!ensureSalesSession()) return;
     const copiesToPrint = Math.min(3, Math.max(1, parseInt(copies, 10) || 1));
     const today = new Date().toLocaleDateString();
     const time = new Date().toLocaleTimeString();
-    
-    let html = `<div style="font-family: 'Plus Jakarta Sans', Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; color: #334155;">`;
-    html += `<div style="text-align:center; margin-bottom: 20px;">`;
-    html += `<h2 style="margin:0; font-size:24px; color:#1e293b;">GRUPO HELIGRAFES</h2>`;
-    html += `<h3 style="margin:5px 0; color:#64748b;">RELATÓRIO DE FECHO DE CAIXA DIÁRIO</h3>`;
-    html += `<p style="margin:0; font-size:14px;"><strong>Data:</strong> ${today} às ${time}</p></div>`;
-    html += `<hr style="border: 1px dashed #cbd5e1; margin-bottom: 20px;">`;
-
-    let totalGeral = 0;
-    let totalDespesas = 0;
-    let categorias = {};
-
-    sales.filter(s => s.date === today).forEach(s => {
-        if (s.category === 'EXPENSE') {
-            totalDespesas += s.total;
-        } else {
-            const valorPago = getSaleInitialPaid(s);
-            totalGeral += valorPago;
-            if (!categorias[s.category]) categorias[s.category] = [];
-            categorias[s.category].push(s);
-        }
-    });
+    const location = getCurrentBusinessLocation() || 'Local não identificado';
+    const seller = getCurrentSeller() || 'Funcionário não identificado';
+    const daySales = sales.filter(s => s.date === today && s.category !== 'EXPENSE');
+    const dayExpenses = sales.filter(s => s.date === today && s.category === 'EXPENSE');
     const debtPaidToday = debtPayments.filter(p => p.date === today);
-    const debtPaidTotal = debtPaidToday.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
     const pendingDebts = getPendingDebts();
-    totalGeral += getExtraCashTotal(today) + debtPaidTotal;
-
-    // Tabelas de Vendas por Categoria
-    for (let cat in categorias) {
-        html += `<h4 style="background:#f1f5f9; padding:8px; border-left: 4px solid #3b82f6; margin-bottom:10px;">DEPARTAMENTO: ${cat}</h4>`;
-        html += `<table style="width:100%; border-collapse: collapse; margin-bottom: 20px; font-size:12px;">`;
-        html += `<tr style="background:#f8fafc; text-align:left;">
-                    <th style="padding:8px; border-bottom:2px solid #e2e8f0; width:15%;">Hora</th>
-                    <th style="padding:8px; border-bottom:2px solid #e2e8f0; width:50%;">Descrição / Cliente</th>
-                    <th style="padding:8px; border-bottom:2px solid #e2e8f0; width:15%;">Método</th>
-                    <th style="padding:8px; border-bottom:2px solid #e2e8f0; text-align:right; width:20%;">Valor</th>
-                 </tr>`;
-        
-        let subtotal = 0;
-        categorias[cat].forEach(s => {
-            const valorPago = getSaleInitialPaid(s);
-            subtotal += valorPago;
-            const hora = s.time || '-';
-            const descFinal = s.client && s.client !== 'Balcão' ? `${s.desc} <br><small style="color:#64748b;">Cli: ${s.client}</small>` : s.desc;
-            
-            html += `<tr>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${hora}</td>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${descFinal}</td>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${s.method || '-'}</td>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9; text-align:right; font-weight:bold;">${valorPago.toLocaleString()} Kz</td>
-                     </tr>`;
-        });
-        html += `<tr>
-                    <td colspan="3" style="padding:8px; text-align:right; color:#64748b;">Subtotal do Departamento:</td>
-                    <td style="padding:8px; font-weight:900; text-align:right; color:#2563eb; border-top:2px solid #cbd5e1;">${subtotal.toLocaleString()} Kz</td>
-                 </tr>`;
-        html += `</table>`;
-    }
-
-    // Tabela de Despesas
-    html += `<h4 style="background:#fff1f2; padding:8px; border-left: 4px solid #e11d48; margin-bottom:10px; color:#be123c;">SAÍDAS E DESPESAS</h4>`;
-    html += `<table style="width:100%; border-collapse: collapse; margin-bottom: 30px; font-size:12px;">`;
-    let countExp = 0;
-    sales.filter(s => s.date === today && s.category === 'EXPENSE').forEach(s => {
-        html += `<tr>
-                    <td style="padding:8px; border-bottom:1px solid #f1f5f9; width:80%;">${s.desc}</td>
-                    <td style="padding:8px; border-bottom:1px solid #f1f5f9; text-align:right; color:#e11d48; font-weight:bold;">-${s.total.toLocaleString()} Kz</td>
-                 </tr>`;
-        countExp++;
+    const salesReceived = daySales.reduce((sum, sale) => sum + getSaleInitialPaid(sale), 0);
+    const debtReceived = debtPaidToday.reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0);
+    const expensesTotal = dayExpenses.reduce((sum, expense) => sum + (Number(expense.total) || 0), 0);
+    const extraCash = getExtraCashTotal(today);
+    const totalEntries = salesReceived + debtReceived + extraCash;
+    const cashBalance = totalEntries - expensesTotal;
+    const methods = new Map();
+    daySales.forEach(sale => {
+        const method = sale.method || 'Não identificado';
+        methods.set(method, (methods.get(method) || 0) + getSaleInitialPaid(sale));
     });
-    if(countExp === 0) html += `<tr><td style="padding:8px; color:#94a3b8; font-style:italic;">Nenhuma despesa registada hoje.</td></tr>`;
-    html += `</table>`;
+    debtPaidToday.forEach(payment => {
+        const method = payment.method || 'Não identificado';
+        methods.set(method, (methods.get(method) || 0) + (Number(payment.amount) || 0));
+    });
 
-    html += `<h4 style="background:#ecfdf5; padding:8px; border-left: 4px solid #10b981; margin-bottom:10px; color:#047857;">DÍVIDAS PAGAS HOJE</h4>`;
-    html += `<table style="width:100%; border-collapse: collapse; margin-bottom: 20px; font-size:12px;">`;
-    if (debtPaidToday.length) {
-        debtPaidToday.forEach(p => {
-            html += `<tr>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${p.time || '-'}</td>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;"><strong>${p.client || 'Cliente'}</strong><br><small>${p.product || 'Produto'} | Dívida de ${p.originalDate}</small></td>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${p.method || '-'}</td>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9; text-align:right; color:#047857; font-weight:bold;">${p.amount.toLocaleString()} Kz</td>
-                     </tr>`;
-        });
-    } else {
-        html += `<tr><td style="padding:8px; color:#94a3b8; font-style:italic;">Nenhum pagamento de dívida registado hoje.</td></tr>`;
-    }
-    html += `</table>`;
+    const categories = new Map();
+    daySales.forEach(sale => {
+        const category = sale.category || 'Sem departamento';
+        if (!categories.has(category)) categories.set(category, []);
+        categories.get(category).push(sale);
+    });
 
-    html += `<h4 style="background:#fff7ed; padding:8px; border-left: 4px solid #f97316; margin-bottom:10px; color:#c2410c;">DÍVIDAS PENDENTES</h4>`;
-    html += `<table style="width:100%; border-collapse: collapse; margin-bottom: 30px; font-size:12px;">`;
-    if (pendingDebts.length) {
-        pendingDebts.forEach(s => {
-            html += `<tr>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;"><strong>${s.client || 'Cliente'}</strong><br><small>${s.phone || 'Sem contacto'}</small></td>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9;">${s.desc || 'Produto'}<br><small>Dívida de ${s.date}</small></td>
-                        <td style="padding:8px; border-bottom:1px solid #f1f5f9; text-align:right; color:#c2410c; font-weight:bold;">${getDebtAmount(s).toLocaleString()} Kz</td>
-                     </tr>`;
-        });
-    } else {
-        html += `<tr><td style="padding:8px; color:#94a3b8; font-style:italic;">Sem dívidas pendentes.</td></tr>`;
-    }
-    html += `</table>`;
+    const styles = 'font-family:Arial,sans-serif;color:#263548;font-size:12px;line-height:1.45;';
+    const th = 'padding:9px 7px;background:#edf3f9;border-bottom:1px solid #d7e1ec;text-align:left;';
+    const td = 'padding:8px 7px;border-bottom:1px solid #e8edf3;';
+    let html = `<div style="${styles}max-width:850px;margin:0 auto;padding:22px">`;
+    html += `<header style="text-align:center;margin-bottom:18px"><h1 style="font-size:23px;margin:0;color:#12365b">GRUPO HELIGRAFES</h1><h2 style="font-size:16px;margin:5px 0;color:#49627d">RELATÓRIO DE FECHO DE CAIXA</h2><div>${escapeReportText(today)} · ${escapeReportText(time)}</div><div style="margin-top:4px;color:#64748b">Local: ${escapeReportText(location)} · Funcionário: ${escapeReportText(seller)}</div></header>`;
+    html += '<h3 style="background:#eaf2fb;padding:9px;margin:18px 0 8px;color:#174477">1. RESUMO FINANCEIRO</h3>';
+    html += '<table style="width:100%;border-collapse:collapse"><tbody>';
+    const summaryRows = [
+        ['Entradas das vendas', salesReceived, '#087443'],
+        ['Dívidas recebidas hoje', debtReceived, '#087443'],
+        ['Outras entradas', extraCash, '#087443'],
+        ['Total de entradas', totalEntries, '#174477'],
+        ['Despesas registadas', expensesTotal, '#be123c'],
+        ['SALDO DE CAIXA', cashBalance, '#12365b']
+    ];
+    summaryRows.forEach((row, index) => {
+        html += `<tr><td style="${td}${index === 5 ? 'font-weight:900;border-top:2px solid #9aafc4;font-size:14px;' : ''}">${row[0]}</td><td style="${td}text-align:right;color:${row[2]};font-weight:900">${row[1].toLocaleString('pt-PT')} Kz</td></tr>`;
+    });
+    html += '</tbody></table>';
 
-    // Resumo Final de Caixa
-    html += `<div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                <span style="font-weight:bold; color:#64748b;">Total de Entradas Brutas:</span>
-                <span style="font-weight:bold; color:#10b981;">${totalGeral.toLocaleString()} Kz</span>
-             </div>`;
-    html += `<div style="display:flex; justify-content:space-between; margin-bottom:10px; padding-bottom:10px; border-bottom:1px solid #cbd5e1;">
-                <span style="font-weight:bold; color:#64748b;">Despesas registadas:</span>
-                <span style="font-weight:bold; color:#e11d48;">${totalDespesas.toLocaleString()} Kz</span>
-             </div>`;
-    html += `<div style="display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-weight:900; font-size:18px; color:#1e293b;">SALDO DE CAIXA:</span>
-                <span style="font-weight:900; font-size:22px; color:#1e293b;">${(totalGeral - totalDespesas).toLocaleString()} Kz</span>
-             </div>`;
-    html += `</div></div>`;
+    html += '<h3 style="background:#eaf2fb;padding:9px;margin:18px 0 8px;color:#174477">2. VENDAS POR DEPARTAMENTO E PRODUTO</h3>';
+    if (categories.size) {
+        for (const [category, rows] of categories) {
+            const products = groupSalesProducts(rows);
+            const categoryReceived = rows.reduce((sum, sale) => sum + getSaleInitialPaid(sale), 0);
+            html += `<h4 style="margin:12px 0 5px;padding:7px;background:#f3f6fa;border-left:4px solid #3977b9">${escapeReportText(category)}</h4>`;
+            html += `<table style="width:100%;border-collapse:collapse;margin-bottom:10px"><thead><tr><th style="${th}">Produto</th><th style="${th}text-align:right">Quantidade</th><th style="${th}text-align:right">Valor dos produtos</th></tr></thead><tbody>`;
+            products.forEach(item => {
+                html += `<tr><td style="${td}">${escapeReportText(item.name)}</td><td style="${td}text-align:right">${item.qty.toLocaleString('pt-PT')}</td><td style="${td}text-align:right">${item.total.toLocaleString('pt-PT')} Kz</td></tr>`;
+            });
+            html += `<tr><td colspan="2" style="${td}font-weight:900;text-align:right">Recebido neste departamento</td><td style="${td}font-weight:900;text-align:right;color:#174477">${categoryReceived.toLocaleString('pt-PT')} Kz</td></tr></tbody></table>`;
+        }
+    } else html += '<p style="color:#7b8794">Nenhuma venda registada hoje.</p>';
+
+    html += `<h3 style="background:#eaf2fb;padding:9px;margin:18px 0 8px;color:#174477">3. MÉTODOS DE PAGAMENTO</h3><table style="width:100%;border-collapse:collapse"><tbody>`;
+    if (methods.size) methods.forEach((amount, method) => { html += `<tr><td style="${td}">${escapeReportText(method)}</td><td style="${td}text-align:right;font-weight:800">${amount.toLocaleString('pt-PT')} Kz</td></tr>`; });
+    else html += `<tr><td style="${td}" colspan="2">Sem pagamentos registados.</td></tr>`;
+    html += '</tbody></table>';
+
+    html += `<h3 style="background:#fff0f2;padding:9px;margin:18px 0 8px;color:#a51d3c">4. DESPESAS E SAÍDAS</h3><table style="width:100%;border-collapse:collapse"><tbody>`;
+    if (dayExpenses.length) dayExpenses.forEach(expense => { html += `<tr><td style="${td}">${escapeReportText(expense.desc)}</td><td style="${td}text-align:right;color:#be123c;font-weight:800">-${(Number(expense.total) || 0).toLocaleString('pt-PT')} Kz</td></tr>`; });
+    else html += `<tr><td style="${td}" colspan="2">Nenhuma despesa registada hoje.</td></tr>`;
+    html += '</tbody></table>';
+
+    html += `<h3 style="background:#eaf8f0;padding:9px;margin:18px 0 8px;color:#087443">5. DÍVIDAS PAGAS HOJE</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th style="${th}">Hora</th><th style="${th}">Cliente / Produto</th><th style="${th}">Método</th><th style="${th}text-align:right">Valor</th></tr></thead><tbody>`;
+    if (debtPaidToday.length) debtPaidToday.forEach(payment => { html += `<tr><td style="${td}">${escapeReportText(payment.time || '-')}</td><td style="${td}">${escapeReportText(payment.client || 'Cliente')}<br><small>${escapeReportText(payment.product || 'Produto')} · Dívida de ${escapeReportText(payment.originalDate || '-')}</small></td><td style="${td}">${escapeReportText(payment.method || '-')}</td><td style="${td}text-align:right;color:#087443;font-weight:800">${(Number(payment.amount) || 0).toLocaleString('pt-PT')} Kz</td></tr>`; });
+    else html += `<tr><td style="${td}" colspan="4">Nenhum pagamento de dívida registado hoje.</td></tr>`;
+    html += '</tbody></table>';
+
+    html += `<h3 style="background:#fff5e9;padding:9px;margin:18px 0 8px;color:#a9540b">6. DÍVIDAS PENDENTES</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th style="${th}">Cliente / Contacto</th><th style="${th}">Produto / Data</th><th style="${th}text-align:right">Em dívida</th></tr></thead><tbody>`;
+    if (pendingDebts.length) pendingDebts.forEach(debt => { html += `<tr><td style="${td}">${escapeReportText(debt.client || 'Cliente')}<br><small>${escapeReportText(debt.phone || 'Sem contacto')}</small></td><td style="${td}">${escapeReportText(debt.desc || 'Produto')}<br><small>Data: ${escapeReportText(debt.date || '-')}</small></td><td style="${td}text-align:right;color:#a9540b;font-weight:800">${getDebtAmount(debt).toLocaleString('pt-PT')} Kz</td></tr>`; });
+    else html += `<tr><td style="${td}" colspan="3">Sem dívidas pendentes.</td></tr>`;
+    html += '</tbody></table><div style="margin-top:28px;padding-top:14px;border-top:1px solid #cbd5e1;color:#64748b">Conferência: ____________________________ &nbsp;&nbsp; Assinatura: ____________________________</div></div>';
 
     const shiftEntry = registerShiftClosePrint(buildShiftStats(today), 'RELATORIO_DIARIO');
     if (!shiftEntry) return;
-
-    // Abrir janela de impressão: uma cópia normal ou três vias no mesmo documento.
-    const copiesHtml = Array.from({ length: copiesToPrint }, (_, index) => `
-        <section class="report-copy">
-            ${copiesToPrint > 1 ? `<div class="copy-label">VIA ${index + 1} DE ${copiesToPrint}</div>` : ''}
-            ${html}
-        </section>`).join('');
+    const copiesHtml = Array.from({ length: copiesToPrint }, (_, index) => `<section class="report-copy">${copiesToPrint > 1 ? `<div class="copy-label">VIA ${index + 1} DE ${copiesToPrint}</div>` : ''}${html}</section>`).join('');
     const printWindow = window.open('', '_blank');
-    printWindow.document.write(`<html><head><title>Relatório de Fecho - ${today}</title><style>body{margin:0}.report-copy{padding:12px}.copy-label{max-width:760px;margin:0 auto -10px;padding:6px 10px;border:1px solid #bfdbfe;border-radius:8px;color:#1d4ed8;font:800 11px Arial;letter-spacing:.08em;text-align:right}@media print{.report-copy{break-after:page;page-break-after:always}.report-copy:last-child{break-after:auto;page-break-after:auto}}</style></head><body onload="window.print(); setTimeout(()=>window.close(), 500);">${copiesHtml}</body></html>`);
+    if (!printWindow) { alert('Permita janelas pop-up para imprimir o relatório. O fecho já foi registado.'); return; }
+    printWindow.document.write(`<html><head><title>Relatório de Fecho - ${today}</title><style>body{margin:0}.report-copy{padding:12px;break-after:page;page-break-after:always}.report-copy:last-child{break-after:auto;page-break-after:auto}.copy-label{max-width:820px;margin:0 auto 8px;padding:6px 10px;color:#1d4ed8;font:800 11px Arial;text-align:right}@media print{@page{margin:12mm}.report-copy{break-after:page;page-break-after:always}.report-copy:last-child{break-after:auto;page-break-after:auto}}</style></head><body onload="window.print()">${copiesHtml}</body></html>`);
     printWindow.document.close();
 }
-
         // --- RELATÓRIOS ---
         function renderReports() {
             renderLocationProfitReport();
