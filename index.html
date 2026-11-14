@@ -191,6 +191,34 @@
         .vr-selected-product.visible { display: flex; }
         @media (max-width: 640px) { .pos-payment-strip { align-items: stretch; flex-direction: column; } .pos-payment-strip select { width: 100%; min-width: 0; } .pos-cart-scroll { max-height: 360px; } }
         @media (max-width: 1024px) { .app-sidebar { width: 15.5rem; } .app-topbar { padding: 16px 22px; } .workspace-scroll { padding: 22px; } }
+
+        /* --- REFINAMENTO VISUAL HELIGRAFES: NAVEGAÇÃO E INTERACÇÕES --- */
+        .app-sidebar { position:relative; isolation:isolate; }
+        .app-sidebar::before { content:''; position:absolute; inset:0 0 auto; height:190px; pointer-events:none; background:radial-gradient(circle at 10% 0%,rgba(31,174,229,.28),transparent 68%); z-index:-1; }
+        .app-brand { transition:transform .25s ease,background .25s ease,box-shadow .25s ease; }
+        .app-brand:hover { transform:translateY(-2px); background:rgba(255,255,255,.14); box-shadow:0 16px 30px rgba(0,0,0,.16); }
+        .app-sidebar nav { scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.25) transparent; }
+        .app-sidebar nav > p { display:flex; align-items:center; gap:10px; margin-top:24px; margin-bottom:12px; padding:0 12px 9px; border-bottom:1px solid rgba(255,255,255,.14); color:#b9dcff; font-size:10px; letter-spacing:.16em; }
+        .app-sidebar nav > p::before { content:''; width:7px; height:7px; flex:0 0 7px; border-radius:50%; background:var(--heli-yellow); box-shadow:0 0 0 4px rgba(249,189,23,.13); }
+        .app-sidebar .sidebar-link { position:relative; min-height:46px; overflow:hidden; isolation:isolate; transition:transform .2s ease,background .2s ease,color .2s ease,box-shadow .2s ease,border-color .2s ease; }
+        .app-sidebar .sidebar-link::before { content:''; position:absolute; left:0; top:9px; bottom:9px; width:3px; border-radius:0 6px 6px 0; background:var(--heli-yellow); transform:scaleY(0); transition:transform .2s ease; }
+        .app-sidebar .sidebar-link:hover { transform:translateX(4px); border-color:rgba(255,255,255,.16); background:linear-gradient(90deg,rgba(255,255,255,.16),rgba(255,255,255,.06)); box-shadow:0 8px 18px rgba(0,0,0,.10); }
+        .app-sidebar .sidebar-link:hover::before,.app-sidebar .sidebar-link.active::before { transform:scaleY(1); }
+        .app-sidebar .sidebar-link span:first-child { display:inline-flex; width:34px; height:34px; flex:0 0 34px; align-items:center; justify-content:center; margin-right:11px; border-radius:11px; background:rgba(255,255,255,.10); transition:transform .2s ease,background .2s ease; }
+        .app-sidebar .sidebar-link:hover span:first-child { transform:scale(1.08) rotate(-3deg); background:rgba(255,255,255,.18); }
+        .app-sidebar .sidebar-link.active span:first-child { background:rgba(6,59,143,.09); }
+        .app-sidebar .sidebar-link:focus-visible { outline:3px solid var(--heli-yellow); outline-offset:2px; }
+        .workspace-scroll button,.app-topbar button { transition:transform .18s ease,box-shadow .18s ease,filter .18s ease; }
+        .workspace-scroll button:not(:disabled):hover,.app-topbar button:not(:disabled):hover { transform:translateY(-2px); filter:brightness(1.04); box-shadow:0 9px 20px rgba(6,59,143,.16); }
+        .workspace-scroll button:not(:disabled):active,.app-topbar button:not(:disabled):active { transform:translateY(0) scale(.98); }
+        .workspace-scroll button:disabled,.app-topbar button:disabled { cursor:not-allowed; opacity:.55; filter:grayscale(.15); }
+        .workspace-scroll button:focus-visible,.app-topbar button:focus-visible { outline:3px solid rgba(31,174,229,.65); outline-offset:3px; }
+        .workspace-scroll .glass-panel { transition:box-shadow .22s ease,border-color .22s ease; }
+        .workspace-scroll .glass-panel:hover { border-color:#c5ddf3; box-shadow:0 16px 34px rgba(38,71,116,.11); }
+        .workspace-scroll input,.workspace-scroll select,.workspace-scroll textarea { transition:border-color .18s ease,box-shadow .18s ease,background .18s ease; }
+        .workspace-scroll input:focus,.workspace-scroll select:focus,.workspace-scroll textarea:focus { border-color:var(--heli-sky); box-shadow:0 0 0 4px rgba(31,174,229,.12); outline:none; }
+        .app-topbar { backdrop-filter:blur(18px); }
+        @media (prefers-reduced-motion:reduce) { .app-sidebar *, .workspace-scroll button, .app-topbar button, .workspace-scroll .glass-panel { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
         @media (max-width: 760px) { .app-sidebar { width: 4.75rem; } .app-brand { margin: 12px 8px; padding: 6px; } .app-brand-logo { height: 48px; padding: 3px; } .app-sidebar nav { padding: 12px 8px; } .app-sidebar nav > p, .app-sidebar .sidebar-link span:last-child, .app-sidebar > div:last-child > div > div { display: none; } .app-sidebar .sidebar-link { justify-content: center; padding: 12px 4px; } .app-sidebar .sidebar-link span:first-child { margin-right: 0; } .app-sidebar > div:last-child { padding: 8px; } .app-sidebar > div:last-child > div { justify-content: center; padding: 10px; } .app-topbar { padding: 12px 14px; } .topbar-company { display: none; } .topbar-session { padding: 8px 10px; gap: 10px !important; } .topbar-session > div:nth-child(2) { display: none; } .clock-toggle button { padding: 5px 6px; font-size: 9px; } .workspace-scroll { padding: 16px; } .pos-screen .pos-heading { align-items: flex-start; gap: 12px; } .pos-screen .pos-heading > div:last-child { flex-wrap: wrap; justify-content: flex-end; } }
     </style>
 <style id="heli-supabase-auth-style">
