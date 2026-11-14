@@ -733,7 +733,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                                     <select id="business-location" class="big-input" onchange="saveBusinessLocation()">
                                         <option value="LOCAL 1">LOCAL 1</option>
                                         <option value="LOCAL 2">LOCAL 2</option>
-                                        <option value="LOCAL 3">LOCAL 3</option>
+                                        <option value="LOCAL 3">LOCAL 3</option><option value="LOCAL 4">LOCAL 4</option><option value="LOCAL 5">LOCAL 5</option>
                                     </select>
                                 </div>
                                 <div class="col-span-12 lg:col-span-3">
@@ -1057,7 +1057,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
         let chatPresenceSyncTimer = null;
         const CHAT_FAST_SYNC_MS = 100;
         const OPS_FAST_SYNC_MS = 2000;
-        const BUSINESS_LOCATIONS = ['LOCAL 1', 'LOCAL 2', 'LOCAL 3'];
+        const BUSINESS_LOCATIONS = ['LOCAL 1', 'LOCAL 2', 'LOCAL 3', 'LOCAL 4', 'LOCAL 5'];
         const CHAT_ONLINE_MS = 90000;
         const CHAT_TYPING_MS = 2500;
         const CHAT_EMOJIS = ['😀','😂','😊','🙏','👍','👎','👌','💪','🔥','❤️','✅','⚠️','📌','📎','🧾','🖨️','💰','⏰','🎉','👏'];
@@ -1128,7 +1128,7 @@ window.onload = function() {
             let locationName = getCurrentBusinessLocation();
             let sellerName = getCurrentSeller();
             if (force || !BUSINESS_LOCATIONS.includes(locationName)) {
-                const requested = prompt('Local deste caixa: LOCAL 1, LOCAL 2 ou LOCAL 3', locationName || 'LOCAL 1');
+                const requested = prompt('Local deste caixa: LOCAL 1, LOCAL 2, LOCAL 3, LOCAL 4 ou LOCAL 5', locationName || 'LOCAL 1');
                 if (requested === null && locationName) return false;
                 const normalized = String(requested || 'LOCAL 1').trim().toUpperCase();
                 locationName = BUSINESS_LOCATIONS.includes(normalized) ? normalized : 'LOCAL 1';
