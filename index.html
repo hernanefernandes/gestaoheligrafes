@@ -1243,6 +1243,21 @@ window.onload = function() {
             if (product) product.updatedAt = new Date().toISOString();
         }
 
+        async function syncLegacyStockAlert(product) {
+            try {
+                if (!product || !window.heliSupabase || !window.HELI_USER?.id || !window.HELI_ORG?.id) return;
+                const result = await window.heliSupabase.rpc('heli_sync_legacy_stock_alert', {
+                    p_org: window.HELI_ORG.id,
+                    p_product_name: String(product.name || ''),
+                    p_location_name: getCurrentBusinessLocation(),
+                    p_quantity: Math.max(0, Number(product.stock) || 0)
+                });
+                if (result.error) throw result.error;
+            } catch (error) {
+                console.warn('[Stock] Não foi possível sincronizar o aviso administrativo:', error.message || error);
+            }
+        }
+
         function setOperationalStatus(text) {
             const status = document.getElementById('ops-sync-status');
             if (status) status.innerText = text;
@@ -3000,6 +3015,7 @@ function finalizeVRSale() {
         if (product) {
             product.stock = (parseInt(product.stock) || 0) - item.qty;
             touchProduct(product);
+            void syncLegacyStockAlert(product);
         }
         return { ...item, productId: product ? product.id : null, cost: product ? (parseFloat(product.cost) || 0) : (parseFloat(item.cost) || 0) };
     });
@@ -3601,6 +3617,7 @@ function printDailyReport(copies = 1) {
             if (!p) return alert('Produto não encontrado.');
             p.stock = (Number(p.stock) || 0) + qtyToAdd;
             touchProduct(p);
+            void syncLegacyStockAlert(p);
             saveData();
             renderStockList();
             updateRestockSelect();
@@ -3765,7 +3782,7 @@ function printDailyReport(copies = 1) {
         function updateStockSelect() { const sel = document.getElementById('st-product-select'); sel.innerHTML = '<option value="">🔍 Procurar Produto...</option>'; products.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
         function updateStockDisplay() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); if(p) { document.getElementById('st-current-stock').innerText = p.stock; document.getElementById('st-current-price').innerText = p.price.toLocaleString() + ' Kz'; } calcStationeryTotal(); }
         function calcStationeryTotal() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = document.getElementById('st-qty').value; document.getElementById('st-total').value = (p ? p.price * qty : 0).toLocaleString() + ' Kz'; }
-        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(!ensureSalesSession()) return; if(confirm("Confirmar venda?")) { const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); if (!savedSale) return; p.stock -= qty; touchProduct(p); saveData(); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-payment-method').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
+        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(!ensureSalesSession()) return; if(confirm("Confirmar venda?")) { const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); if (!savedSale) return; p.stock -= qty; touchProduct(p); void syncLegacyStockAlert(p); saveData(); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-payment-method').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
         function renderStationeryDailyReport() { const list = document.getElementById('st-sales-list'); if(!list) return; list.innerHTML=''; sales.slice().reverse().forEach(s => { if(s.category === 'PAPELARIA' && s.date === new Date().toLocaleDateString()) list.innerHTML += `<div class="grid grid-cols-12 bg-white p-2 border-b border-slate-100 text-xs text-slate-600 hover:bg-slate-50 items-center"><div class="col-span-2">${new Date(s.id).toLocaleTimeString().slice(0,5)}</div><div class="col-span-5 font-bold">${s.desc}</div><div class="col-span-2 text-center bg-blue-50 rounded">${s.qty||1}</div><div class="col-span-2 text-right font-bold text-emerald-600">${s.total.toLocaleString()}</div><div class="col-span-1 text-center"><button onclick="deleteSale(${s.id})" class="text-red-400 font-bold hover:text-red-600">×</button></div></div>`; }); }
         function renderOrdersHistory() { const tbody = document.getElementById('orders-history-body'); tbody.innerHTML = ''; sales.slice().reverse().forEach(s => { const debt = getDebtAmount(s); let statusHtml = debt <= 0 ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600">Pago</span>' : `<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">Dívida: ${debt.toLocaleString()}</span><button onclick="registerDebtPayment(${s.id})" class="ml-2 text-emerald-600 font-black text-[10px] underline">Pagar</button>`; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-3 text-slate-500">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client || 'Balcão'}<div class="text-[10px] text-slate-400">${s.phone || ''}</div></td><td class="p-3 text-slate-600 text-xs">${s.desc}</td><td class="p-3 text-right font-medium">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center">${statusHtml}</td><td class="p-3 text-center"><button onclick='printInvoiceDouble(${s.id})' class="text-blue-500 font-bold text-xs mr-2">🖨️</button><button onclick='deleteSale(${s.id})' class="text-red-400 font-bold text-xs">🗑️</button></td></tr>`; }); }
         function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, payrollPayments: payrollPayments, shiftCloses: shiftCloses, shiftAuditLogs: shiftAuditLogs, extraCashAdds: extraCashAdds, debtPayments: debtPayments, chatMessages: chatMessages, chatPresence: chatPresence, deletedChatIds: deletedChatIds }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
