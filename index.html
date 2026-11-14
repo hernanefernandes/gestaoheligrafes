@@ -1559,7 +1559,9 @@ window.onload = function() {
               else if(packet.kind==='end'&&meta){
                 const blob=new Blob(parts,{type:meta.fileType||'application/octet-stream'}),url=URL.createObjectURL(blob);
                 const message=chatMessages.find(m=>String(m.id)===String(meta.messageId));
-                if(message){message.fileName=meta.fileName;message.fileType=meta.fileType;message.fileData=url;message.fileReceived=true;renderChatMessages();}
+                const received={fileName:meta.fileName,fileType:meta.fileType,fileData:url,fileReceived:true};
+                if(message)Object.assign(message,received);else heliChatIncomingFiles.set(String(meta.messageId),received);
+                renderChatMessages();
                 channel.close();heliChatFilePeers.get(signal.transferId)?.close();heliChatFilePeers.delete(signal.transferId);
               }
             }else if(meta)parts.push(event.data);
@@ -1618,7 +1620,7 @@ window.onload = function() {
           const overlay=document.createElement('div');overlay.id='chat-unread-alert';overlay.className='fixed inset-0 z-[10000] bg-slate-950/50 flex items-center justify-center p-4';
           overlay.innerHTML='<div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"><div class="text-xs font-black uppercase text-amber-600 mb-2">🔔 Mensagem por ler há mais de 2 minutos</div><h3 class="text-lg font-black text-slate-800">'+escapeChatHtml(m.user||'Colega')+'</h3><p class="text-xs text-slate-500 mt-1">'+escapeChatHtml(m.room||'GERAL')+' · '+escapeChatHtml(m.date||'')+' '+escapeChatHtml(m.time||'')+'</p><p class="my-4 whitespace-pre-wrap text-sm text-slate-700">'+escapeChatHtml(m.text||'Mensagem com anexo')+'</p><div class="flex gap-2"><button id="chat-alert-reply" class="flex-1 rounded-xl bg-indigo-600 px-4 py-3 text-xs font-black text-white">Responder agora</button><button id="chat-alert-close" class="rounded-xl border px-4 py-3 text-xs font-bold">Fechar</button></div></div>';
           document.body.appendChild(overlay);
-          overlay.querySelector('#chat-alert-reply').onclick=()=>{overlay.remove();if(typeof showTab==='function')showTab('chat');const r=document.getElementById('chat-recipient');if(r)r.value=m.senderId;document.getElementById('chat-room').value=m.room;renderChatMessages();document.getElementById('chat-message').value='@'+(m.user||'Colega')+' ';document.getElementById('chat-message').focus();};
+          overlay.querySelector('#chat-alert-reply').onclick=()=>{markChatMessageRead(m.id);overlay.remove();if(typeof showTab==='function')showTab('chat');const r=document.getElementById('chat-recipient');if(r)r.value=m.senderId;document.getElementById('chat-room').value=m.room;renderChatMessages();document.getElementById('chat-message').value='@'+(m.user||'Colega')+' ';document.getElementById('chat-message').focus();};
           overlay.querySelector('#chat-alert-close').onclick=()=>overlay.remove();
         }
         function initInternalChat(){window.addEventListener('heli-auth-ready',startSupabaseInternalChat);if(window.HELI_USER&&window.heliSupabase)startSupabaseInternalChat();}
@@ -1658,7 +1660,7 @@ window.onload = function() {
           const q=await db.from('chat_messages').select('id,room_id,sender_id,recipient_id,body,attachment_path,sender_name,location_id,created_at,delivery_at').eq('organization_id',window.HELI_ORG.id).order('created_at',{ascending:true}).limit(300);
           if(q.error)throw q.error;
           const rooms=Object.fromEntries(Object.values(heliChatRooms).map(r=>[r.id,r.code])),names=Object.fromEntries(heliChatRecipients.map(p=>[p.user_id,p.full_name||p.email||'Funcionário']));
-          chatMessages=(q.data||[]).map(row=>{let file={};try{if(row.attachment_path)file=JSON.parse(row.attachment_path);}catch(_){}const d=new Date(row.created_at);return{id:row.id,dbId:row.id,room:rooms[row.room_id]||'GERAL',senderId:row.sender_id,recipientId:row.recipient_id||null,user:row.sender_name||names[row.sender_id]||'Funcionário',to:row.recipient_id?(names[row.recipient_id]||'Mensagem privada'):'TODOS',text:row.body||'',date:d.toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'}),time:d.toLocaleTimeString('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'}),createdAt:row.created_at,deliveryAt:row.delivery_at,location_id:row.location_id,...file};});
+          chatMessages=(q.data||[]).map(row=>{let file={};try{if(row.attachment_path)file=JSON.parse(row.attachment_path);}catch(_){}const d=new Date(row.created_at);return{id:row.id,dbId:row.id,room:rooms[row.room_id]||'GERAL',senderId:row.sender_id,recipientId:row.recipient_id||null,user:row.sender_name||names[row.sender_id]||'Funcionário',to:row.recipient_id?(names[row.recipient_id]||'Mensagem privada'):'TODOS',text:row.body||'',date:d.toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'}),time:d.toLocaleTimeString('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'}),createdAt:row.created_at,deliveryAt:row.delivery_at,location_id:row.location_id,...file,...(heliChatIncomingFiles.get(String(row.id))||{})};});
           deletedChatIds=[];return chatMessages[chatMessages.length-1]?.id||'';
         }
 
