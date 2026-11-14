@@ -1243,6 +1243,47 @@ window.onload = function() {
             if (product) product.updatedAt = new Date().toISOString();
         }
 
+        function resolveCurrentStockLocation() {
+            const allowed = window.HELI_ALLOWED_LOCATIONS || [];
+            const current = String(getCurrentBusinessLocation() || '').trim().toLowerCase();
+            return allowed.find(location =>
+                String(location.name || '').trim().toLowerCase() === current ||
+                String(location.code || '').trim().toLowerCase() === current
+            ) || (allowed.length === 1 ? allowed[0] : null);
+        }
+        async function refreshCurrentProductStock(product) {
+            if (!product || !product.id || !window.heliSupabase || !window.HELI_ORG?.id) throw new Error('Produto ainda não está ligado ao catálogo online.');
+            const location = resolveCurrentStockLocation();
+            if (!location) throw new Error('O local deste caixa não está associado à sua conta. Confirme o local da sessão.');
+            const result = await window.heliSupabase.from('stock_balances').select('quantity')
+                .eq('organization_id', window.HELI_ORG.id).eq('location_id', location.id)
+                .eq('product_id', product.id).maybeSingle();
+            if (result.error) throw result.error;
+            product.stock = Number(result.data?.quantity || 0);
+            return { location, quantity: product.stock };
+        }
+        async function syncCurrentLocationStocks() {
+            if (!window.heliSupabase || !window.HELI_ORG?.id) return;
+            const location = resolveCurrentStockLocation();
+            if (!location) return;
+            const result = await window.heliSupabase.from('stock_balances').select('product_id,quantity')
+                .eq('organization_id', window.HELI_ORG.id).eq('location_id', location.id);
+            if (result.error) { console.warn('[Stock] Sincronização:', result.error.message); return; }
+            const balances = new Map((result.data || []).map(row => [String(row.product_id), Number(row.quantity) || 0]));
+            products.forEach(product => { if (product.id && product.track_stock !== false) product.stock = balances.get(String(product.id)) || 0; });
+            localStorage.setItem('multi_products_v52', JSON.stringify(products));
+            updateProductDatalist();
+            if (typeof renderStockList === 'function') renderStockList();
+        }
+        let heliStockRealtimeChannel = null;
+        function startStockBalanceRealtime() {
+            if (!window.heliSupabase || !window.HELI_ORG?.id || heliStockRealtimeChannel) return;
+            heliStockRealtimeChannel = window.heliSupabase.channel('heli-pos-stock-' + window.HELI_ORG.id)
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'stock_balances', filter: 'organization_id=eq.' + window.HELI_ORG.id },
+                    () => { void syncCurrentLocationStocks(); }).subscribe();
+            void syncCurrentLocationStocks();
+        }
+        window.addEventListener('heli-auth-ready', startStockBalanceRealtime);
         async function syncLegacyStockAlert(product) {
             try {
                 if (!product || !window.heliSupabase || !window.HELI_USER?.id || !window.HELI_ORG?.id) return;
@@ -2851,7 +2892,7 @@ function promptDailyPaymentMethod() {
 
 window.HeligrafesApplyCloudProduct = function(p) {
     if (!p || !p.id || !p.name) return;
-    const item = { id: p.id, name: p.name, price: Number(p.sale_price || 0), cost: Number(p.cost_price || 0), stock: 0, replenishmentLevel: Number(p.min_stock || 0), category: p.category || 'Geral', img: '' };
+    const item = { id: p.id, name: p.name, price: Number(p.sale_price || 0), cost: Number(p.cost_price || 0), stock: 0, track_stock: p.track_stock !== false, replenishmentLevel: Number(p.min_stock || 0), category: p.category || 'Geral', img: '' };
     const index = products.findIndex(x => String(x.id) === String(p.id) || normalizeProductName(x.name) === normalizeProductName(p.name));
     if (index >= 0) products[index] = { ...products[index], ...item };
     else products.push(item);
@@ -2894,14 +2935,15 @@ function renderVrSelectedProduct(product) {
     container.classList.add('visible');
 }
 
-function findProductPrice() { 
-    const p = products.find(x => x.name === document.getElementById('vr-product').value); 
-    if(p) document.getElementById('vr-price').value = p.price;
-    renderVrSelectedProduct(p); 
+function findProductPrice() {
+    const p = products.find(x => x.name === document.getElementById('vr-product').value);
+    if (p) document.getElementById('vr-price').value = p.price;
+    renderVrSelectedProduct(p);
+    if (p?.id && window.HELI_USER) refreshCurrentProductStock(p).catch(error => console.warn('[Stock] Consulta:', error.message || error));
 }
 
 // 1. ADICIONADO O AGRUPAMENTO E SOMA DE QUANTIDADES
-function addToVRCart() {
+async function addToVRCart() {
     const name = document.getElementById('vr-product').value;
     const price = parseFloat(document.getElementById('vr-price').value);
     const qty = parseInt(document.getElementById('vr-qty').value);
@@ -2911,10 +2953,13 @@ function addToVRCart() {
         const itemExistente = vrCart.find(item => item.name === name);
         const product = products.find(p => p.name === name);
         const qtyNoCarrinho = itemExistente ? itemExistente.qty : 0;
-        if (product && (parseInt(product.stock) || 0) < qtyNoCarrinho + qty) {
-            return alert(`Stock insuficiente para ${name}. Disponivel: ${product.stock}`);
+        if (product?.id && product.track_stock !== false && window.HELI_USER) {
+            try { await refreshCurrentProductStock(product); }
+            catch (error) { return alert('Não foi possível confirmar o stock online: ' + (error.message || error)); }
         }
-        
+        if (product && product.track_stock !== false && (parseFloat(product.stock) || 0) < qtyNoCarrinho + qty) {
+            return alert(`Stock insuficiente para ${name}. Disponível neste local: ${product.stock || 0}`);
+        }
         if (itemExistente) {
             // Se já existe, soma a quantidade ao que lá está
             itemExistente.qty += qty;
@@ -2922,7 +2967,7 @@ function addToVRCart() {
             if (!itemExistente.img && product?.img) itemExistente.img = product.img;
         } else {
             // Se não existe, adiciona como nova linha
-            vrCart.push({ name: name, price: price, qty: qty, total: price * qty, img: product?.img || '' });
+            vrCart.push({ name: name, price: price, qty: qty, total: price * qty, img: product?.img || '', productId: product?.id || null });
         }
         
         renderVRCart();
@@ -2997,27 +3042,42 @@ async function removeVRCartItem(index) {
     if(await checkPermission()) { vrCart.splice(index, 1); renderVRCart(); }
 }
 
-function finalizeVRSale() { 
+async function finalizeVRSale() {
     const method = document.getElementById('vr-payment-method').value;
-    if(vrCart.length===0) return; 
-    if(!method) return alert("Selecione o método!");
-    if(!ensureSalesSession()) return;
+    if (vrCart.length === 0) return;
+    if (!method) return alert("Selecione o método!");
+    if (!ensureSalesSession()) return;
+    const cloudStockItems = [];
     for (const item of vrCart) {
         const product = products.find(p => p.name === item.name);
-        if (product && (parseInt(product.stock) || 0) < item.qty) {
-            return alert(`Stock insuficiente para ${item.name}. Disponivel: ${product.stock}`);
+        if (product?.id && product.track_stock !== false && window.HELI_USER) {
+            try {
+                const current = await refreshCurrentProductStock(product);
+                if (current.quantity < item.qty) return alert(`Stock insuficiente para ${item.name}. Disponível neste local: ${current.quantity}`);
+                cloudStockItems.push({ product_id: product.id, location_id: current.location.id, quantity: item.qty });
+            } catch (error) { return alert('Não foi possível confirmar o stock online: ' + (error.message || error)); }
+        } else if (product && product.track_stock !== false && (parseFloat(product.stock) || 0) < item.qty) {
+            return alert(`Stock insuficiente para ${item.name}. Disponível: ${product.stock || 0}`);
         }
     }
-    
+    if (cloudStockItems.length) {
+        const deduction = await window.heliSupabase.rpc('heli_pos_deduct_stock', { p_items: cloudStockItems });
+        if (deduction.error) return alert('A venda não foi concluída: ' + deduction.error.message);
+        (deduction.data?.balances || []).forEach(balance => {
+            const product = products.find(p => String(p.id) === String(balance.product_id));
+            if (product) product.stock = Number(balance.quantity) || 0;
+        });
+        localStorage.setItem('multi_products_v52', JSON.stringify(products));
+    }
     const t = vrCart.reduce((a,b)=>a+b.total,0); 
     
     const nomesProdutos = vrCart.map(item => `${item.qty}x ${item.name}`).join(', ');
     const itemsForSale = vrCart.map(item => {
         const product = products.find(p => p.name === item.name);
         if (product) {
-            product.stock = (parseInt(product.stock) || 0) - item.qty;
+            if (!product.id || product.track_stock === false || !window.HELI_USER) product.stock = (parseInt(product.stock) || 0) - item.qty;
             touchProduct(product);
-            void syncLegacyStockAlert(product);
+            if (!product.id || product.track_stock === false) void syncLegacyStockAlert(product);
         }
         return { ...item, productId: product ? product.id : null, cost: product ? (parseFloat(product.cost) || 0) : (parseFloat(item.cost) || 0) };
     });
@@ -4227,7 +4287,7 @@ function selectAcademicPage(value) {
 <script src="./js/supabase-config.js"></script>
 <script src="./js/heligrafes-cloud.js?v=20261113-11"></script>
 <script src="./js/heligrafes-sales-live.js?v=20261113-5"></script>
-<script src="./js/heligrafes-admin.js?v=20261114-3"></script>
+<script src="./js/heligrafes-admin.js?v=20261115-1"></script>
 <script id="heli-auto-update-checker">
 (function(){
   'use strict';
