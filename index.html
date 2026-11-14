@@ -191,6 +191,34 @@
         .vr-selected-product.visible { display: flex; }
         @media (max-width: 640px) { .pos-payment-strip { align-items: stretch; flex-direction: column; } .pos-payment-strip select { width: 100%; min-width: 0; } .pos-cart-scroll { max-height: 360px; } }
         @media (max-width: 1024px) { .app-sidebar { width: 15.5rem; } .app-topbar { padding: 16px 22px; } .workspace-scroll { padding: 22px; } }
+
+        /* --- REFINAMENTO VISUAL HELIGRAFES: NAVEGAÇÃO E INTERACÇÕES --- */
+        .app-sidebar { position:relative; isolation:isolate; }
+        .app-sidebar::before { content:''; position:absolute; inset:0 0 auto; height:190px; pointer-events:none; background:radial-gradient(circle at 10% 0%,rgba(31,174,229,.28),transparent 68%); z-index:-1; }
+        .app-brand { transition:transform .25s ease,background .25s ease,box-shadow .25s ease; }
+        .app-brand:hover { transform:translateY(-2px); background:rgba(255,255,255,.14); box-shadow:0 16px 30px rgba(0,0,0,.16); }
+        .app-sidebar nav { scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.25) transparent; }
+        .app-sidebar nav > p { display:flex; align-items:center; gap:10px; margin-top:24px; margin-bottom:12px; padding:0 12px 9px; border-bottom:1px solid rgba(255,255,255,.14); color:#b9dcff; font-size:10px; letter-spacing:.16em; }
+        .app-sidebar nav > p::before { content:''; width:7px; height:7px; flex:0 0 7px; border-radius:50%; background:var(--heli-yellow); box-shadow:0 0 0 4px rgba(249,189,23,.13); }
+        .app-sidebar .sidebar-link { position:relative; min-height:46px; overflow:hidden; isolation:isolate; transition:transform .2s ease,background .2s ease,color .2s ease,box-shadow .2s ease,border-color .2s ease; }
+        .app-sidebar .sidebar-link::before { content:''; position:absolute; left:0; top:9px; bottom:9px; width:3px; border-radius:0 6px 6px 0; background:var(--heli-yellow); transform:scaleY(0); transition:transform .2s ease; }
+        .app-sidebar .sidebar-link:hover { transform:translateX(4px); border-color:rgba(255,255,255,.16); background:linear-gradient(90deg,rgba(255,255,255,.16),rgba(255,255,255,.06)); box-shadow:0 8px 18px rgba(0,0,0,.10); }
+        .app-sidebar .sidebar-link:hover::before,.app-sidebar .sidebar-link.active::before { transform:scaleY(1); }
+        .app-sidebar .sidebar-link span:first-child { display:inline-flex; width:34px; height:34px; flex:0 0 34px; align-items:center; justify-content:center; margin-right:11px; border-radius:11px; background:rgba(255,255,255,.10); transition:transform .2s ease,background .2s ease; }
+        .app-sidebar .sidebar-link:hover span:first-child { transform:scale(1.08) rotate(-3deg); background:rgba(255,255,255,.18); }
+        .app-sidebar .sidebar-link.active span:first-child { background:rgba(6,59,143,.09); }
+        .app-sidebar .sidebar-link:focus-visible { outline:3px solid var(--heli-yellow); outline-offset:2px; }
+        .workspace-scroll button,.app-topbar button { transition:transform .18s ease,box-shadow .18s ease,filter .18s ease; }
+        .workspace-scroll button:not(:disabled):hover,.app-topbar button:not(:disabled):hover { transform:translateY(-2px); filter:brightness(1.04); box-shadow:0 9px 20px rgba(6,59,143,.16); }
+        .workspace-scroll button:not(:disabled):active,.app-topbar button:not(:disabled):active { transform:translateY(0) scale(.98); }
+        .workspace-scroll button:disabled,.app-topbar button:disabled { cursor:not-allowed; opacity:.55; filter:grayscale(.15); }
+        .workspace-scroll button:focus-visible,.app-topbar button:focus-visible { outline:3px solid rgba(31,174,229,.65); outline-offset:3px; }
+        .workspace-scroll .glass-panel { transition:box-shadow .22s ease,border-color .22s ease; }
+        .workspace-scroll .glass-panel:hover { border-color:#c5ddf3; box-shadow:0 16px 34px rgba(38,71,116,.11); }
+        .workspace-scroll input,.workspace-scroll select,.workspace-scroll textarea { transition:border-color .18s ease,box-shadow .18s ease,background .18s ease; }
+        .workspace-scroll input:focus,.workspace-scroll select:focus,.workspace-scroll textarea:focus { border-color:var(--heli-sky); box-shadow:0 0 0 4px rgba(31,174,229,.12); outline:none; }
+        .app-topbar { backdrop-filter:blur(18px); }
+        @media (prefers-reduced-motion:reduce) { .app-sidebar *, .workspace-scroll button, .app-topbar button, .workspace-scroll .glass-panel { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
         @media (max-width: 760px) { .app-sidebar { width: 4.75rem; } .app-brand { margin: 12px 8px; padding: 6px; } .app-brand-logo { height: 48px; padding: 3px; } .app-sidebar nav { padding: 12px 8px; } .app-sidebar nav > p, .app-sidebar .sidebar-link span:last-child, .app-sidebar > div:last-child > div > div { display: none; } .app-sidebar .sidebar-link { justify-content: center; padding: 12px 4px; } .app-sidebar .sidebar-link span:first-child { margin-right: 0; } .app-sidebar > div:last-child { padding: 8px; } .app-sidebar > div:last-child > div { justify-content: center; padding: 10px; } .app-topbar { padding: 12px 14px; } .topbar-company { display: none; } .topbar-session { padding: 8px 10px; gap: 10px !important; } .topbar-session > div:nth-child(2) { display: none; } .clock-toggle button { padding: 5px 6px; font-size: 9px; } .workspace-scroll { padding: 16px; } .pos-screen .pos-heading { align-items: flex-start; gap: 12px; } .pos-screen .pos-heading > div:last-child { flex-wrap: wrap; justify-content: flex-end; } }
     </style>
 <style id="heli-supabase-auth-style">
@@ -235,9 +263,9 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
 
         <nav class="flex-1 px-6 space-y-2 overflow-y-auto py-6">
             <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-4 mb-3">Departamentos Heligrafes</p>
+            <div onclick="showTab('tabacaria')" class="sidebar-link active" id="btn-tabacaria"><span class="text-xl mr-3 opacity-90">⚡</span> <span>VENDA DIÁRIA</span></div>
             <div onclick="showTab('academico')" class="sidebar-link" id="btn-academico"><span class="text-xl mr-3 opacity-90">🎓</span> <span>Trabalho Académico</span></div>
             <div onclick="showTab('tshirts')" class="sidebar-link" id="btn-tshirts"><span class="text-xl mr-3 opacity-90">👕</span> <span>T-Shirts & Brindes</span></div>
-            <div onclick="showTab('tabacaria')" class="sidebar-link active" id="btn-tabacaria"><span class="text-xl mr-3 opacity-90">⚡</span> <span>VENDA DIÁRIA</span></div>
             <div onclick="showTab('outros')" class="sidebar-link" id="btn-outros"><span class="text-xl mr-3 opacity-90">📦</span> <span>Papelaria & Decoração</span></div>
             
             <p id="heli-admin-nav-heading" class="text-xs font-bold text-slate-400 uppercase tracking-wider px-4 mt-8 mb-3">Administração</p>
@@ -733,7 +761,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                                     <select id="business-location" class="big-input" onchange="saveBusinessLocation()">
                                         <option value="LOCAL 1">LOCAL 1</option>
                                         <option value="LOCAL 2">LOCAL 2</option>
-                                        <option value="LOCAL 3">LOCAL 3</option>
+                                        <option value="LOCAL 3">LOCAL 3</option><option value="LOCAL 4">LOCAL 4</option><option value="LOCAL 5">LOCAL 5</option>
                                     </select>
                                 </div>
                                 <div class="col-span-12 lg:col-span-3">
@@ -963,14 +991,14 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                                     <h3 class="font-black">Mensagens</h3>
                                     <p class="text-[10px] text-slate-400 font-bold uppercase">Texto, ficheiros e comprovativos</p>
                                 </div>
-                                <span id="chat-count" class="text-xs bg-white/10 px-3 py-1 rounded-full">0 mensagens</span>
+                                <div class="flex items-center gap-2"><button type="button" onclick="openChatNotifications()" class="relative px-3 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm" aria-label="Notificações do chat">🔔 <span id="chat-unread-badge" class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-500 text-white text-[10px] font-black items-center justify-center">0</span></button><span id="chat-count" class="text-xs bg-white/10 px-3 py-1 rounded-full">0 mensagens</span></div>
                             </div>
                             <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50"></div>
                             <div id="chat-typing-status" class="hidden px-4 py-2 bg-indigo-50 text-indigo-700 text-xs font-bold border-t border-indigo-100"></div>
                             <div class="border-t border-slate-200 p-4 bg-white">
                                 <div id="chat-emoji-picker" class="hidden mb-3 flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
                                 <div id="chat-file-preview" class="hidden mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
-                                <textarea id="chat-message" class="w-full h-20 p-3 border-2 border-slate-200 rounded-xl outline-none font-medium resize-none" placeholder="Escreva a mensagem..." oninput="markChatTyping()"></textarea>
+                                <label class="block text-[10px] font-bold uppercase text-slate-500 mb-1" for="chat-delivery-at">Data/hora prevista de entrega (opcional)</label><input id="chat-delivery-at" type="datetime-local" class="w-full mb-3 p-2 border border-slate-200 rounded-lg text-xs"><textarea id="chat-message" class="w-full h-20 p-3 border-2 border-slate-200 rounded-xl outline-none font-medium resize-none" placeholder="Escreva a mensagem..." oninput="markChatTyping()"></textarea>
                                 <div class="flex flex-wrap gap-3 items-center mt-3">
                                     <button onclick="toggleEmojiPicker()" class="px-4 py-3 rounded-xl border border-slate-200 text-slate-600 font-black text-xs">EMOJI</button>
                                     <input type="file" id="chat-file" class="text-xs flex-1" onchange="previewSelectedChatFile()">
@@ -1057,7 +1085,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
         let chatPresenceSyncTimer = null;
         const CHAT_FAST_SYNC_MS = 100;
         const OPS_FAST_SYNC_MS = 2000;
-        const BUSINESS_LOCATIONS = ['LOCAL 1', 'LOCAL 2', 'LOCAL 3'];
+        const BUSINESS_LOCATIONS = ['LOCAL 1', 'LOCAL 2', 'LOCAL 3', 'LOCAL 4', 'LOCAL 5'];
         const CHAT_ONLINE_MS = 90000;
         const CHAT_TYPING_MS = 2500;
         const CHAT_EMOJIS = ['😀','😂','😊','🙏','👍','👎','👌','💪','🔥','❤️','✅','⚠️','📌','📎','🧾','🖨️','💰','⏰','🎉','👏'];
@@ -1128,7 +1156,7 @@ window.onload = function() {
             let locationName = getCurrentBusinessLocation();
             let sellerName = getCurrentSeller();
             if (force || !BUSINESS_LOCATIONS.includes(locationName)) {
-                const requested = prompt('Local deste caixa: LOCAL 1, LOCAL 2 ou LOCAL 3', locationName || 'LOCAL 1');
+                const requested = prompt('Local deste caixa: LOCAL 1, LOCAL 2, LOCAL 3, LOCAL 4 ou LOCAL 5', locationName || 'LOCAL 1');
                 if (requested === null && locationName) return false;
                 const normalized = String(requested || 'LOCAL 1').trim().toUpperCase();
                 locationName = BUSINESS_LOCATIONS.includes(normalized) ? normalized : 'LOCAL 1';
@@ -1524,6 +1552,105 @@ window.onload = function() {
 
         /* --- CHAT INTERNO --- */
         let heliChatDbChannel=null,heliChatRooms={},heliChatRecipients=[],heliChatLocations=[],heliChatReady=false;
+        let heliChatReadIds=new Set(),heliChatAlertedIds=new Set(),heliChatAlertTimer=null,heliChatFileChannel=null;
+        const heliChatFilePeers=new Map(),heliChatFileWaiters=new Map(),heliChatIncomingFiles=new Map();
+        function waitIceGathering(pc){return new Promise(resolve=>{if(pc.iceGatheringState==='complete')return resolve();const done=()=>{if(pc.iceGatheringState==='complete'){pc.removeEventListener('icegatheringstatechange',done);resolve();}};pc.addEventListener('icegatheringstatechange',done);setTimeout(resolve,8000);});}
+        async function sendChatFileSignal(payload){if(!heliChatFileChannel)throw new Error('Canal de transferência directa indisponível.');const result=await heliChatFileChannel.send({type:'broadcast',event:'file_signal',payload});if(result!=='ok')throw new Error('Não foi possível sinalizar a transferência directa.');}
+        function initChatFileTransfer(){
+          if(heliChatFileChannel||!window.heliSupabase||!window.HELI_ORG)return;
+          heliChatFileChannel=window.heliSupabase.channel('heli-chat-file-p2p-'+window.HELI_ORG.id);
+          heliChatFileChannel.on('broadcast',{event:'file_signal'},async({payload})=>{
+            if(!payload||payload.to!==chatCurrentUserId())return;
+            try{
+              if(payload.kind==='offer'){
+                const pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});heliChatFilePeers.set(payload.transferId,pc);
+                pc.ondatachannel=e=>receiveChatFileDataChannel(e.channel,payload);
+                await pc.setRemoteDescription(payload.description);const answer=await pc.createAnswer();await pc.setLocalDescription(answer);await waitIceGathering(pc);
+                await sendChatFileSignal({kind:'answer',transferId:payload.transferId,to:payload.from,from:chatCurrentUserId(),description:pc.localDescription});
+              }else if(payload.kind==='answer'){
+                const pc=heliChatFilePeers.get(payload.transferId);if(pc&&payload.from===pc._chatPeerId)await pc.setRemoteDescription(payload.description);
+              }else if(payload.kind==='ack'){
+                const waiter=heliChatFileWaiters.get(payload.transferId);if(waiter){waiter.resolve(true);heliChatFileWaiters.delete(payload.transferId);}
+              }else if(payload.kind==='cancel'){
+                const pc=heliChatFilePeers.get(payload.transferId);pc?.close();heliChatFilePeers.delete(payload.transferId);
+              }
+            }catch(err){console.warn('[Chat P2P]',err.message||err);}
+          }).subscribe();
+        }
+        function receiveChatFileDataChannel(channel,signal){
+          const parts=[];let meta=null;
+          channel.onopen=()=>sendChatFileSignal({kind:'ack',transferId:signal.transferId,to:signal.from,from:chatCurrentUserId()}).catch(err=>console.warn(err));
+          channel.onmessage=event=>{
+            if(typeof event.data==='string'){
+              let packet;try{packet=JSON.parse(event.data);}catch(_){return;}
+              if(packet.kind==='meta'){meta=packet;parts.length=0;}
+              else if(packet.kind==='end'&&meta){
+                const blob=new Blob(parts,{type:meta.fileType||'application/octet-stream'}),url=URL.createObjectURL(blob);
+                const message=chatMessages.find(m=>String(m.id)===String(meta.messageId));
+                const received={fileName:meta.fileName,fileType:meta.fileType,fileData:url,fileReceived:true};
+                if(message)Object.assign(message,received);else heliChatIncomingFiles.set(String(meta.messageId),received);
+                renderChatMessages();
+                channel.close();heliChatFilePeers.get(signal.transferId)?.close();heliChatFilePeers.delete(signal.transferId);
+              }
+            }else if(meta)parts.push(event.data);
+          };
+        }
+        async function transferChatFileDirect(messageId,file,recipientId){
+          if(!recipientId||recipientId==='TODOS')throw new Error('Para enviar ficheiro, seleccione um colega específico.');
+          initChatFileTransfer();if(!heliChatFileChannel)throw new Error('Canal de transferência directa não está disponível.');
+          const transferId=crypto.randomUUID(),pc=new RTCPeerConnection({iceServers:[{urls:'stun:stun.l.google.com:19302'}]});pc._chatPeerId=recipientId;heliChatFilePeers.set(transferId,pc);
+          const dc=pc.createDataChannel('heli-chat-file');dc.binaryType='arraybuffer';
+          const opened=new Promise((resolve,reject)=>{dc.onopen=resolve;dc.onerror=()=>reject(new Error('Ligação directa falhou. Verifique se o colega está online e acessível.'));setTimeout(()=>reject(new Error('O colega não respondeu. O ficheiro não foi enviado.')),15000);});
+          const offer=await pc.createOffer();await pc.setLocalDescription(offer);await waitIceGathering(pc);
+          await sendChatFileSignal({kind:'offer',transferId,to:recipientId,from:chatCurrentUserId(),description:pc.localDescription});
+          const ack=new Promise((resolve,reject)=>{heliChatFileWaiters.set(transferId,{resolve,reject});setTimeout(()=>{if(heliChatFileWaiters.has(transferId)){heliChatFileWaiters.delete(transferId);reject(new Error('O destinatário não confirmou a recepção.'));}},15000);});
+          await Promise.race([opened.then(()=>ack),ack]);
+          dc.send(JSON.stringify({kind:'meta',messageId,fileName:file.name,fileType:file.type||'application/octet-stream'}));
+          const buffer=await file.arrayBuffer(),chunkSize=16384;
+          for(let offset=0;offset<buffer.byteLength;offset+=chunkSize){while(dc.bufferedAmount>1024*1024)await new Promise(r=>setTimeout(r,30));dc.send(buffer.slice(offset,offset+chunkSize));}
+          dc.send(JSON.stringify({kind:'end'}));pc.close();heliChatFilePeers.delete(transferId);
+        }
+        const CHAT_UNREAD_STORAGE_KEY='heli_chat_unread_v1_'+(window.HELI_USER?.id||'guest');
+        function chatCurrentUserId(){return window.HELI_USER?.id||'';}
+        function chatIsVisible(){return !document.getElementById('chat')?.classList.contains('hidden');}
+        function chatMessageIsForMe(m){return m&&m.senderId!==chatCurrentUserId()&&(!m.recipientId||m.recipientId===chatCurrentUserId());}
+        function updateChatUnreadBadge(){
+          const unread=chatMessages.filter(m=>chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)));
+          const badge=document.getElementById('chat-unread-badge');if(badge){badge.textContent=String(unread.length);badge.classList.toggle('hidden',!unread.length);badge.classList.toggle('flex',!!unread.length);}
+        }
+        async function markChatMessageRead(id){
+          const key=String(id);if(!key||heliChatReadIds.has(key))return;
+          heliChatReadIds.add(key);updateChatUnreadBadge();
+          try{const q=await window.heliSupabase.from('chat_message_reads').upsert({message_id:key,user_id:chatCurrentUserId()},{onConflict:'message_id,user_id',ignoreDuplicates:true});if(q.error)throw q.error;}
+          catch(err){console.warn('[Chat] Não foi possível sincronizar leitura:',err.message||err);}
+          const card=document.querySelector('[data-chat-message-id="'+CSS.escape(key)+'"]');if(card)card.classList.remove('ring-2','ring-amber-300');
+        }
+        async function loadChatReadReceipts(){
+          const ids=chatMessages.filter(chatMessageIsForMe).map(m=>m.id);if(!ids.length)return;
+          const q=await window.heliSupabase.from('chat_message_reads').select('message_id').eq('user_id',chatCurrentUserId()).in('message_id',ids);
+          if(q.error)throw q.error;(q.data||[]).forEach(r=>heliChatReadIds.add(String(r.message_id)));
+        }
+        function openChatNotifications(){
+          const unread=chatMessages.filter(m=>chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)));
+          const target=unread[0];if(!target){alert('Não existem mensagens por ler.');return;}
+          if(typeof showTab==='function')showTab('chat');
+          const recipient=document.getElementById('chat-recipient');if(recipient)recipient.value=target.senderId;
+          const room=document.getElementById('chat-room');if(room)room.value=target.room;
+          renderChatMessages();
+          document.getElementById('chat-message').value='@'+(target.user||'Colega')+' ';
+          document.getElementById('chat-message').focus();
+          const node=document.querySelector('[data-chat-message-id="'+CSS.escape(String(target.id))+'"]');node?.scrollIntoView({behavior:'smooth',block:'center'});
+        }
+        function checkChatUnansweredAlerts(){
+          const now=Date.now(),pending=chatMessages.filter(m=>chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id))&&!heliChatAlertedIds.has(String(m.id))&&now-new Date(m.createdAt||0).getTime()>=120000);
+          if(!pending.length)return;
+          const m=pending[0];heliChatAlertedIds.add(String(m.id));
+          const overlay=document.createElement('div');overlay.id='chat-unread-alert';overlay.className='fixed inset-0 z-[10000] bg-slate-950/50 flex items-center justify-center p-4';
+          overlay.innerHTML='<div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"><div class="text-xs font-black uppercase text-amber-600 mb-2">🔔 Mensagem por ler há mais de 2 minutos</div><h3 class="text-lg font-black text-slate-800">'+escapeChatHtml(m.user||'Colega')+'</h3><p class="text-xs text-slate-500 mt-1">'+escapeChatHtml(m.room||'GERAL')+' · '+escapeChatHtml(m.date||'')+' '+escapeChatHtml(m.time||'')+'</p><p class="my-4 whitespace-pre-wrap text-sm text-slate-700">'+escapeChatHtml(m.text||'Mensagem com anexo')+'</p><div class="flex gap-2"><button id="chat-alert-reply" class="flex-1 rounded-xl bg-indigo-600 px-4 py-3 text-xs font-black text-white">Responder agora</button><button id="chat-alert-close" class="rounded-xl border px-4 py-3 text-xs font-bold">Fechar</button></div></div>';
+          document.body.appendChild(overlay);
+          overlay.querySelector('#chat-alert-reply').onclick=()=>{markChatMessageRead(m.id);overlay.remove();if(typeof showTab==='function')showTab('chat');const r=document.getElementById('chat-recipient');if(r)r.value=m.senderId;document.getElementById('chat-room').value=m.room;renderChatMessages();document.getElementById('chat-message').value='@'+(m.user||'Colega')+' ';document.getElementById('chat-message').focus();};
+          overlay.querySelector('#chat-alert-close').onclick=()=>overlay.remove();
+        }
         function initInternalChat(){window.addEventListener('heli-auth-ready',startSupabaseInternalChat);if(window.HELI_USER&&window.heliSupabase)startSupabaseInternalChat();}
         async function startSupabaseInternalChat(){
           if(heliChatReady||!window.heliSupabase||!window.HELI_USER)return;
@@ -1544,6 +1671,10 @@ window.onload = function() {
             const recipient=document.getElementById('chat-recipient'),old=recipient?.value||'TODOS';
             if(recipient){recipient.innerHTML='<option value="TODOS">Todos</option>'+heliChatRecipients.filter(p=>p.user_id!==user.id).map(p=>'<option value="'+p.user_id+'">'+escapeChatHtml(p.full_name||p.email||'Funcionário')+'</option>').join('');recipient.value=heliChatRecipients.some(p=>p.user_id===old)?old:'TODOS';}
             const latest=await loadSupabaseChatMessages();lastChatNotificationId=latest||'';
+            initChatFileTransfer();
+            await loadChatReadReceipts();
+            if(heliChatAlertTimer)clearInterval(heliChatAlertTimer);
+            heliChatAlertTimer=setInterval(checkChatUnansweredAlerts,10000);
             if(heliChatDbChannel)db.removeChannel(heliChatDbChannel);
             heliChatDbChannel=db.channel('heli-chat-live-'+window.HELI_ORG.id)
               .on('postgres_changes',{event:'INSERT',schema:'public',table:'chat_messages',filter:'organization_id=eq.'+window.HELI_ORG.id},async payload=>{
@@ -1554,10 +1685,10 @@ window.onload = function() {
         }
         async function loadSupabaseChatMessages(){
           const db=window.heliSupabase,user=window.HELI_USER;if(!db||!user||!window.HELI_ORG)return '';
-          const q=await db.from('chat_messages').select('id,room_id,sender_id,recipient_id,body,attachment_path,sender_name,location_id,created_at').eq('organization_id',window.HELI_ORG.id).order('created_at',{ascending:true}).limit(300);
+          const q=await db.from('chat_messages').select('id,room_id,sender_id,recipient_id,body,attachment_path,sender_name,location_id,created_at,delivery_at').eq('organization_id',window.HELI_ORG.id).order('created_at',{ascending:true}).limit(300);
           if(q.error)throw q.error;
           const rooms=Object.fromEntries(Object.values(heliChatRooms).map(r=>[r.id,r.code])),names=Object.fromEntries(heliChatRecipients.map(p=>[p.user_id,p.full_name||p.email||'Funcionário']));
-          chatMessages=(q.data||[]).map(row=>{let file={};try{if(row.attachment_path)file=JSON.parse(row.attachment_path);}catch(_){}const d=new Date(row.created_at);return{id:row.id,dbId:row.id,room:rooms[row.room_id]||'GERAL',senderId:row.sender_id,recipientId:row.recipient_id||null,user:row.sender_name||names[row.sender_id]||'Funcionário',to:row.recipient_id?(names[row.recipient_id]||'Mensagem privada'):'TODOS',text:row.body||'',date:d.toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'}),time:d.toLocaleTimeString('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'}),location_id:row.location_id,...file};});
+          chatMessages=(q.data||[]).map(row=>{let file={};try{if(row.attachment_path)file=JSON.parse(row.attachment_path);}catch(_){}const d=new Date(row.created_at);return{id:row.id,dbId:row.id,room:rooms[row.room_id]||'GERAL',senderId:row.sender_id,recipientId:row.recipient_id||null,user:row.sender_name||names[row.sender_id]||'Funcionário',to:row.recipient_id?(names[row.recipient_id]||'Mensagem privada'):'TODOS',text:row.body||'',date:d.toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'}),time:d.toLocaleTimeString('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'}),createdAt:row.created_at,deliveryAt:row.delivery_at,location_id:row.location_id,...file,...(heliChatIncomingFiles.get(String(row.id))||{})};});
           deletedChatIds=[];return chatMessages[chatMessages.length-1]?.id||'';
         }
 
@@ -1569,8 +1700,8 @@ window.onload = function() {
           const list=document.getElementById('chat-messages'),counter=document.getElementById('chat-count'),room=document.getElementById('chat-room')?.value||'GERAL',recipient=document.getElementById('chat-recipient')?.value||'TODOS',me=window.HELI_USER?.id||'';
           if(!list)return;
           const rows=chatMessages.filter(m=>m.room===room&&(m.senderId===me||!m.recipientId||m.recipientId===me)&&(recipient==='TODOS'||m.senderId===recipient||m.recipientId===recipient||m.senderId===me&&m.recipientId===recipient)).slice(-200);
-          list.innerHTML=rows.length?rows.map(m=>{const file=renderChatFilePreview(m),color=getChatUserColor(m.user||'Sistema'),mine=m.senderId===me,loc=heliChatLocations.find(x=>x.id===m.location_id)?.name||'Local não atribuído',to=m.to&&m.to!=='TODOS'?' → '+escapeChatHtml(m.to):'';return '<div class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm '+(mine?'ml-10':'mr-10')+'" style="border-left:6px solid '+color+'"><div class="flex justify-between gap-3 text-[10px] font-bold text-slate-400 uppercase"><span style="color:'+color+'">'+escapeChatHtml(m.user||'Funcionário')+to+'</span><span>'+m.date+' '+m.time+'</span></div><div class="text-[10px] text-slate-500 mt-1">📍 '+escapeChatHtml(loc)+'</div><p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">'+escapeChatHtml(m.text||'')+'</p>'+file+'</div>';}).join(''):'<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
-          if(counter)counter.innerText=rows.length+' mensagem(ns)';list.scrollTop=list.scrollHeight;renderChatTypingStatus();
+          list.innerHTML=rows.length?rows.map(m=>{const file=renderChatFilePreview(m),color=getChatUserColor(m.user||'Sistema'),mine=m.senderId===me,loc=heliChatLocations.find(x=>x.id===m.location_id)?.name||'Local não atribuído',to=m.to&&m.to!=='TODOS'?' → '+escapeChatHtml(m.to):'',unread=chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)),delivery=m.deliveryAt?'<div class="text-[10px] text-indigo-600 mt-1">📦 Entrega prevista: '+new Date(m.deliveryAt).toLocaleString('pt-PT',{timeZone:'Africa/Luanda'})+'</div>':'';return '<div data-chat-message-id="'+escapeChatHtml(String(m.id))+'" onclick="markChatMessageRead(\''+escapeChatHtml(String(m.id))+'\')" class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm cursor-pointer '+(mine?'ml-10':'mr-10')+(unread?' ring-2 ring-amber-300':'')+'" style="border-left:6px solid '+color+'"><div class="flex justify-between gap-3 text-[10px] font-bold text-slate-400 uppercase"><span style="color:'+color+'">'+escapeChatHtml(m.user||'Funcionário')+to+(unread?' · NOVA':'')+'</span><span>'+m.date+' '+m.time+'</span></div><div class="text-[10px] text-slate-500 mt-1">📍 '+escapeChatHtml(loc)+'</div>'+delivery+'<p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">'+escapeChatHtml(m.text||'')+'</p>'+file+'</div>';}).join(''):'<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
+          if(counter)counter.innerText=rows.length+' mensagem(ns)';list.scrollTop=list.scrollHeight;renderChatTypingStatus();updateChatUnreadBadge();
         }
 
         function escapeChatHtml(text) {
@@ -1578,16 +1709,21 @@ window.onload = function() {
         }
 
         async function sendChatMessage(){
-          const db=window.heliSupabase,user=window.HELI_USER,code=document.getElementById('chat-room')?.value||'GERAL',to=document.getElementById('chat-recipient')?.value||'TODOS',text=(document.getElementById('chat-message')?.value||'').trim(),file=document.getElementById('chat-file')?.files?.[0];
+          const db=window.heliSupabase,user=window.HELI_USER,code=document.getElementById('chat-room')?.value||'GERAL',to=document.getElementById('chat-recipient')?.value||'TODOS',text=(document.getElementById('chat-message')?.value||'').trim(),file=document.getElementById('chat-file')?.files?.[0],deliveryInput=document.getElementById('chat-delivery-at')?.value||'';
           if(!db||!user||!window.HELI_ORG)return alert('Inicie sessão para utilizar o chat online.');
           if(!text&&!file)return alert('Escreva uma mensagem ou seleccione um ficheiro.');
-          if(file&&file.size>750000)return alert('O ficheiro deve ter até 750 KB.');
+          if(file&&to==='TODOS')return alert('Para enviar ficheiros sem armazenamento na nuvem, escolha um colega específico em “Falar com”.');
+          if(file&&file.size>20*1024*1024)return alert('Por segurança, a transferência directa está limitada a 20 MB por ficheiro.');
+          if(deliveryInput&&Number.isNaN(new Date(deliveryInput).getTime()))return alert('Data/hora de entrega inválida.');
           const room=heliChatRooms[code];if(!room)return alert('Sala não encontrada. Actualize a página.');
           const btn=document.querySelector('button[onclick="sendChatMessage()"]');if(btn){btn.disabled=true;btn.textContent='A enviar...';}
           try{
-            let attachment=null;if(file){const data=await new Promise((ok,no)=>{const r=new FileReader();r.onload=e=>ok(e.target.result);r.onerror=no;r.readAsDataURL(file);});attachment=JSON.stringify({fileName:file.name,fileType:file.type||'application/octet-stream',fileData:data});}
-            const q=await db.from('chat_messages').insert({organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:to==='TODOS'?null:to,body:text,attachment_path:attachment}).select('id').single();if(q.error)throw q.error;
-            document.getElementById('chat-message').value='';document.getElementById('chat-file').value='';clearSelectedChatFilePreview();await loadSupabaseChatMessages();renderChatMessages();
+            const location=heliChatLocations.find(x=>(x.code||'').toUpperCase()===getCurrentBusinessLocation()||(x.name||'').toUpperCase()===getCurrentBusinessLocation());
+            const attachment=file?JSON.stringify({fileName:file.name,fileType:file.type||'application/octet-stream',transfer:'p2p'}):null;
+            const payload={organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:to==='TODOS'?null:to,body:text||('📎 '+(file?.name||'')),attachment_path:attachment,sender_name:window.HELI_PROFILE?.full_name||user.email||'Funcionário',location_id:location?.id||null,delivery_at:deliveryInput?new Date(deliveryInput).toISOString():null};
+            const q=await db.from('chat_messages').insert(payload).select('id').single();if(q.error)throw q.error;
+            document.getElementById('chat-message').value='';document.getElementById('chat-file').value='';document.getElementById('chat-delivery-at').value='';clearSelectedChatFilePreview();await loadSupabaseChatMessages();renderChatMessages();
+            if(file){try{await transferChatFileDirect(q.data.id,file,to);const sent=chatMessages.find(m=>String(m.id)===String(q.data.id));if(sent){sent.fileData=URL.createObjectURL(file);sent.fileName=file.name;sent.fileType=file.type||'application/octet-stream';renderChatMessages();}}catch(transferError){alert('A mensagem de texto foi enviada, mas o ficheiro não foi transferido: '+(transferError.message||transferError));}}
           }catch(err){console.error('[Heligrafes Chat] Envio:',err);alert('Não foi possível enviar: '+(err.message||err));}
           finally{if(btn){btn.disabled=false;btn.textContent='Enviar';}}
         }
@@ -1730,6 +1866,7 @@ window.onload = function() {
         function deleteChatMessage(){alert('A eliminação de mensagens não está disponível no chat online.');}
 
         function renderChatFilePreview(msg) {
+            if(msg.fileName&&!msg.fileData&&msg.transfer==='p2p')return '<div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-800">📎 '+escapeChatHtml(msg.fileName)+' · à espera de transferência directa (remetente e destinatário online)</div>';
             if (!msg.fileName || !msg.fileData) return '';
             const safeName = escapeChatHtml(msg.fileName);
             const type = msg.fileType || '';
@@ -4061,6 +4198,6 @@ function selectAcademicPage(value) {
 <script src="./js/supabase-config.js"></script>
 <script src="./js/heligrafes-cloud.js?v=20261113-11"></script>
 <script src="./js/heligrafes-sales-live.js?v=20261113-5"></script>
-<script src="./js/heligrafes-admin.js?v=20261113-14"></script>
+<script src="./js/heligrafes-admin.js?v=20261114-2"></script>
 </body>
 </html>
