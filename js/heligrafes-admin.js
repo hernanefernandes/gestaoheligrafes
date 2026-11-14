@@ -39,6 +39,50 @@ function inject(){
 '@media(max-width:460px){#heli-admin .cards{grid-template-columns:1fr 1fr}#heli-admin .formgrid{grid-template-columns:1fr}#heli-admin-launch{right:10px;bottom:70px}}';
  document.head.append(s);
  }
+
+ if(!$('heli-admin-polish-style')){
+  const polish=document.createElement('style');polish.id='heli-admin-polish-style';
+  polish.textContent=
+  '#heli-admin{background:radial-gradient(circle at 92% 0%,#dceeff 0,transparent 30%),linear-gradient(135deg,#f4f8fe,#edf3fb);color:#17324d}'+
+  '#heli-admin .wrap{max-width:1500px;padding:clamp(12px,2.4vw,30px)}'+
+  '#heli-admin .head{position:relative;overflow:hidden;min-height:118px;padding:clamp(18px,2.5vw,30px);border:1px solid #1c66b5;border-radius:22px;background:linear-gradient(118deg,#04265f 0%,#0755ad 58%,#0b85c5 100%);box-shadow:0 18px 38px #063b8f2b}'+
+  '#heli-admin .head:after{content:"";position:absolute;width:220px;height:220px;right:10%;top:-130px;border:22px solid #ffffff16;border-radius:50%;pointer-events:none}'+
+  '#heli-admin .head h2{font-size:clamp(20px,2.2vw,28px);letter-spacing:-.035em}'+
+  '#heli-admin .head p{font-size:11px;letter-spacing:.13em;font-weight:800;text-transform:uppercase;color:#c9e6ff}'+
+  '#heli-admin .close{position:relative;z-index:1;border:1px solid #ffffff8c;background:#fff;color:#12315c;border-radius:12px;padding:10px 15px;box-shadow:0 6px 16px #001c4630;transition:.2s}'+
+  '#heli-admin .close:hover{transform:translateY(-2px);background:#fff8e4;box-shadow:0 10px 20px #001c4640}'+
+  '#heli-admin .toolbar{align-items:center;padding:12px;border:1px solid #d9e7f6;border-radius:16px;background:#ffffffc9;box-shadow:0 8px 22px #244c780b}'+
+  '#heli-admin .toolbar select{min-width:170px}'+
+  '#heli-admin .tab{position:relative;border:1px solid #d7e5f4;background:linear-gradient(180deg,#f5f9ff,#e7f0fa);color:#365878;border-radius:11px;padding:10px 14px;transition:transform .18s,box-shadow .18s,background .18s,color .18s}'+
+  '#heli-admin .tab:hover{transform:translateY(-2px);box-shadow:0 8px 16px #164b821c;background:#fff;color:#0755ad}'+
+  '#heli-admin .tab.active{background:linear-gradient(135deg,#0755ad,#087fc0);border-color:#087fc0;color:#fff;box-shadow:0 8px 18px #0755ad35}'+
+  '#heli-admin .cards{gap:14px;margin:14px 0 20px}'+
+  '#heli-admin .card{position:relative;overflow:hidden;border:1px solid #d9e7f5;border-radius:17px;background:linear-gradient(145deg,#fff,#f7fbff);box-shadow:0 8px 22px #1c477110;transition:transform .2s,box-shadow .2s,border-color .2s}'+
+  '#heli-admin .card:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(180deg,#1faee5,#0755ad)}'+
+  '#heli-admin .card:hover{transform:translateY(-3px);border-color:#a9cbea;box-shadow:0 15px 28px #1c47711c}'+
+  '#heli-admin .card small{letter-spacing:.08em;color:#68819d}'+
+  '#heli-admin .card strong{font-size:clamp(21px,2.3vw,29px);letter-spacing:-.04em;color:#063b8f}'+
+  '#heli-admin h3{display:flex;align-items:center;gap:9px;margin:24px 0 11px;color:#123d70;font-size:14px;letter-spacing:.015em}'+
+  '#heli-admin h3:before{content:"";width:7px;height:19px;border-radius:9px;background:linear-gradient(180deg,#f9bd17,#f36d16)}'+
+  '#heli-admin .tablebox{border:1px solid #dce8f5;border-radius:15px;box-shadow:0 8px 20px #244c7809}'+
+  '#heli-admin table{font-size:12px}'+
+  '#heli-admin th{position:sticky;top:0;z-index:1;background:#edf5fd;color:#476887;letter-spacing:.08em}'+
+  '#heli-admin tbody tr{transition:background .15s}#heli-admin tbody tr:hover{background:#f2f8ff}'+
+  '#heli-admin td{color:#294763}'+
+  '#heli-admin td button,#heli-admin .formgrid button{border:1px solid #0755ad;background:linear-gradient(135deg,#0755ad,#087fc0)!important;color:#fff!important;border-radius:10px!important;padding:9px 12px!important;font-weight:900;box-shadow:0 5px 12px #0755ad24;transition:transform .18s,box-shadow .18s,filter .18s}'+
+  '#heli-admin td button:hover,#heli-admin .formgrid button:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 9px 18px #0755ad35}'+
+  '#heli-admin button:focus-visible,#heli-admin input:focus-visible,#heli-admin select:focus-visible{outline:3px solid #1faee580;outline-offset:2px}'+
+  '#heli-admin .formgrid{border:1px solid #dce8f5;border-radius:16px;background:linear-gradient(145deg,#fff,#f7fbff);box-shadow:0 8px 20px #244c7809}'+
+  '#heli-admin .formgrid input,#heli-admin .formgrid select{min-width:0;border-color:#d2e0ef;transition:border-color .18s,box-shadow .18s}'+
+  '#heli-admin .formgrid input:focus,#heli-admin .formgrid select:focus,#heli-admin .toolbar select:focus{border-color:#1faee5;box-shadow:0 0 0 4px #1faee51c;outline:0}'+
+  '#heli-admin #heli-admin-status{display:flex;align-items:center;gap:8px;padding:11px 13px;border:1px solid #dce8f5;border-radius:12px;background:#fff;font-weight:800}'+
+  '#heli-admin #heli-admin-status:before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 0 4px #16a34a18}'+
+  '#heli-admin-launch{background:linear-gradient(135deg,#ffd65a,#f4b51c)!important;border:1px solid #e5a900!important;border-radius:14px!important;box-shadow:0 12px 26px #063b8f30!important;transition:transform .2s,box-shadow .2s!important}'+
+  '#heli-admin-launch:hover{transform:translateY(-3px) scale(1.02);box-shadow:0 17px 32px #063b8f40!important}'+
+  '@media(max-width:800px){#heli-admin .toolbar{align-items:stretch}#heli-admin .toolbar select,#heli-admin .toolbar button{flex:1 1 100%}#heli-admin .tabs{flex-wrap:nowrap;overflow-x:auto;padding:2px 1px 10px;scrollbar-width:thin}#heli-admin .tab{white-space:nowrap}}'+
+  '@media(prefers-reduced-motion:reduce){#heli-admin *{transition:none!important;animation:none!important}}';
+  document.head.append(polish);
+ }
  if(!$('heli-admin')){
  const root=document.createElement('section');root.id='heli-admin';root.innerHTML=
 '<div class="wrap"><header class="head"><div><h2>Painel de Administração</h2><p>GRUPO HELIGRAFES · controlo de vendas, stock e equipa</p></div><button class="close" id="heli-admin-close">Fechar ✕</button></header>'+
