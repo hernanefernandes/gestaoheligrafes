@@ -3330,46 +3330,75 @@ function printDailyReport(copies = 1) {
         function renderStockList() {
             const list = document.getElementById('stock-list-body');
             if (!list) return;
-            list.innerHTML='';
+            list.innerHTML = '';
             products.forEach(p => {
-                const profit = p.price - (p.cost || 0);
-                const margin = p.cost > 0 ? ((profit/p.price)*100).toFixed(0) : 100;
-                list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name))}</span></div></td><td class="p-3 text-slate-500">${(p.cost || 0).toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${p.price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-blue-600 font-bold">${p.stock}</td><td class="p-3 text-right flex justify-end gap-2"><button onclick="editProduct(${p.id})" class="text-blue-500 text-xs font-bold">✏️ EDITAR</button><button onclick="deleteProduct(${p.id})" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
+                const price = Number(p.price) || 0;
+                const cost = Number(p.cost) || 0;
+                const stock = Number(p.stock) || 0;
+                const profit = price - cost;
+                const margin = price > 0 ? ((profit / price) * 100).toFixed(0) : 0;
+                list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name || 'Produto sem nome'))}</span></div></td><td class="p-3 text-slate-500">${cost.toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-blue-600 font-bold">${stock}</td><td class="p-3 text-right flex justify-end gap-2"><button type="button" onclick="editProduct('${String(p.id).replace(/\\\\/g, '\\\\\\\\').replace(/'/g, "\\\\'")}')" class="text-blue-500 text-xs font-bold">✏️ EDITAR</button><button type="button" onclick="deleteProduct('${String(p.id).replace(/\\\\/g, '\\\\\\\\').replace(/'/g, "\\\\'")}')" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
             });
         }
 
         function editProduct(id) {
-            const prod = products.find(p => p.id === id);
-            if(!prod) return;
+            const prod = products.find(p => String(p.id) === String(id));
+            if (!prod) return alert('Produto não encontrado. Actualize a lista e tente novamente.');
             document.getElementById('edit-prod-id').value = prod.id;
-            document.getElementById('new-prod-name').value = prod.name;
-            document.getElementById('new-prod-cost').value = prod.cost || 0;
-            document.getElementById('new-prod-price').value = prod.price;
-            document.getElementById('new-prod-qty').value = prod.stock;
+            document.getElementById('new-prod-name').value = prod.name || '';
+            document.getElementById('new-prod-cost').value = Number(prod.cost) || 0;
+            document.getElementById('new-prod-price').value = Number(prod.price) || 0;
+            document.getElementById('new-prod-qty').value = Number(prod.stock) || 0;
             const source = prod.img || '';
-            document.getElementById('new-prod-img').value = /^data:image\//i.test(source) ? '' : source;
+            document.getElementById('new-prod-img').value = /^data:image\\//i.test(source) ? '' : source;
             document.getElementById('new-prod-image-data').value = source;
             document.getElementById('new-prod-image-file').value = '';
             setProductImagePreview(source);
             const btn = document.getElementById('btn-add-prod');
-            btn.innerHTML = "💾 ATUALIZAR PRODUTO";
-            btn.classList.replace('bg-blue-600', 'bg-emerald-600');
-            btn.onclick = function() { updateProductExisting(id); };
+            btn.innerHTML = '💾 ATUALIZAR PRODUTO';
+            btn.classList.remove('bg-blue-600');
+            btn.classList.add('bg-emerald-600');
+            btn.onclick = function() { updateProductExisting(prod.id); };
             document.getElementById('btn-cancel-edit').classList.remove('hidden');
             document.getElementById('new-prod-name').focus();
         }
 
         function updateProductExisting(id) {
             const name = document.getElementById('new-prod-name').value.trim();
-            const price = parseFloat(document.getElementById('new-prod-price').value);
-            const cost = parseFloat(document.getElementById('new-prod-cost').value);
-            const stock = parseInt(document.getElementById('new-prod-qty').value);
-            const img = getProductDraftImage();
-            const idx = products.findIndex(p => p.id === id);
-            if(idx !== -1 && name && Number.isFinite(price)) {
-                products[idx] = { id: parseInt(id), name, price, cost: cost||0, stock: Number.isFinite(stock) ? stock : 0, img, updatedAt: new Date().toISOString() };
-                saveData(); renderStockList(); updateProductDatalist(); updateStockSelect(); renderVrSelectedProduct(null); alert("Produto atualizado!"); cancelEdit();
-            }
+            const priceRaw = document.getElementById('new-prod-price').value;
+            const costRaw = document.getElementById('new-prod-cost').value;
+            const stockRaw = document.getElementById('new-prod-qty').value;
+            const price = Number(priceRaw);
+            const cost = costRaw === '' ? 0 : Number(costRaw);
+            const stock = stockRaw === '' ? 0 : Number(stockRaw);
+            const idx = products.findIndex(p => String(p.id) === String(id));
+
+            if (idx === -1) return alert('Não foi possível actualizar: produto não encontrado.');
+            if (!name) return alert('Informe o nome do produto.');
+            if (priceRaw === '' || !Number.isFinite(price) || price < 0) return alert('Informe um preço de venda válido.');
+            if (!Number.isFinite(cost) || cost < 0) return alert('O preço de compra não pode ser negativo.');
+            if (!Number.isInteger(stock) || stock < 0) return alert('A quantidade em stock deve ser um número inteiro igual ou superior a zero.');
+
+            const current = products[idx];
+            const imgDraft = getProductDraftImage();
+            products[idx] = {
+                ...current,
+                name,
+                price,
+                cost,
+                stock,
+                img: imgDraft || current.img || '',
+                updatedAt: new Date().toISOString()
+            };
+
+            saveData();
+            renderStockList();
+            updateRestockSelect();
+            updateProductDatalist();
+            updateStockSelect();
+            renderVrSelectedProduct(null);
+            cancelEdit();
+            alert('Produto actualizado com sucesso!');
         }
 
         function cancelEdit() {
@@ -3383,25 +3412,68 @@ function printDailyReport(copies = 1) {
             document.getElementById('new-prod-image-file').value = '';
             setProductImagePreview('');
             const btn = document.getElementById('btn-add-prod');
-            btn.innerHTML = "CRIAR PRODUTO";
-            btn.classList.replace('bg-emerald-600', 'bg-blue-600');
+            btn.innerHTML = 'CRIAR PRODUTO';
+            btn.classList.remove('bg-emerald-600');
+            btn.classList.add('bg-blue-600');
             btn.onclick = addNewProduct;
             document.getElementById('btn-cancel-edit').classList.add('hidden');
         }
 
         function addNewProduct() {
             const name = document.getElementById('new-prod-name').value.trim();
-            const price = parseFloat(document.getElementById('new-prod-price').value);
-            const cost = parseFloat(document.getElementById('new-prod-cost').value) || 0;
-            const stock = parseInt(document.getElementById('new-prod-qty').value);
+            const priceRaw = document.getElementById('new-prod-price').value;
+            const costRaw = document.getElementById('new-prod-cost').value;
+            const stockRaw = document.getElementById('new-prod-qty').value;
+            const price = Number(priceRaw);
+            const cost = costRaw === '' ? 0 : Number(costRaw);
+            const stock = stockRaw === '' ? 0 : Number(stockRaw);
             const img = getProductDraftImage();
-            if(name && Number.isFinite(price)) {
-                products.push({ id: Date.now(), name, price, cost, stock: Number.isFinite(stock) ? stock : 0, img, updatedAt: new Date().toISOString() });
-                saveData(); renderStockList(); updateRestockSelect(); updateProductDatalist(); updateStockSelect(); alert("Produto Adicionado!"); cancelEdit();
-            }
+
+            if (!name) return alert('Informe o nome do produto.');
+            if (priceRaw === '' || !Number.isFinite(price) || price < 0) return alert('Informe um preço de venda válido.');
+            if (!Number.isFinite(cost) || cost < 0) return alert('O preço de compra não pode ser negativo.');
+            if (!Number.isInteger(stock) || stock < 0) return alert('A quantidade em stock deve ser um número inteiro igual ou superior a zero.');
+
+            products.push({ id: Date.now(), name, price, cost, stock, img, updatedAt: new Date().toISOString() });
+            saveData();
+            renderStockList();
+            updateRestockSelect();
+            updateProductDatalist();
+            updateStockSelect();
+            cancelEdit();
+            alert('Produto adicionado com sucesso!');
         }
-        function addStock() { const id = document.getElementById('restock-select').value; const qtyToAdd = parseInt(document.getElementById('restock-qty').value); if (!id || !qtyToAdd) return alert("Erro"); const p = products.find(x => x.id == id); if (p) { p.stock += qtyToAdd; touchProduct(p); saveData(); alert("Stock atualizado!"); renderStockList(); updateRestockSelect(); } }
-        function deleteProduct(id) { if(confirm("Remover?")) { products = products.filter(p=>p.id!==id); saveData(); renderStockList(); updateRestockSelect(); } }
+
+        function addStock() {
+            const id = document.getElementById('restock-select').value;
+            const qtyRaw = document.getElementById('restock-qty').value;
+            const qtyToAdd = Number(qtyRaw);
+            if (!id) return alert('Seleccione um produto.');
+            if (!Number.isInteger(qtyToAdd) || qtyToAdd <= 0) return alert('Informe uma quantidade inteira superior a zero.');
+            const p = products.find(x => String(x.id) === String(id));
+            if (!p) return alert('Produto não encontrado.');
+            p.stock = (Number(p.stock) || 0) + qtyToAdd;
+            touchProduct(p);
+            saveData();
+            renderStockList();
+            updateRestockSelect();
+            updateStockSelect();
+            document.getElementById('restock-qty').value = '';
+            alert('Stock actualizado com sucesso!');
+        }
+
+        function deleteProduct(id) {
+            const product = products.find(p => String(p.id) === String(id));
+            if (!product) return alert('Produto não encontrado.');
+            if (!confirm(`Tem a certeza de que pretende remover "${product.name}"? Esta operação não pode ser desfeita.`)) return;
+            products = products.filter(p => String(p.id) !== String(id));
+            saveData();
+            renderStockList();
+            updateRestockSelect();
+            updateProductDatalist();
+            updateStockSelect();
+            renderVrSelectedProduct(null);
+        }
         function suggestPrice() { const cost = parseFloat(document.getElementById('new-prod-cost').value); if(cost > 0) { const suggested = cost + (cost * 0.4); document.getElementById('price-suggestion').innerHTML = `💡 Sugestão (40%): <b>${suggested.toLocaleString()} Kz</b>`; if(document.getElementById('new-prod-price').value == "") document.getElementById('new-prod-price').value = suggested; } }
         function updateRestockSelect() { const sel = document.getElementById('restock-select'); sel.innerHTML = '<option value="">Selecionar...</option>'; products.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
         function printInvoiceDouble(saleId) {
