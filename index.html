@@ -3419,7 +3419,7 @@ function printDailyReport(copies = 1) {
             const products = groupSalesProducts(rows);
             const categoryReceived = rows.reduce((sum, sale) => sum + getSaleInitialPaid(sale), 0);
             html += `<h4 style="margin:12px 0 5px;padding:7px;background:#f3f6fa;border-left:4px solid #3977b9">${escapeReportText(category)}</h4>`;
-            html += '<table style="width:100%;border-collapse:collapse;margin-bottom:10px"><thead><tr><th style="${th}">Produto</th><th style="${th}text-align:right">Quantidade</th><th style="${th}text-align:right">Valor dos produtos</th></tr></thead><tbody>';
+            html += `<table style="width:100%;border-collapse:collapse;margin-bottom:10px"><thead><tr><th style="${th}">Produto</th><th style="${th}text-align:right">Quantidade</th><th style="${th}text-align:right">Valor dos produtos</th></tr></thead><tbody>`;
             products.forEach(item => {
                 html += `<tr><td style="${td}">${escapeReportText(item.name)}</td><td style="${td}text-align:right">${item.qty.toLocaleString('pt-PT')}</td><td style="${td}text-align:right">${item.total.toLocaleString('pt-PT')} Kz</td></tr>`;
             });
@@ -3427,22 +3427,22 @@ function printDailyReport(copies = 1) {
         }
     } else html += '<p style="color:#7b8794">Nenhuma venda registada hoje.</p>';
 
-    html += '<h3 style="background:#eaf2fb;padding:9px;margin:18px 0 8px;color:#174477">3. MÉTODOS DE PAGAMENTO</h3><table style="width:100%;border-collapse:collapse"><tbody>';
+    html += `<h3 style="background:#eaf2fb;padding:9px;margin:18px 0 8px;color:#174477">3. MÉTODOS DE PAGAMENTO</h3><table style="width:100%;border-collapse:collapse"><tbody>`;
     if (methods.size) methods.forEach((amount, method) => { html += `<tr><td style="${td}">${escapeReportText(method)}</td><td style="${td}text-align:right;font-weight:800">${amount.toLocaleString('pt-PT')} Kz</td></tr>`; });
     else html += `<tr><td style="${td}" colspan="2">Sem pagamentos registados.</td></tr>`;
     html += '</tbody></table>';
 
-    html += '<h3 style="background:#fff0f2;padding:9px;margin:18px 0 8px;color:#a51d3c">4. DESPESAS E SAÍDAS</h3><table style="width:100%;border-collapse:collapse"><tbody>';
+    html += `<h3 style="background:#fff0f2;padding:9px;margin:18px 0 8px;color:#a51d3c">4. DESPESAS E SAÍDAS</h3><table style="width:100%;border-collapse:collapse"><tbody>`;
     if (dayExpenses.length) dayExpenses.forEach(expense => { html += `<tr><td style="${td}">${escapeReportText(expense.desc)}</td><td style="${td}text-align:right;color:#be123c;font-weight:800">-${(Number(expense.total) || 0).toLocaleString('pt-PT')} Kz</td></tr>`; });
     else html += `<tr><td style="${td}" colspan="2">Nenhuma despesa registada hoje.</td></tr>`;
     html += '</tbody></table>';
 
-    html += '<h3 style="background:#eaf8f0;padding:9px;margin:18px 0 8px;color:#087443">5. DÍVIDAS PAGAS HOJE</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th style="${th}">Hora</th><th style="${th}">Cliente / Produto</th><th style="${th}">Método</th><th style="${th}text-align:right">Valor</th></tr></thead><tbody>';
+    html += `<h3 style="background:#eaf8f0;padding:9px;margin:18px 0 8px;color:#087443">5. DÍVIDAS PAGAS HOJE</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th style="${th}">Hora</th><th style="${th}">Cliente / Produto</th><th style="${th}">Método</th><th style="${th}text-align:right">Valor</th></tr></thead><tbody>`;
     if (debtPaidToday.length) debtPaidToday.forEach(payment => { html += `<tr><td style="${td}">${escapeReportText(payment.time || '-')}</td><td style="${td}">${escapeReportText(payment.client || 'Cliente')}<br><small>${escapeReportText(payment.product || 'Produto')} · Dívida de ${escapeReportText(payment.originalDate || '-')}</small></td><td style="${td}">${escapeReportText(payment.method || '-')}</td><td style="${td}text-align:right;color:#087443;font-weight:800">${(Number(payment.amount) || 0).toLocaleString('pt-PT')} Kz</td></tr>`; });
     else html += `<tr><td style="${td}" colspan="4">Nenhum pagamento de dívida registado hoje.</td></tr>`;
     html += '</tbody></table>';
 
-    html += '<h3 style="background:#fff5e9;padding:9px;margin:18px 0 8px;color:#a9540b">6. DÍVIDAS PENDENTES</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th style="${th}">Cliente / Contacto</th><th style="${th}">Produto / Data</th><th style="${th}text-align:right">Em dívida</th></tr></thead><tbody>';
+    html += `<h3 style="background:#fff5e9;padding:9px;margin:18px 0 8px;color:#a9540b">6. DÍVIDAS PENDENTES</h3><table style="width:100%;border-collapse:collapse"><thead><tr><th style="${th}">Cliente / Contacto</th><th style="${th}">Produto / Data</th><th style="${th}text-align:right">Em dívida</th></tr></thead><tbody>`;
     if (pendingDebts.length) pendingDebts.forEach(debt => { html += `<tr><td style="${td}">${escapeReportText(debt.client || 'Cliente')}<br><small>${escapeReportText(debt.phone || 'Sem contacto')}</small></td><td style="${td}">${escapeReportText(debt.desc || 'Produto')}<br><small>Data: ${escapeReportText(debt.date || '-')}</small></td><td style="${td}text-align:right;color:#a9540b;font-weight:800">${getDebtAmount(debt).toLocaleString('pt-PT')} Kz</td></tr>`; });
     else html += `<tr><td style="${td}" colspan="3">Sem dívidas pendentes.</td></tr>`;
     html += '</tbody></table><div style="margin-top:28px;padding-top:14px;border-top:1px solid #cbd5e1;color:#64748b">Conferência: ____________________________ &nbsp;&nbsp; Assinatura: ____________________________</div></div>';
