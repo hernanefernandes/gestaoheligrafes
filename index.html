@@ -308,6 +308,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                         <button id="clock-digital-btn" type="button" onclick="setClockMode('digital')">Digital</button>
                         <button id="clock-analog-btn" type="button" onclick="setClockMode('analog')">Analógico</button>
                     </div>
+                    <button id="topbar-chat-notifications" type="button" onclick="openTopbarChatNotifications()" class="relative inline-flex items-center justify-center w-10 h-10 rounded-xl border border-blue-200 bg-white text-blue-800 shadow-sm hover:bg-blue-50 transition" aria-label="Ver notificações do chat" title="Notificações do chat">💬<span id="topbar-chat-unread-badge" class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-600 text-white text-[10px] font-black items-center justify-center">0</span></button>
                 </div>
                 <div class="topbar-company border-l-2 border-slate-300 pl-6">
                     <h4 class="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -1242,6 +1243,21 @@ window.onload = function() {
             if (product) product.updatedAt = new Date().toISOString();
         }
 
+        async function syncLegacyStockAlert(product) {
+            try {
+                if (!product || !window.heliSupabase || !window.HELI_USER?.id || !window.HELI_ORG?.id) return;
+                const result = await window.heliSupabase.rpc('heli_sync_legacy_stock_alert', {
+                    p_org: window.HELI_ORG.id,
+                    p_product_name: String(product.name || ''),
+                    p_location_name: getCurrentBusinessLocation(),
+                    p_quantity: Math.max(0, Number(product.stock) || 0)
+                });
+                if (result.error) throw result.error;
+            } catch (error) {
+                console.warn('[Stock] Não foi possível sincronizar o aviso administrativo:', error.message || error);
+            }
+        }
+
         function setOperationalStatus(text) {
             const status = document.getElementById('ops-sync-status');
             if (status) status.innerText = text;
@@ -1616,7 +1632,16 @@ window.onload = function() {
         function chatMessageIsForMe(m){return m&&m.senderId!==chatCurrentUserId()&&(!m.recipientId||m.recipientId===chatCurrentUserId());}
         function updateChatUnreadBadge(){
           const unread=chatMessages.filter(m=>chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)));
-          const badge=document.getElementById('chat-unread-badge');if(badge){badge.textContent=String(unread.length);badge.classList.toggle('hidden',!unread.length);badge.classList.toggle('flex',!!unread.length);}
+          [document.getElementById('chat-unread-badge'),document.getElementById('topbar-chat-unread-badge')].forEach(b=>{if(b){b.textContent=String(unread.length);b.classList.toggle('hidden',!unread.length);b.classList.toggle('flex',!!unread.length);}});
+        }
+        function openTopbarChatNotifications(){
+          const unread=chatMessages.filter(m=>chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id))).slice().reverse();
+          document.getElementById('topbar-chat-notification-panel')?.remove();
+          const panel=document.createElement('div');panel.id='topbar-chat-notification-panel';panel.className='fixed z-[10050] top-24 left-4 w-[min(390px,calc(100vw-2rem))] max-h-[65vh] overflow-y-auto rounded-2xl border border-blue-100 bg-white p-3 shadow-2xl';
+          panel.innerHTML='<div class="flex items-center justify-between border-b border-slate-100 pb-2 mb-2"><b class="text-sm text-slate-800">Notificações do chat</b><button type="button" id="topbar-chat-notification-close" class="rounded-lg px-2 py-1 text-slate-500 hover:bg-slate-100" aria-label="Fechar">✕</button></div>'+(unread.length?unread.map(m=>'<button type="button" data-top-chat-open="'+escapeChatHtml(String(m.id))+'" class="block w-full rounded-xl border border-slate-100 p-3 mb-2 text-left hover:bg-blue-50"><span class="block text-xs font-black text-blue-800">'+escapeChatHtml(m.user||'Colega')+' · '+escapeChatHtml(m.room||'GERAL')+'</span><span class="block mt-1 text-sm text-slate-700">'+escapeChatHtml((m.text||'Mensagem com anexo').slice(0,150))+'</span><span class="block mt-1 text-[10px] text-slate-400">'+escapeChatHtml(m.date||'')+' '+escapeChatHtml(m.time||'')+'</span></button>').join(''):'<p class="p-4 text-sm text-slate-500">Não existem mensagens por ler.</p>');
+          document.body.appendChild(panel);panel.querySelector('#topbar-chat-notification-close').onclick=()=>panel.remove();
+          panel.querySelectorAll('[data-top-chat-open]').forEach(b=>b.onclick=()=>{const m=unread.find(x=>String(x.id)===b.dataset.topChatOpen);if(!m)return;panel.remove();if(typeof showTab==='function')showTab('chat');const recipient=document.getElementById('chat-recipient');if(recipient)recipient.value=m.senderId;const room=document.getElementById('chat-room');if(room)room.value=m.room||'GERAL';renderChatMessages();void markChatMessageRead(m.id);document.querySelector('[data-chat-message-id="'+CSS.escape(String(m.id))+'"]')?.scrollIntoView({behavior:'smooth',block:'center'});});
+          setTimeout(()=>{const closeOnOutside=e=>{if(!panel.contains(e.target)&&e.target.id!=='topbar-chat-notifications'){panel.remove();document.removeEventListener('click',closeOnOutside);}};document.addEventListener('click',closeOnOutside);},0);
         }
         async function markChatMessageRead(id){
           const key=String(id);if(!key||heliChatReadIds.has(key))return;
@@ -2637,7 +2662,9 @@ window.onload = function() {
             const time = new Date().toLocaleTimeString();
             const saldoCaixa = stats.totalVendas;
             const printWindow = window.open('', '_blank');
-            printWindow.document.write(`<html><head><title>Fecho</title><style>body{font-family:'Courier New';width:80mm;font-size:12px;}.item{display:flex;justify-content:space-between;margin:5px 0;}</style></head><body><center><strong>RELATÓRIO DE FECHO</strong><br>${today} ${time}</center><hr><div class="item"><span>Entradas:</span><span>${stats.totalVendas} Kz</span></div><div class="item"><span>Despesas registadas:</span><span>${stats.despesas} Kz</span></div><hr><div class="item"><strong>SALDO DE CAIXA:</strong><strong>${saldoCaixa} Kz</strong></div><script>window.print();window.close();<\/script></body></html>`);
+            printWindow.document.write(`<html><head><title>Fecho</title><style>body{font-family:'Courier New';width:80mm;font-size:12px;}.item{display:flex;justify-content:space-between;margin:5px 0;}</style></head><body><center><strong>RELATÓRIO DE FECHO</strong><br>${today} ${time}</center><hr><div class="item"><span>Entradas:</span><span>${stats.totalVendas} Kz</span></div><div class="item"><span>Despesas registadas:</span><span>${stats.despesas} Kz</span></div><hr><div class="item"><strong>SALDO DE CAIXA:</strong><strong>${saldoCaixa} Kz</strong></div><script>window.print();window.close();<\/script>
+
+</body></html>`);
             printWindow.document.close();
         }
 
@@ -2990,6 +3017,7 @@ function finalizeVRSale() {
         if (product) {
             product.stock = (parseInt(product.stock) || 0) - item.qty;
             touchProduct(product);
+            void syncLegacyStockAlert(product);
         }
         return { ...item, productId: product ? product.id : null, cost: product ? (parseFloat(product.cost) || 0) : (parseFloat(item.cost) || 0) };
     });
@@ -3591,6 +3619,7 @@ function printDailyReport(copies = 1) {
             if (!p) return alert('Produto não encontrado.');
             p.stock = (Number(p.stock) || 0) + qtyToAdd;
             touchProduct(p);
+            void syncLegacyStockAlert(p);
             saveData();
             renderStockList();
             updateRestockSelect();
@@ -3755,7 +3784,7 @@ function printDailyReport(copies = 1) {
         function updateStockSelect() { const sel = document.getElementById('st-product-select'); sel.innerHTML = '<option value="">🔍 Procurar Produto...</option>'; products.forEach(p => sel.innerHTML += `<option value="${p.id}">${p.name}</option>`); }
         function updateStockDisplay() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); if(p) { document.getElementById('st-current-stock').innerText = p.stock; document.getElementById('st-current-price').innerText = p.price.toLocaleString() + ' Kz'; } calcStationeryTotal(); }
         function calcStationeryTotal() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = document.getElementById('st-qty').value; document.getElementById('st-total').value = (p ? p.price * qty : 0).toLocaleString() + ' Kz'; }
-        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(!ensureSalesSession()) return; if(confirm("Confirmar venda?")) { const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); if (!savedSale) return; p.stock -= qty; touchProduct(p); saveData(); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-payment-method').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
+        function sellStationery() { const p = products.find(x => x.id == document.getElementById('st-product-select').value); const qty = parseInt(document.getElementById('st-qty').value); if(!p || qty <= 0 || p.stock < qty) return alert("Erro de Stock/Produto"); const method = document.getElementById('st-payment-method').value; if(!method) return alert("Selecione o método!"); if(!ensureSalesSession()) return; if(confirm("Confirmar venda?")) { const savedSale = saveData({ date: new Date().toLocaleDateString(), desc: p.name, qty: qty, total: p.price*qty, paid: p.price*qty, cost: (p.cost||0)*qty, category: 'PAPELARIA', client: 'Balcão', method: method }); if (!savedSale) return; p.stock -= qty; touchProduct(p); void syncLegacyStockAlert(p); saveData(); printInvoiceDouble(savedSale.id); document.getElementById('st-qty').value = '1'; document.getElementById('st-product-select').value = ''; document.getElementById('st-payment-method').value = ''; document.getElementById('st-total').value = '0 Kz'; document.getElementById('st-current-stock').innerText = '0'; document.getElementById('st-current-price').innerText = '0 Kz'; updateStockDisplay(); } }
         function renderStationeryDailyReport() { const list = document.getElementById('st-sales-list'); if(!list) return; list.innerHTML=''; sales.slice().reverse().forEach(s => { if(s.category === 'PAPELARIA' && s.date === new Date().toLocaleDateString()) list.innerHTML += `<div class="grid grid-cols-12 bg-white p-2 border-b border-slate-100 text-xs text-slate-600 hover:bg-slate-50 items-center"><div class="col-span-2">${new Date(s.id).toLocaleTimeString().slice(0,5)}</div><div class="col-span-5 font-bold">${s.desc}</div><div class="col-span-2 text-center bg-blue-50 rounded">${s.qty||1}</div><div class="col-span-2 text-right font-bold text-emerald-600">${s.total.toLocaleString()}</div><div class="col-span-1 text-center"><button onclick="deleteSale(${s.id})" class="text-red-400 font-bold hover:text-red-600">×</button></div></div>`; }); }
         function renderOrdersHistory() { const tbody = document.getElementById('orders-history-body'); tbody.innerHTML = ''; sales.slice().reverse().forEach(s => { const debt = getDebtAmount(s); let statusHtml = debt <= 0 ? '<span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-1 text-xs font-semibold text-emerald-600">Pago</span>' : `<span class="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-1 text-xs font-semibold text-red-600">Dívida: ${debt.toLocaleString()}</span><button onclick="registerDebtPayment(${s.id})" class="ml-2 text-emerald-600 font-black text-[10px] underline">Pagar</button>`; tbody.innerHTML += `<tr class="hover:bg-slate-50 transition-colors"><td class="p-3 text-slate-500">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client || 'Balcão'}<div class="text-[10px] text-slate-400">${s.phone || ''}</div></td><td class="p-3 text-slate-600 text-xs">${s.desc}</td><td class="p-3 text-right font-medium">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center">${statusHtml}</td><td class="p-3 text-center"><button onclick='printInvoiceDouble(${s.id})' class="text-blue-500 font-bold text-xs mr-2">🖨️</button><button onclick='deleteSale(${s.id})' class="text-red-400 font-bold text-xs">🗑️</button></td></tr>`; }); }
         function exportData() { const dataStr = JSON.stringify({ sales: sales, products: products, employees: employees, attendance: attendance, payrollPayments: payrollPayments, shiftCloses: shiftCloses, shiftAuditLogs: shiftAuditLogs, extraCashAdds: extraCashAdds, debtPayments: debtPayments, chatMessages: chatMessages, chatPresence: chatPresence, deletedChatIds: deletedChatIds }); const blob = new Blob([dataStr], { type: "application/json" }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = "backup_v52_" + new Date().toLocaleDateString().replace(/\//g, '-') + ".json"; document.body.appendChild(a); a.click(); document.body.removeChild(a); }
@@ -4198,6 +4227,99 @@ function selectAcademicPage(value) {
 <script src="./js/supabase-config.js"></script>
 <script src="./js/heligrafes-cloud.js?v=20261113-11"></script>
 <script src="./js/heligrafes-sales-live.js?v=20261113-5"></script>
-<script src="./js/heligrafes-admin.js?v=20261114-2"></script>
+<script src="./js/heligrafes-admin.js?v=20261114-3"></script>
+<script id="heli-auto-update-checker">
+(function(){
+  'use strict';
+  const CHECK_INTERVAL = 60000;
+  let baseline = '';
+  let checking = false;
+  let updateAvailable = false;
+  let pendingEdits = false;
+  let lastInteraction = Date.now();
+
+  const isEditing = () => {
+    const el = document.activeElement;
+    return !!(el && (el.matches('input,textarea,select,[contenteditable="true"]')));
+  };
+  const hasOpenDialog = () => !!document.querySelector(
+    '[role="dialog"]:not([aria-hidden="true"]),.modal:not(.hidden),.dialog:not(.hidden),#heli-admin.open'
+  );
+  const safeToReload = () => !pendingEdits && !isEditing() && !hasOpenDialog() &&
+    document.visibilityState === 'visible' && Date.now() - lastInteraction > 5000;
+
+  function showUpdateNotice(){
+    if(document.getElementById('heli-update-notice')) return;
+    const box=document.createElement('div');
+    box.id='heli-update-notice';
+    box.setAttribute('role','status');
+    box.style.cssText='position:fixed;z-index:2147483647;left:50%;bottom:22px;transform:translateX(-50%);max-width:calc(100vw - 28px);display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:#102d55;color:#fff;box-shadow:0 10px 35px #0003;font:600 13px system-ui,sans-serif';
+    const label=document.createElement('span');
+    label.textContent='Nova versão disponível. A actualizar quando for seguro…';
+    box.appendChild(label);
+    const button=document.createElement('button');
+    button.type='button';
+    button.textContent='Actualizar agora';
+    button.style.cssText='border:0;border-radius:9px;padding:8px 11px;background:#f4b51c;color:#102d55;font-weight:800;cursor:pointer;white-space:nowrap';
+    button.addEventListener('click',()=>{pendingEdits=false;window.location.reload();});
+    box.appendChild(button);
+    document.body.appendChild(box);
+  }
+
+  async function readRemoteVersion(){
+    const url=new URL(window.location.href);
+    url.searchParams.set('__heli_version_check',String(Date.now()));
+    const response=await fetch(url.toString(),{
+      method:'GET',
+      cache:'no-store',
+      credentials:'same-origin',
+      headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}
+    });
+    if(!response.ok) throw new Error('Não foi possível verificar a versão.');
+    return await response.text();
+  }
+
+  async function checkForUpdate(){
+    if(checking || !baseline) return;
+    checking=true;
+    try{
+      const remote=await readRemoteVersion();
+      if(remote && remote!==baseline){
+        updateAvailable=true;
+        showUpdateNotice();
+      }
+    }catch(error){
+      console.debug('[Heligrafes] Verificação de actualização adiada:',error.message||error);
+    }finally{
+      checking=false;
+    }
+    if(updateAvailable && safeToReload()) window.location.reload();
+  }
+
+  document.addEventListener('input',()=>{pendingEdits=true;lastInteraction=Date.now();},true);
+  document.addEventListener('change',()=>{pendingEdits=true;lastInteraction=Date.now();},true);
+  document.addEventListener('focusin',()=>{lastInteraction=Date.now();},true);
+  document.addEventListener('focusout',()=>{lastInteraction=Date.now();},true);
+  document.addEventListener('click',event=>{
+    lastInteraction=Date.now();
+    const button=event.target.closest('button,[type="submit"]');
+    if(button && /guardar|salvar|registar|confirmar|enviar|adicionar|actualizar|atualizar|repor|repor stock|finalizar/i.test(button.textContent||button.value||'')){
+      pendingEdits=false;
+    }
+  },true);
+  document.addEventListener('submit',()=>{pendingEdits=false;},true);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void checkForUpdate();});
+
+  (async function start(){
+    try{
+      baseline=await readRemoteVersion();
+      window.setInterval(checkForUpdate,CHECK_INTERVAL);
+      window.addEventListener('focus',checkForUpdate);
+    }catch(error){
+      console.debug('[Heligrafes] Verificação automática de versão indisponível:',error.message||error);
+    }
+  })();
+})();
+</script>
 </body>
 </html>
