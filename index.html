@@ -2902,6 +2902,38 @@ function saveDailyPaymentMethod() {
     if (select && select.value) localStorage.setItem(DAILY_PAYMENT_METHOD_KEY, select.value);
 }
 
+let dailyPaymentPromptTimer = null;
+function scheduleDailyPaymentMethodPrompt(method) {
+    if (dailyPaymentPromptTimer) clearTimeout(dailyPaymentPromptTimer);
+    dailyPaymentPromptTimer = setTimeout(() => {
+        const existing = document.getElementById('heli-payment-method-reminder');
+        if (existing) existing.remove();
+        const overlay = document.createElement('div');
+        overlay.id = 'heli-payment-method-reminder';
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:2147483000;background:rgba(8,25,48,.58);display:flex;align-items:center;justify-content:center;padding:16px';
+        const card = document.createElement('div');
+        card.style.cssText = 'width:min(420px,100%);background:#fff;border-radius:18px;padding:22px;box-shadow:0 24px 70px rgba(0,0,0,.28);color:#17324f';
+        const title = document.createElement('h3');
+        title.textContent = 'Confirmar método de pagamento';
+        title.style.cssText = 'font-size:18px;font-weight:900;margin:0 0 8px';
+        const description = document.createElement('p');
+        description.textContent = 'A última venda foi registada com: ' + (method || 'método não definido') + '. Pretende manter este método para as próximas vendas ou alterar?';
+        description.style.cssText = 'font-size:13px;line-height:1.5;color:#52657b;margin:0 0 16px';
+        const actions = document.createElement('div');
+        actions.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
+        const keep = document.createElement('button');
+        keep.type = 'button'; keep.textContent = 'Manter método actual';
+        keep.style.cssText = 'flex:1;min-width:145px;padding:11px;border:0;border-radius:10px;background:#087443;color:white;font-weight:800';
+        keep.onclick = () => { saveDailyPaymentMethod(); overlay.remove(); };
+        const change = document.createElement('button');
+        change.type = 'button'; change.textContent = 'Alterar método';
+        change.style.cssText = 'flex:1;min-width:120px;padding:11px;border:0;border-radius:10px;background:#e8f1fb;color:#174a7e;font-weight:800';
+        change.onclick = () => { overlay.remove(); promptDailyPaymentMethod(); };
+        actions.append(keep, change);
+        card.append(title, description, actions); overlay.appendChild(card); document.body.appendChild(overlay);
+    }, 120000);
+}
+
 function promptDailyPaymentMethod() {
     const select = document.getElementById('vr-payment-method');
     if (!select) return;
@@ -2934,6 +2966,61 @@ function getSafeProductImageSrc(image) {
     return /^(data:image\/(png|jpeg|jpg|webp);base64,|https?:\/\/)/i.test(source) ? source : '';
 }
 
+const heliProductImageJobs = new Map();
+async function HeligrafesFindProductImage(product) {
+    if (!product?.id || !product?.name || product.img || !window.heliSupabase || !window.HELI_USER) return null;
+    const key = String(product.id);
+    if (heliProductImageJobs.has(key)) return heliProductImageJobs.get(key);
+    const attemptKey = 'heli_product_image_attempt_' + key;
+    const lastAttempt = Number(localStorage.getItem(attemptKey) || 0);
+    if (Date.now() - lastAttempt < 7 * 24 * 60 * 60 * 1000) return null;
+    const job = (async () => {
+        localStorage.setItem(attemptKey, String(Date.now()));
+        try {
+            const url = new URL('https://api.openverse.org/v1/images/');
+            url.searchParams.set('q', product.name);
+            url.searchParams.set('page_size', '5');
+            url.searchParams.set('mature', 'false');
+            const response = await fetch(url.toString(), { method: 'GET', mode: 'cors', credentials: 'omit', headers: { 'Accept': 'application/json' } });
+            if (!response.ok) throw new Error('Pesquisa de imagens indisponível (' + response.status + ').');
+            const data = await response.json();
+            const results = Array.isArray(data.results) ? data.results : [];
+            const tokens = String(product.name).toLocaleLowerCase().split(/[^\p{L}\p{N}]+/u).filter(x => x.length > 2);
+            const match = results.find(item => {
+                const haystack = [item.title, ...(item.tags || []).map(tag => tag.name)].join(' ').toLocaleLowerCase();
+                return item.thumbnail && tokens.some(token => haystack.includes(token));
+            });
+            if (!match?.thumbnail || !/^https:\/\/api\.openverse\.org\//i.test(match.thumbnail)) {
+                console.info('[Heligrafes] Nenhuma imagem aberta suficientemente relacionada com:', product.name);
+                return null;
+            }
+            const saved = await window.heliSupabase.rpc('heli_set_product_auto_image', {
+                p_product_id: product.id,
+                p_image_url: match.thumbnail,
+                p_source_url: match.foreign_landing_url || null,
+                p_attribution: match.attribution || (match.title || 'Imagem') + (match.creator ? ' — ' + match.creator : ''),
+                p_license: match.license || null,
+                p_license_url: match.license_url || null
+            });
+            if (saved.error) throw saved.error;
+            if (saved.data) {
+                product.img = match.thumbnail;
+                product.imageAttribution = match.attribution || '';
+                localStorage.setItem('multi_products_v52', JSON.stringify(products));
+                renderVrSelectedProduct(product);
+                if (typeof renderStockList === 'function') renderStockList();
+            }
+            return saved.data ? match : null;
+        } catch (error) {
+            console.warn('[Heligrafes] Imagem automática:', error.message || error);
+            return null;
+        }
+    })();
+    heliProductImageJobs.set(key, job);
+    try { return await job; } finally { heliProductImageJobs.delete(key); }
+}
+window.HeligrafesFindProductImage = HeligrafesFindProductImage;
+
 function productImageMarkup(image, label = 'Produto', className = 'product-thumb') {
     const source = getSafeProductImageSrc(image);
     if (!source) return `<span class="${className}" aria-label="Sem imagem do produto">📦</span>`;
@@ -2955,6 +3042,7 @@ function renderVrSelectedProduct(product) {
     thumb.innerHTML = source ? `<img src="${escapeChatHtml(source)}" alt="${escapeChatHtml(String(product.name))}">` : '📦';
     name.innerText = product.name;
     container.classList.add('visible');
+    if (!source && product.id) void HeligrafesFindProductImage(product);
 }
 
 let vrAutoSaleInProgress = false;
@@ -3165,6 +3253,7 @@ async function finalizeVRSale() {
     vrCart=[];
     renderVRCart();
     saveDailyPaymentMethod();
+    scheduleDailyPaymentMethodPrompt(method);
 }
 
 // 2. ADICIONADA A LIMPEZA DE CAMPOS APÓS REGISTAR DESPESA
