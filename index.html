@@ -1768,7 +1768,7 @@ window.onload = function() {
           if(status)status.textContent='A carregar fotografia…';
           try{
             const uploaded=await db.storage.from('heligrafes-private').upload(path,file,{upsert:true,contentType:file.type,cacheControl:'3600'});if(uploaded.error)throw uploaded.error;
-            const saved=await db.from('user_profiles').update({avatar_path:path}).eq('user_id',user.id).eq('organization_id',org.id);if(saved.error)throw saved.error;
+            const saved=await db.rpc('heli_set_my_avatar',{p_path:path});if(saved.error)throw saved.error;
             const signed=await db.storage.from('heligrafes-private').createSignedUrl(path,3600);if(signed.error)throw signed.error;
             const me=heliChatRecipients.find(p=>p.user_id===user.id);if(me){me.avatar_path=path;me.avatar_url=signed.data.signedUrl;}
             const own=document.getElementById('chat-own-avatar');if(own)own.src=signed.data.signedUrl;
@@ -3004,6 +3004,8 @@ async function tryAutoRegisterVRSale() {
             document.getElementById('vr-product').focus();
             setVRAutoStatus('VENDA REGISTADA ✓');
             vrAutoSaleNotice = '';
+        } else {
+            setVRAutoStatus('VENDA NÃO CONCLUÍDA · VERIFIQUE O AVISO', true);
         }
     } catch (error) {
         console.error('[POS automático]', error);
