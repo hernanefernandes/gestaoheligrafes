@@ -2946,14 +2946,16 @@ function promptDailyPaymentMethod() {
 
 window.HeligrafesApplyCloudProduct = function(p) {
     if (!p || !p.id || !p.name) return;
-    const item = { id: p.id, name: p.name, price: Number(p.sale_price || 0), cost: Number(p.cost_price || 0), stock: 0, track_stock: p.track_stock !== false, replenishmentLevel: Number(p.min_stock || 0), category: p.category || 'Geral', img: '' };
     const index = products.findIndex(x => String(x.id) === String(p.id) || normalizeProductName(x.name) === normalizeProductName(p.name));
-    if (index >= 0) products[index] = { ...products[index], ...item };
+    const previous = index >= 0 ? products[index] : null;
+    const item = { id: p.id, name: p.name, price: Number(p.sale_price || 0), cost: Number(p.cost_price || 0), stock: Number(previous?.stock || 0), track_stock: p.track_stock !== false, replenishmentLevel: Number(p.min_stock || 0), category: p.category || 'Geral', img: p.image_path || previous?.img || '' };
+    if (index >= 0) products[index] = { ...previous, ...item };
     else products.push(item);
     localStorage.setItem('multi_products_v52', JSON.stringify(products));
     updateProductDatalist();
     if (typeof renderStockList === 'function') renderStockList();
     if (typeof renderProductSalesManagement === 'function') renderProductSalesManagement();
+    if (!item.img) void HeligrafesFindProductImage(item);
 };
 function updateProductDatalist() { 
     const dl = document.getElementById('vr-products'); 
