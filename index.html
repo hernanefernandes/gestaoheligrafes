@@ -1551,10 +1551,11 @@ window.onload = function() {
         }
         function receiveChatFileDataChannel(channel,signal){
           const parts=[];let meta=null;
+          channel.onopen=()=>sendChatFileSignal({kind:'ack',transferId:signal.transferId,to:signal.from,from:chatCurrentUserId()}).catch(err=>console.warn(err));
           channel.onmessage=event=>{
             if(typeof event.data==='string'){
               let packet;try{packet=JSON.parse(event.data);}catch(_){return;}
-              if(packet.kind==='meta'){meta=packet;parts.length=0;sendChatFileSignal({kind:'ack',transferId:signal.transferId,to:signal.from,from:chatCurrentUserId()});}
+              if(packet.kind==='meta'){meta=packet;parts.length=0;}
               else if(packet.kind==='end'&&meta){
                 const blob=new Blob(parts,{type:meta.fileType||'application/octet-stream'}),url=URL.createObjectURL(blob);
                 const message=chatMessages.find(m=>String(m.id)===String(meta.messageId));
@@ -1682,6 +1683,7 @@ window.onload = function() {
           if(!db||!user||!window.HELI_ORG)return alert('Inicie sessão para utilizar o chat online.');
           if(!text&&!file)return alert('Escreva uma mensagem ou seleccione um ficheiro.');
           if(file&&to==='TODOS')return alert('Para enviar ficheiros sem armazenamento na nuvem, escolha um colega específico em “Falar com”.');
+          if(file&&file.size>20*1024*1024)return alert('Por segurança, a transferência directa está limitada a 20 MB por ficheiro.');
           if(deliveryInput&&Number.isNaN(new Date(deliveryInput).getTime()))return alert('Data/hora de entrega inválida.');
           const room=heliChatRooms[code];if(!room)return alert('Sala não encontrada. Actualize a página.');
           const btn=document.querySelector('button[onclick="sendChatMessage()"]');if(btn){btn.disabled=true;btn.textContent='A enviar...';}
@@ -1691,7 +1693,7 @@ window.onload = function() {
             const payload={organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:to==='TODOS'?null:to,body:text||('📎 '+(file?.name||'')),attachment_path:attachment,sender_name:window.HELI_PROFILE?.full_name||user.email||'Funcionário',location_id:location?.id||null,delivery_at:deliveryInput?new Date(deliveryInput).toISOString():null};
             const q=await db.from('chat_messages').insert(payload).select('id').single();if(q.error)throw q.error;
             document.getElementById('chat-message').value='';document.getElementById('chat-file').value='';document.getElementById('chat-delivery-at').value='';clearSelectedChatFilePreview();await loadSupabaseChatMessages();renderChatMessages();
-            if(file){try{await transferChatFileDirect(q.data.id,file,to);}catch(transferError){await db.from('chat_messages').delete().eq('id',q.data.id).eq('sender_id',user.id);await loadSupabaseChatMessages();renderChatMessages();throw transferError;}}
+            if(file){try{await transferChatFileDirect(q.data.id,file,to);const sent=chatMessages.find(m=>String(m.id)===String(q.data.id));if(sent){sent.fileData=URL.createObjectURL(file);sent.fileName=file.name;sent.fileType=file.type||'application/octet-stream';renderChatMessages();}}catch(transferError){alert('A mensagem de texto foi enviada, mas o ficheiro não foi transferido: '+(transferError.message||transferError));}}
           }catch(err){console.error('[Heligrafes Chat] Envio:',err);alert('Não foi possível enviar: '+(err.message||err));}
           finally{if(btn){btn.disabled=false;btn.textContent='Enviar';}}
         }
