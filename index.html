@@ -2663,99 +2663,7 @@ window.onload = function() {
             const saldoCaixa = stats.totalVendas;
             const printWindow = window.open('', '_blank');
             printWindow.document.write(`<html><head><title>Fecho</title><style>body{font-family:'Courier New';width:80mm;font-size:12px;}.item{display:flex;justify-content:space-between;margin:5px 0;}</style></head><body><center><strong>RELATÓRIO DE FECHO</strong><br>${today} ${time}</center><hr><div class="item"><span>Entradas:</span><span>${stats.totalVendas} Kz</span></div><div class="item"><span>Despesas registadas:</span><span>${stats.despesas} Kz</span></div><hr><div class="item"><strong>SALDO DE CAIXA:</strong><strong>${saldoCaixa} Kz</strong></div><script>window.print();window.close();<\/script>
-<script id="heli-auto-update-checker">
-(function(){
-  'use strict';
-  const CHECK_INTERVAL = 60000;
-  let baseline = '';
-  let checking = false;
-  let updateAvailable = false;
-  let pendingEdits = false;
-  let lastInteraction = Date.now();
 
-  const isEditing = () => {
-    const el = document.activeElement;
-    return !!(el && (el.matches('input,textarea,select,[contenteditable="true"]')));
-  };
-  const hasOpenDialog = () => !!document.querySelector(
-    '[role="dialog"]:not([aria-hidden="true"]),.modal:not(.hidden),.dialog:not(.hidden),#heli-admin.open'
-  );
-  const safeToReload = () => !pendingEdits && !isEditing() && !hasOpenDialog() &&
-    document.visibilityState === 'visible' && Date.now() - lastInteraction > 5000;
-
-  function showUpdateNotice(){
-    if(document.getElementById('heli-update-notice')) return;
-    const box=document.createElement('div');
-    box.id='heli-update-notice';
-    box.setAttribute('role','status');
-    box.style.cssText='position:fixed;z-index:2147483647;left:50%;bottom:22px;transform:translateX(-50%);max-width:calc(100vw - 28px);display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:#102d55;color:#fff;box-shadow:0 10px 35px #0003;font:600 13px system-ui,sans-serif';
-    const label=document.createElement('span');
-    label.textContent='Nova versão disponível. A actualizar quando for seguro…';
-    box.appendChild(label);
-    const button=document.createElement('button');
-    button.type='button';
-    button.textContent='Actualizar agora';
-    button.style.cssText='border:0;border-radius:9px;padding:8px 11px;background:#f4b51c;color:#102d55;font-weight:800;cursor:pointer;white-space:nowrap';
-    button.addEventListener('click',()=>{pendingEdits=false;window.location.reload();});
-    box.appendChild(button);
-    document.body.appendChild(box);
-  }
-
-  async function readRemoteVersion(){
-    const url=new URL(window.location.href);
-    url.searchParams.set('__heli_version_check',String(Date.now()));
-    const response=await fetch(url.toString(),{
-      method:'GET',
-      cache:'no-store',
-      credentials:'same-origin',
-      headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}
-    });
-    if(!response.ok) throw new Error('Não foi possível verificar a versão.');
-    return await response.text();
-  }
-
-  async function checkForUpdate(){
-    if(checking || !baseline) return;
-    checking=true;
-    try{
-      const remote=await readRemoteVersion();
-      if(remote && remote!==baseline){
-        updateAvailable=true;
-        showUpdateNotice();
-      }
-    }catch(error){
-      console.debug('[Heligrafes] Verificação de actualização adiada:',error.message||error);
-    }finally{
-      checking=false;
-    }
-    if(updateAvailable && safeToReload()) window.location.reload();
-  }
-
-  document.addEventListener('input',()=>{pendingEdits=true;lastInteraction=Date.now();},true);
-  document.addEventListener('change',()=>{pendingEdits=true;lastInteraction=Date.now();},true);
-  document.addEventListener('focusin',()=>{lastInteraction=Date.now();},true);
-  document.addEventListener('focusout',()=>{lastInteraction=Date.now();},true);
-  document.addEventListener('click',event=>{
-    lastInteraction=Date.now();
-    const button=event.target.closest('button,[type="submit"]');
-    if(button && /guardar|salvar|registar|confirmar|enviar|adicionar|actualizar|atualizar|repor|repor stock|finalizar/i.test(button.textContent||button.value||'')){
-      pendingEdits=false;
-    }
-  },true);
-  document.addEventListener('submit',()=>{pendingEdits=false;},true);
-  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void checkForUpdate();});
-
-  (async function start(){
-    try{
-      baseline=await readRemoteVersion();
-      window.setInterval(checkForUpdate,CHECK_INTERVAL);
-      window.addEventListener('focus',checkForUpdate);
-    }catch(error){
-      console.debug('[Heligrafes] Verificação automática de versão indisponível:',error.message||error);
-    }
-  })();
-})();
-</script>
 </body></html>`);
             printWindow.document.close();
         }
@@ -4320,5 +4228,98 @@ function selectAcademicPage(value) {
 <script src="./js/heligrafes-cloud.js?v=20261113-11"></script>
 <script src="./js/heligrafes-sales-live.js?v=20261113-5"></script>
 <script src="./js/heligrafes-admin.js?v=20261114-3"></script>
+<script id="heli-auto-update-checker">
+(function(){
+  'use strict';
+  const CHECK_INTERVAL = 60000;
+  let baseline = '';
+  let checking = false;
+  let updateAvailable = false;
+  let pendingEdits = false;
+  let lastInteraction = Date.now();
+
+  const isEditing = () => {
+    const el = document.activeElement;
+    return !!(el && (el.matches('input,textarea,select,[contenteditable="true"]')));
+  };
+  const hasOpenDialog = () => !!document.querySelector(
+    '[role="dialog"]:not([aria-hidden="true"]),.modal:not(.hidden),.dialog:not(.hidden),#heli-admin.open'
+  );
+  const safeToReload = () => !pendingEdits && !isEditing() && !hasOpenDialog() &&
+    document.visibilityState === 'visible' && Date.now() - lastInteraction > 5000;
+
+  function showUpdateNotice(){
+    if(document.getElementById('heli-update-notice')) return;
+    const box=document.createElement('div');
+    box.id='heli-update-notice';
+    box.setAttribute('role','status');
+    box.style.cssText='position:fixed;z-index:2147483647;left:50%;bottom:22px;transform:translateX(-50%);max-width:calc(100vw - 28px);display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:#102d55;color:#fff;box-shadow:0 10px 35px #0003;font:600 13px system-ui,sans-serif';
+    const label=document.createElement('span');
+    label.textContent='Nova versão disponível. A actualizar quando for seguro…';
+    box.appendChild(label);
+    const button=document.createElement('button');
+    button.type='button';
+    button.textContent='Actualizar agora';
+    button.style.cssText='border:0;border-radius:9px;padding:8px 11px;background:#f4b51c;color:#102d55;font-weight:800;cursor:pointer;white-space:nowrap';
+    button.addEventListener('click',()=>{pendingEdits=false;window.location.reload();});
+    box.appendChild(button);
+    document.body.appendChild(box);
+  }
+
+  async function readRemoteVersion(){
+    const url=new URL(window.location.href);
+    url.searchParams.set('__heli_version_check',String(Date.now()));
+    const response=await fetch(url.toString(),{
+      method:'GET',
+      cache:'no-store',
+      credentials:'same-origin',
+      headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}
+    });
+    if(!response.ok) throw new Error('Não foi possível verificar a versão.');
+    return await response.text();
+  }
+
+  async function checkForUpdate(){
+    if(checking || !baseline) return;
+    checking=true;
+    try{
+      const remote=await readRemoteVersion();
+      if(remote && remote!==baseline){
+        updateAvailable=true;
+        showUpdateNotice();
+      }
+    }catch(error){
+      console.debug('[Heligrafes] Verificação de actualização adiada:',error.message||error);
+    }finally{
+      checking=false;
+    }
+    if(updateAvailable && safeToReload()) window.location.reload();
+  }
+
+  document.addEventListener('input',()=>{pendingEdits=true;lastInteraction=Date.now();},true);
+  document.addEventListener('change',()=>{pendingEdits=true;lastInteraction=Date.now();},true);
+  document.addEventListener('focusin',()=>{lastInteraction=Date.now();},true);
+  document.addEventListener('focusout',()=>{lastInteraction=Date.now();},true);
+  document.addEventListener('click',event=>{
+    lastInteraction=Date.now();
+    const button=event.target.closest('button,[type="submit"]');
+    if(button && /guardar|salvar|registar|confirmar|enviar|adicionar|actualizar|atualizar|repor|repor stock|finalizar/i.test(button.textContent||button.value||'')){
+      pendingEdits=false;
+    }
+  },true);
+  document.addEventListener('submit',()=>{pendingEdits=false;},true);
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')void checkForUpdate();});
+
+  (async function start(){
+    try{
+      baseline=await readRemoteVersion();
+      window.setInterval(checkForUpdate,CHECK_INTERVAL);
+      window.addEventListener('focus',checkForUpdate);
+    }catch(error){
+      console.debug('[Heligrafes] Verificação automática de versão indisponível:',error.message||error);
+    }
+  })();
+})();
+</script>
 </body>
 </html>
