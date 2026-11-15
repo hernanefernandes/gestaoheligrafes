@@ -781,12 +781,6 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Token GitHub</label>
                                     <input type="password" id="ops-github-token" class="big-input" placeholder="token">
                                 </div>
-                                <div class="col-span-12 flex flex-wrap gap-2 items-center">
-                                    <button onclick="saveOperationalSyncConfig()" class="px-4 py-2 bg-indigo-600 text-white font-black rounded-xl text-xs">LIGAR 3 LOCAIS</button>
-                                    <button onclick="syncOperationalFromGitHub(true)" class="px-4 py-2 bg-slate-100 text-slate-700 font-black rounded-xl text-xs border border-slate-200">PUXAR AGORA</button>
-                                    <button onclick="syncOperationalToGitHub(true)" class="px-4 py-2 bg-emerald-100 text-emerald-700 font-black rounded-xl text-xs border border-emerald-200">ENVIAR AGORA</button>
-                                    <span id="ops-sync-status" class="text-xs font-bold text-slate-500">Sincronizacao desligada.</span>
-                                </div>
                                 <div class="col-span-12">
                                     <div id="location-profit-summary" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
                                 </div>
