@@ -1784,7 +1784,7 @@ window.onload = function() {
           const q=await db.from('chat_messages').select('id,room_id,sender_id,recipient_id,body,attachment_path,sender_name,location_id,created_at,delivery_at').eq('organization_id',window.HELI_ORG.id).order('created_at',{ascending:true}).limit(300);
           if(q.error)throw q.error;
           const rooms=Object.fromEntries(Object.values(heliChatRooms).map(r=>[r.id,r.code])),names=Object.fromEntries(heliChatRecipients.map(p=>[p.user_id,p.full_name||p.email||'Funcionário']));
-          chatMessages=(q.data||[]).map(row=>{let file={};try{if(row.attachment_path)file=JSON.parse(row.attachment_path);}catch(_){}const d=new Date(row.created_at);return{id:row.id,dbId:row.id,room:rooms[row.room_id]||'GERAL',senderId:row.sender_id,recipientId:row.recipient_id||null,user:row.sender_name||names[row.sender_id]||'Funcionário',to:row.recipient_id?(names[row.recipient_id]||'Mensagem privada'):'TODOS',text:row.body||'',date:d.toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'}),time:d.toLocaleTimeString('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'}),createdAt:row.created_at,deliveryAt:row.delivery_at,location_id:row.location_id,...file,...(heliChatIncomingFiles.get(String(row.id))||{})};});
+          chatMessages=(q.data||[]).map(row=>{let file={};try{if(row.attachment_path)file=JSON.parse(row.attachment_path);}catch(_){}const d=new Date(row.created_at);return{id:row.id,dbId:row.id,room:rooms[row.room_id]||'GERAL',senderId:row.sender_id,recipientId:row.recipient_id||null,user:names[row.sender_id]||row.sender_name||'Funcionário',to:row.recipient_id?(names[row.recipient_id]||'Mensagem privada'):'TODOS',text:row.body||'',date:d.toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'}),time:d.toLocaleTimeString('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'}),createdAt:row.created_at,deliveryAt:row.delivery_at,location_id:row.location_id,...file,...(heliChatIncomingFiles.get(String(row.id))||{})};});
           deletedChatIds=[];return chatMessages[chatMessages.length-1]?.id||'';
         }
 
@@ -1814,11 +1814,11 @@ window.onload = function() {
 
         function replyToChatMessage(id){
           const message=chatMessages.find(m=>String(m.id)===String(id));if(!message)return;
-          const me=chatCurrentUserId();if(message.senderId===me)return alert('Esta mensagem foi enviada por si. Seleccione o colega na lista para continuar a conversa.');
-          const recipient=document.getElementById('chat-recipient');if(recipient){recipient.value=message.senderId;recipient.dispatchEvent(new Event('change',{bubbles:true}));}
-          heliChatReplyContext={id:String(message.id),senderId:message.senderId,senderName:message.user||'Colega',text:String(message.text||'').slice(0,500)};
-          const banner=document.getElementById('chat-reply-context');if(banner){banner.classList.remove('hidden');banner.innerHTML='<div class="flex items-start justify-between gap-2"><span><b>Responder a '+escapeChatHtml(heliChatReplyContext.senderName)+'</b><span class="block mt-1 text-indigo-700">'+escapeChatHtml(heliChatReplyContext.text||'Anexo')+'</span></span><button type="button" onclick="cancelChatReply()" class="font-black text-indigo-700" aria-label="Cancelar resposta">✕</button></div>';}
-          const input=document.getElementById('chat-message');if(input){input.focus();input.placeholder='Escreva a sua resposta...';}
+          const recipient=document.getElementById('chat-recipient');if(recipient){recipient.value='TODOS';recipient.dispatchEvent(new Event('change',{bubbles:true}));}
+          const profile=heliChatRecipients.find(p=>p.user_id===message.senderId);
+          heliChatReplyContext={id:String(message.id),senderId:message.senderId,senderName:profile?.full_name||message.user||'Colega',text:String(message.text||'').slice(0,500)};
+          const banner=document.getElementById('chat-reply-context');if(banner){banner.classList.remove('hidden');banner.innerHTML='<div class="flex items-start justify-between gap-2"><span><b>Resposta no grupo geral a '+escapeChatHtml(heliChatReplyContext.senderName)+'</b><span class="block mt-1 text-indigo-700">'+escapeChatHtml(heliChatReplyContext.text||'Anexo')+'</span><small class="block mt-1 text-indigo-500">Todos os colegas poderão ver esta resposta.</small></span><button type="button" onclick="cancelChatReply()" class="font-black text-indigo-700" aria-label="Cancelar resposta">✕</button></div>'; }
+          const input=document.getElementById('chat-message');if(input){input.focus();input.placeholder='Escreva a resposta para o grupo...';}
           renderChatMessages();
         }
         function cancelChatReply(){
@@ -1827,37 +1827,45 @@ window.onload = function() {
         }
         function openForwardChatMessage(id){
           const message=chatMessages.find(m=>String(m.id)===String(id));if(!message)return;
-          const me=chatCurrentUserId(),people=heliChatRecipients.filter(p=>p.user_id!==me);
-          if(!people.length)return alert('Não existem outros funcionários cadastrados para receber a mensagem.');
           document.getElementById('chat-forward-modal')?.remove();
-          const options=people.slice().sort((a,b)=>String(a.full_name||a.email||'').localeCompare(String(b.full_name||b.email||''),'pt')).map(p=>'<option value="'+p.user_id+'">'+escapeChatHtml(String(p.full_name||p.email||'Funcionário').trim())+'</option>').join('');
           const modal=document.createElement('div');modal.id='chat-forward-modal';modal.className='fixed inset-0 z-[10050] flex items-center justify-center bg-slate-950/60 p-4';
-          modal.innerHTML='<div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl"><h3 class="text-lg font-black text-slate-800">Reencaminhar conversa</h3><p class="mt-1 text-xs text-slate-500">Escolha o colega que receberá esta mensagem privada.</p><label class="mt-4 block text-xs font-bold text-slate-600">Destinatário</label><select id="chat-forward-recipient" class="mt-1 w-full rounded-xl border border-slate-300 p-3 text-sm">'+options+'</select><div class="mt-4 flex justify-end gap-2"><button type="button" onclick="document.getElementById(\'chat-forward-modal\').remove()" class="rounded-xl border border-slate-300 px-4 py-2 text-xs font-bold text-slate-600">Cancelar</button><button type="button" onclick="confirmForwardChatMessage(\''+encodeURIComponent(String(message.id))+'\')" class="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-black text-white">Reencaminhar</button></div></div>';
+          modal.innerHTML='<div class="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl"><h3 class="text-lg font-black text-slate-800">Reencaminhar para o grupo geral</h3><p class="mt-2 text-sm text-slate-600">A mensagem será publicada para todos os colegas na sala geral, identificando o remetente original. Se incluir imagem, o sistema tentará transferi-la para os colegas que estiverem online.</p><div class="mt-4 rounded-xl bg-slate-50 p-3 text-xs text-slate-600">'+escapeChatHtml((message.text||message.fileName||'Anexo').slice(0,240))+'</div><div class="mt-4 flex justify-end gap-2"><button type="button" onclick="document.getElementById(\'chat-forward-modal\').remove()" class="rounded-xl border border-slate-300 px-4 py-2 text-xs font-bold text-slate-600">Cancelar</button><button type="button" onclick="confirmForwardChatMessage(\''+encodeURIComponent(String(message.id))+'\')" class="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-black text-white">Publicar para todos</button></div></div>';
           document.body.appendChild(modal);
         }
+        async function transferChatFileToGroup(messageId,file){
+          const peers=heliChatRecipients.filter(p=>p.user_id!==chatCurrentUserId()&&window.HeligrafesIsOnline?.(p.user_id)).map(p=>p.user_id);
+          if(!peers.length)throw new Error('A mensagem foi publicada no grupo, mas não há colegas online para receber a imagem neste momento.');
+          const delivered=[],failed=[];
+          for(const peerId of peers){try{await transferChatFileDirect(messageId,file,peerId);delivered.push(peerId);}catch(error){failed.push({id:peerId,error:error.message||String(error)});}}
+          return {delivered,failed};
+        }
         async function confirmForwardChatMessage(encodedId){
-          const id=decodeURIComponent(encodedId),message=chatMessages.find(m=>String(m.id)===id),recipient=document.getElementById('chat-forward-recipient')?.value;
-          if(!message||!recipient)return alert('Seleccione uma mensagem e um destinatário.');
-          const db=window.heliSupabase,user=window.HELI_USER,room=heliChatRooms[message.room]||heliChatRooms.GERAL;
-          if(!db||!user||!room)return alert('A ligação ao chat não está disponível.');
+          const id=decodeURIComponent(encodedId),message=chatMessages.find(m=>String(m.id)===id);
+          if(!message)return alert('Mensagem original não encontrada.');
+          const db=window.heliSupabase,user=window.HELI_USER,room=heliChatRooms.GERAL||heliChatRooms[message.room];
+          if(!db||!user||!room)return alert('A ligação ao chat geral não está disponível.');
           const fileAvailable=!!(message.fileData&&message.fileName);
-          if(message.fileName&&!fileAvailable)return alert('A imagem ou ficheiro original já não está disponível neste dispositivo. O anexo não pode ser reencaminhado com segurança.');
-          const originalSender=message.user||'Colega',body='↪ Mensagem reencaminhada de '+originalSender+':\\n'+(message.text||('📎 '+(message.fileName||'Anexo')));
-          const attachment=fileAvailable?JSON.stringify({fileName:message.fileName,fileType:message.fileType||'application/octet-stream',transfer:'p2p'}):null;
+          if(message.fileName&&!fileAvailable)return alert('A imagem ou ficheiro original já não está disponível neste dispositivo. O texto pode ser reencaminhado, mas o anexo não pode ser transferido.');
+          const profile=heliChatRecipients.find(p=>p.user_id===message.senderId);
+          const originalSender=profile?.full_name||message.user||'Colega';
+          const body='↗ Reencaminhado de '+originalSender+':\n'+(message.text||('📎 '+(message.fileName||'Anexo')));
+          const attachment=fileAvailable?JSON.stringify({fileName:message.fileName,fileType:message.fileType||'application/octet-stream',transfer:'p2p-group'}):null;
           const location=heliChatLocations.find(x=>(x.code||'').toUpperCase()===getCurrentBusinessLocation()||(x.name||'').toUpperCase()===getCurrentBusinessLocation());
           try{
-            const result=await db.from('chat_messages').insert({organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:recipient,body,attachment_path:attachment,sender_name:window.HELI_PROFILE?.full_name||user.email||'Funcionário',location_id:location?.id||message.location_id||null}).select('id').single();
+            const result=await db.from('chat_messages').insert({organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:null,body,attachment_path:attachment,sender_name:window.HELI_PROFILE?.full_name||user.email||'Funcionário',location_id:location?.id||message.location_id||null}).select('id').single();
             if(result.error)throw result.error;
             document.getElementById('chat-forward-modal')?.remove();
-            const select=document.getElementById('chat-recipient');if(select)select.value=recipient;
+            const select=document.getElementById('chat-recipient');if(select)select.value='TODOS';
             await loadSupabaseChatMessages();renderChatMessages();
             if(fileAvailable){
               const response=await fetch(message.fileData),blob=await response.blob(),file=new File([blob],message.fileName,{type:message.fileType||blob.type||'application/octet-stream'});
-              await transferChatFileDirect(result.data.id,file,recipient);
-              const forwarded=chatMessages.find(m=>String(m.id)===String(result.data.id));if(forwarded){forwarded.fileData=URL.createObjectURL(blob);forwarded.fileName=file.name;forwarded.fileType=file.type;renderChatMessages();}
-            }
-            alert('Mensagem reencaminhada com sucesso.');
-          }catch(error){console.error('[Chat] Reencaminhamento:',error);alert('Não foi possível reencaminhar: '+(error.message||error));}
+              const transfer=await transferChatFileToGroup(result.data.id,file);
+              const forwarded=chatMessages.find(m=>String(m.id)===String(result.data.id));
+              if(forwarded){forwarded.fileData=URL.createObjectURL(blob);forwarded.fileName=file.name;forwarded.fileType=file.type;renderChatMessages();}
+              if(transfer.failed.length)alert('Mensagem publicada para todos. Imagem transferida para '+transfer.delivered.length+' colega(s); '+transfer.failed.length+' transferência(s) falharam.');
+              else alert('Mensagem e imagem reencaminhadas para o grupo. Transferências concluídas: '+transfer.delivered.length+'.');
+            }else alert('Mensagem reencaminhada para todos os colegas no grupo geral.');
+          }catch(error){console.error('[Chat] Reencaminhamento para grupo:',error);alert('A mensagem pode ter sido publicada, mas houve uma falha na transferência: '+(error.message||error));}
         }
 
         function renderChatMessages(){
@@ -1885,7 +1893,7 @@ window.onload = function() {
           try{
             const location=heliChatLocations.find(x=>(x.code||'').toUpperCase()===getCurrentBusinessLocation()||(x.name||'').toUpperCase()===getCurrentBusinessLocation());
             const attachment=file?JSON.stringify({fileName:file.name,fileType:file.type||'application/octet-stream',transfer:'p2p'}):null;
-            const payload={organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:to==='TODOS'?null:to,body:heliChatReplyContext?'↩ Resposta a '+heliChatReplyContext.senderName+':\\n'+(heliChatReplyContext.text?'“'+heliChatReplyContext.text+'”\\n\\n':'')+(text||('📎 '+(file?.name||''))):(text||('📎 '+(file?.name||''))),attachment_path:attachment,sender_name:window.HELI_PROFILE?.full_name||user.email||'Funcionário',location_id:location?.id||null };
+            const payload={organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:heliChatReplyContext?null:(to==='TODOS'?null:to),body:heliChatReplyContext?'↩ Resposta no grupo a '+heliChatReplyContext.senderName+':\\n'+(heliChatReplyContext.text?'“'+heliChatReplyContext.text+'”\\n\\n':'')+(text||('📎 '+(file?.name||''))):(text||('📎 '+(file?.name||''))),attachment_path:attachment,sender_name:window.HELI_PROFILE?.full_name||user.email||'Funcionário',location_id:location?.id||null };
             const q=await db.from('chat_messages').insert(payload).select('id').single();if(q.error)throw q.error;
             document.getElementById('chat-message').value='';document.getElementById('chat-file').value='';clearSelectedChatFilePreview();cancelChatReply();await loadSupabaseChatMessages();renderChatMessages();
             if(file){try{await transferChatFileDirect(q.data.id,file,to);const sent=chatMessages.find(m=>String(m.id)===String(q.data.id));if(sent){sent.fileData=URL.createObjectURL(file);sent.fileName=file.name;sent.fileType=file.type||'application/octet-stream';renderChatMessages();}}catch(transferError){alert('A mensagem de texto foi enviada, mas o ficheiro não foi transferido: '+(transferError.message||transferError));}}
