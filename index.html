@@ -297,6 +297,40 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
 #heli-session-bar #heli-cloud-status{color:#a7f3d0}
 #heli-signout{flex:0 0 auto;background:#fff;color:#12315c;border:0;border-radius:7px;padding:7px 10px;font-weight:800;cursor:pointer}
 @media(max-width:700px){#heli-session-bar{grid-column:1/-1;gap:7px;padding:8px}.clock-control{grid-template-columns:auto auto;grid-template-rows:repeat(4,auto)}.clock-control #heli-session-bar{grid-row:3}.clock-control #topbar-chat-notifications{max-width:40px}.clock-control .clock-toggle{grid-column:2;grid-row:2}.heli-session-time{display:block!important}}
+
+/* ORGANIZAÇÃO PROFISSIONAL DO CABEÇALHO — relógio, empresa, sessão de venda e perfil */
+.app-topbar{display:grid!important;grid-template-columns:minmax(150px,.62fr) minmax(250px,1.15fr) minmax(175px,.72fr) minmax(315px,1.35fr);align-items:center!important;gap:12px!important;min-height:132px!important;height:auto!important;padding:14px 22px!important;box-sizing:border-box}
+.app-topbar>div:first-child{display:contents!important}
+.app-topbar>div:first-child>.clock-control{grid-column:1;grid-row:1;display:flex;align-items:center;justify-content:center;width:100%;min-width:0;max-width:none;gap:0}
+.app-topbar .digital-clock-box{width:100%;min-width:0;max-width:190px}
+.app-topbar>div:first-child>.topbar-company{grid-column:2;grid-row:1;min-width:0;width:100%;border-left:2px solid var(--heli-yellow)!important;padding:5px 0 5px 16px}
+.app-topbar .topbar-company h4{display:block!important;font-size:clamp(12px,1vw,15px)!important;line-height:1.4;overflow-wrap:anywhere}
+.app-topbar .topbar-company>div{align-items:flex-start}
+.app-topbar #delivery-alert-text{line-height:1.4}
+.app-topbar>.topbar-session{grid-column:3;grid-row:1;width:100%;min-width:0;max-width:none;padding:10px 12px!important;box-sizing:border-box}
+.app-topbar>.topbar-session #topbar-chat-notifications{flex:0 0 40px;width:40px;height:40px;margin:0 auto}
+.app-topbar>.topbar-session>div{min-width:0;width:100%}
+.app-topbar #sales-session-label{display:block;overflow-wrap:anywhere;text-align:center;line-height:1.35}
+.app-topbar>#heli-session-bar{grid-column:4;grid-row:1;width:100%;max-width:none;min-width:0;margin:0!important;align-self:center;box-sizing:border-box}
+@media(max-width:1250px){
+.app-topbar{grid-template-columns:minmax(145px,.65fr) minmax(230px,1.2fr) minmax(170px,.8fr);min-height:0!important}
+.app-topbar>div:first-child>.clock-control{grid-column:1;grid-row:1}
+.app-topbar>div:first-child>.topbar-company{grid-column:2;grid-row:1}
+.app-topbar>.topbar-session{grid-column:3;grid-row:1}
+.app-topbar>#heli-session-bar{grid-column:1/-1;grid-row:2}
+}
+@media(max-width:760px){
+.app-topbar{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:10px!important;padding:12px 14px!important}
+.app-topbar>div:first-child{display:contents!important}
+.app-topbar>div:first-child>.clock-control,.app-topbar>div:first-child>.topbar-company,.app-topbar>.topbar-session,.app-topbar>#heli-session-bar{grid-column:1!important;grid-row:auto!important;width:100%;max-width:none}
+.app-topbar>div:first-child>.clock-control{justify-content:flex-start}
+.app-topbar>div:first-child>.topbar-company{border-left:0!important;border-top:1px solid #dbe8f7;padding:9px 0 0}
+.app-topbar>.topbar-session{flex-direction:row!important;justify-content:center;gap:12px!important}
+.app-topbar>.topbar-session>div{width:auto}
+.app-topbar>.topbar-session>div>p{text-align:left}
+.app-topbar>.topbar-session #sales-session-label{text-align:left}
+.app-topbar>#heli-session-bar{margin:0!important}
+}
 </style><script>document.documentElement.classList.add('heli-auth-lock');</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="flex h-screen overflow-hidden main-container">
