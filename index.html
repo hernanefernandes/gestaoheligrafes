@@ -3837,8 +3837,8 @@ async function printDailyReport(copies = 1) {
     const printWindow = window.open('', '_blank');
     if (!printWindow) { alert('Permita janelas pop-up para imprimir o relatório.'); return; }
     if (window.HELI_ATTENDANCE_REQUIRED && !window.HELI_ATTENDANCE_EXITED) {
-        try { await window.HeligrafesMarkAttendanceExit(); }
-        catch (error) { printWindow.close(); alert(error.message || 'Não foi possível registar a saída. O fecho foi cancelado.'); return; }
+        const exitConfirmed = await window.HeligrafesPromptAttendanceExit();
+        if (!exitConfirmed) { printWindow.close(); return; }
     }
     const copiesToPrint = Math.min(3, Math.max(1, parseInt(copies, 10) || 1));
     const today = new Date().toLocaleDateString();
