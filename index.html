@@ -386,6 +386,16 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
         </nav>
         
         <div class="p-6">
+            <div id="heli-employee-absence-counter" class="hidden mb-3 rounded-xl border border-blue-300/30 bg-blue-950/35 px-4 py-3 text-white shadow-sm" role="status" aria-live="polite">
+                <div class="flex items-center justify-between gap-3">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-blue-200">O meu registo</p>
+                        <p class="mt-1 text-xs font-semibold text-white">Faltas registadas</p>
+                    </div>
+                    <strong id="heli-employee-absence-value" class="text-2xl font-black text-amber-300 tabular-nums">0</strong>
+                </div>
+                <p class="mt-1 text-[9px] text-blue-200/80">Actualização automática</p>
+            </div>
             <div class="bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 text-emerald-800 shadow-lg flex items-center justify-between">
                 <div>
                     <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Estado da Memória</p>
