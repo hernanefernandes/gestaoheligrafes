@@ -370,7 +370,7 @@ async function launch(user){
 }
 async function signIn(event){
  event.preventDefault();const btn=el('heli-auth-submit');btn.disabled=true;btn.textContent='A autenticar...';message('A validar as credenciais...');
- try{const q=await client.auth.signInWithPassword({email:el('heli-auth-email').value.trim(),password:el('heli-auth-password').value});if(q.error)throw q.error;await launch(q.data.user);}
+ try{const q=await client.auth.signInWithPassword({email:el('heli-auth-email').value.trim(),password:el('heli-auth-password').value});if(q.error)throw q.error;sessionStorage.setItem('heli_login_refresh_user_v1',q.data.user.id);const refreshUrl=new URL(window.location.href);refreshUrl.searchParams.set('__heli_login_refresh',String(Date.now()));window.location.replace(refreshUrl.toString());return;}
  catch(err){message(err.message||'Falha no início de sessão.',true);}
  finally{if(btn.isConnected){btn.disabled=false;btn.textContent='Entrar';}}
 }
@@ -399,7 +399,7 @@ async function boot(){
  const flow=new URLSearchParams(window.location.search).get('flow');
  const hashType=new URLSearchParams(window.location.hash.replace(/^#/,'')).get('type');
  if(session?.user&&(flow==='invite'||hashType==='invite'||hashType==='recovery')){showSetPassword(session.user);return;}
- if(session?.user)await launch(session.user);else message('Introduza o e-mail e a palavra-passe para entrar.');
+ if(session?.user){sessionStorage.removeItem('heli_login_refresh_user_v1');await launch(session.user);}else message('Introduza o e-mail e a palavra-passe para entrar.');
 }
 window.checkPermission=async function(text){if(!identity)return false;const ok=window.HELI_HAS_ROLE('owner','admin');if(!ok)alert(text||'Não tem permissão para esta operação.');return ok;};
 originalOnload=window.onload;window.onload=null;boot();
