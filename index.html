@@ -151,14 +151,14 @@
         #heli-session-bar .heli-session-online i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px #22c55e30}
         @media(max-width:700px){#heli-session-bar{flex-wrap:wrap}#heli-session-bar .heli-session-time{display:none}}
 
-        .clock-control { display: grid; grid-template-columns: minmax(0,auto) auto; grid-template-rows: auto auto auto; align-items: start; gap: 5px 12px; min-width: 0; width: max-content; max-width: 100%; }
+        .clock-control { display: grid; grid-template-columns: minmax(0,auto) auto; grid-template-rows: repeat(4, auto); align-items: start; gap: 5px 12px; min-width: 0; width: max-content; max-width: 100%; }
         .clock-control #heli-session-bar { grid-column: 1 / -1; grid-row: 3; width: 100%; }
         .app-topbar { min-height: 0; height: auto; align-items: flex-start; gap: 18px; }
         .app-topbar > div:first-child { min-width: 0; }
         @media(max-width:760px){.clock-control{width:100%;grid-template-columns:minmax(0,1fr) auto}.clock-control #heli-session-bar{grid-column:1/-1;grid-row:3}.app-topbar{align-items:flex-start}.app-topbar>div:first-child{width:100%}}
         .clock-control #digital-clock-box, .clock-control #analog-clock { grid-column: 1; grid-row: 1 / span 2; }
         .clock-control .clock-toggle { grid-column: 2; grid-row: 2; align-self: end; margin-top: 4px; }
-        .clock-control #topbar-chat-notifications { grid-column: 1 / -1; grid-row: 4; justify-self: center; }
+        .clock-control #topbar-chat-notifications { grid-column: 1 / -1; grid-row: 4; justify-self: center; align-self: center; width: 44px; height: 44px; margin-top: 2px; }
         .digital-clock-box { position: relative; min-width: 178px; padding: 10px 14px 12px; border-radius: 16px; background: linear-gradient(135deg, var(--heli-blue-deep), var(--heli-blue)); color: white; box-shadow: 0 10px 20px rgba(6,59,143,.22); overflow: hidden; }
         .digital-clock-box::after { content: ''; position: absolute; left: 0; bottom: 0; width: var(--clock-progress, 0%); height: 4px; background: linear-gradient(90deg, var(--heli-yellow), var(--heli-orange)); transition: width .25s linear; }
         .digital-clock-box .vibrant-clock { color: #fff; background: none; -webkit-text-fill-color: initial; animation: none; }
@@ -286,7 +286,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
 #heli-session-bar .heli-session-meta{display:flex;flex:1 1 190px;flex-wrap:wrap;align-items:center;gap:5px 10px;min-width:0;color:#dbeafe;font-size:10px}
 #heli-session-bar #heli-cloud-status{color:#a7f3d0}
 #heli-signout{flex:0 0 auto;background:#fff;color:#12315c;border:0;border-radius:7px;padding:7px 10px;font-weight:800;cursor:pointer}
-@media(max-width:700px){#heli-session-bar{grid-column:1/-1;gap:7px;padding:8px}.clock-control{grid-template-columns:auto auto;grid-template-rows:auto auto auto}.clock-control #heli-session-bar{grid-row:3}.clock-control #topbar-chat-notifications{max-width:40px}.clock-control .clock-toggle{grid-column:2;grid-row:2}.heli-session-time{display:block!important}}
+@media(max-width:700px){#heli-session-bar{grid-column:1/-1;gap:7px;padding:8px}.clock-control{grid-template-columns:auto auto;grid-template-rows:repeat(4,auto)}.clock-control #heli-session-bar{grid-row:3}.clock-control #topbar-chat-notifications{max-width:40px}.clock-control .clock-toggle{grid-column:2;grid-row:2}.heli-session-time{display:block!important}}
 </style><script>document.documentElement.classList.add('heli-auth-lock');</script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="flex h-screen overflow-hidden main-container">
@@ -355,10 +355,6 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                     </div>
                     <div id="analog-clock" class="analog-clock hidden" aria-label="Relógio analógico">
                         <span id="clock-hour-hand" class="clock-hand hour"></span><span id="clock-minute-hand" class="clock-hand minute"></span><span id="clock-second-hand" class="clock-hand second"></span><span class="clock-center"></span>
-                    </div>
-                    <div class="clock-toggle" aria-label="Preferência de relógio">
-                        <button id="clock-digital-btn" type="button" onclick="setClockMode('digital')">Digital</button>
-                        <button id="clock-analog-btn" type="button" onclick="setClockMode('analog')">Analógico</button>
                     </div>
                     <button id="topbar-chat-notifications" type="button" onclick="openTopbarChatNotifications()" class="relative inline-flex items-center justify-center w-10 h-10 rounded-xl border border-blue-200 bg-white text-blue-800 shadow-sm hover:bg-blue-50 transition" aria-label="Ver notificações do chat" title="Notificações do chat">💬<span id="topbar-chat-unread-badge" class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-600 text-white text-[10px] font-black items-center justify-center">0</span></button>
                 </div>
