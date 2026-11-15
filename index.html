@@ -159,6 +159,15 @@
         .clock-control #digital-clock-box, .clock-control #analog-clock { grid-column: 1; grid-row: 1 / span 2; }
         .clock-control .clock-toggle { grid-column: 2; grid-row: 2; align-self: end; margin-top: 4px; }
         .clock-control #topbar-chat-notifications { grid-column: 1 / -1; grid-row: 4; justify-self: center; align-self: center; width: 44px; height: 44px; margin-top: 2px; }
+        /* Perfil autenticado alinhado à direita no cabeçalho */
+        .app-topbar { display:flex; flex-wrap:wrap; align-items:center; }
+        .app-topbar > div:first-child { flex:1 1 420px; }
+        .app-topbar > #heli-session-bar { grid-column:auto; grid-row:auto; flex:0 1 460px; width:auto; max-width:460px; margin:0 0 0 auto; align-self:center; }
+        @media(max-width:760px){
+          .app-topbar { align-items:flex-start; }
+          .app-topbar > div:first-child { flex:1 1 100%; }
+          .app-topbar > #heli-session-bar { flex:1 1 100%; width:100%; max-width:none; margin:8px 0 0; }
+        }
         .digital-clock-box { position: relative; min-width: 178px; padding: 10px 14px 12px; border-radius: 16px; background: linear-gradient(135deg, var(--heli-blue-deep), var(--heli-blue)); color: white; box-shadow: 0 10px 20px rgba(6,59,143,.22); overflow: hidden; }
         .digital-clock-box::after { content: ''; position: absolute; left: 0; bottom: 0; width: var(--clock-progress, 0%); height: 4px; background: linear-gradient(90deg, var(--heli-yellow), var(--heli-orange)); transition: width .25s linear; }
         .digital-clock-box .vibrant-clock { color: #fff; background: none; -webkit-text-fill-color: initial; animation: none; }
@@ -4963,7 +4972,7 @@ function selectAcademicPage(value) {
 
 <!-- Autenticação obrigatória: scripts carregados após o código principal -->
 <script src="./js/supabase-config.js"></script>
-<script src="./js/heligrafes-cloud.js?v=20261115-15"></script>
+<script src="./js/heligrafes-cloud.js?v=20261115-16"></script>
 <script src="./js/heligrafes-sales-live.js?v=20261115-14"></script>
 <script src="./js/heligrafes-admin.js?v=20261115-16"></script>
 <script id="heli-auto-update-checker">
