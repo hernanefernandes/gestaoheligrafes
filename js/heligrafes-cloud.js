@@ -281,7 +281,10 @@ async function launch(user){
   if(!window.HELI_OFFLINE_MODE){const login=await client.rpc('heli_register_login');if(login.error)console.warn('[Heligrafes] Registo de entrada:',login.error.message);else window.HELI_LOGIN_SESSION_ID=login.data;}
   const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
   const canAdmin=window.HELI_HAS_ROLE('owner','admin');
-  if(!canAdmin&&!window.HELI_OFFLINE_MODE){const attendanceAllowed=await enforceEmployeeAttendanceBeforeLaunch();if(!attendanceAllowed)return;}
+  if(!canAdmin){
+   if(window.HELI_OFFLINE_MODE){attendanceGateMarkup('A marcação de presença exige ligação ao servidor. Restabeleça a internet e entre novamente.',false);return;}
+   const attendanceAllowed=await enforceEmployeeAttendanceBeforeLaunch();if(!attendanceAllowed)return;
+  }
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
   started=true;document.documentElement.classList.remove('heli-auth-lock');el('heli-auth-root')?.remove();addSessionBar();
   window.dispatchEvent(new CustomEvent('heli-auth-ready'));
