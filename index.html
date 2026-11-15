@@ -3398,7 +3398,8 @@ const heliProductImageJobs = new Map();
 // Imagens automáticas/aleatórias foram desactivadas: cada produto deve ter a sua fotografia real carregada pelo administrador.
 function getSafeProductImageSrc(image) {
     const source = String(image || '').trim();
-    return /^(data:image\/(png|jpeg|jpg|webp);base64,|https?:\/\/)/i.test(source) ? source : '';
+    // Apenas fotografias carregadas e convertidas pelo próprio sistema são consideradas válidas.
+    return /^data:image\/webp;base64,/i.test(source) ? source : '';
 }
 
 function productImageMarkup(image, label = 'Produto', className = 'product-thumb') {
@@ -4160,7 +4161,7 @@ async function printDailyReport(copies = 1) {
                 const profit = price - cost;
                 const margin = price > 0 ? ((profit / price) * 100).toFixed(0) : 0;
                 const productId = String(p.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
-                list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name || 'Produto sem nome'))}</span></div></td><td class="p-3 text-slate-500">${cost.toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-amber-700 font-bold">${minStock}</td><td class="p-3 text-slate-600 font-bold">${maxStock || '—'}</td><td class="p-3 text-blue-600 font-bold">${stock}</td><td class="p-3 text-right whitespace-nowrap"><button type="button" onclick="editProduct('${productId}')" class="text-blue-500 text-xs font-bold mr-2">✏️ EDITAR</button><button type="button" onclick="deleteProduct('${productId}')" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
+                list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name || 'Produto sem nome'))}</span>${getSafeProductImageSrc(p.img) ? '' : '<span class="ml-2 rounded bg-rose-100 px-2 py-1 text-[9px] font-black text-rose-700">FOTO EM FALTA</span>'}</div></td><td class="p-3 text-slate-500">${cost.toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-amber-700 font-bold">${minStock}</td><td class="p-3 text-slate-600 font-bold">${maxStock || '—'}</td><td class="p-3 text-blue-600 font-bold">${stock}</td><td class="p-3 text-right whitespace-nowrap"><button type="button" onclick="editProduct('${productId}')" class="text-blue-500 text-xs font-bold mr-2">✏️ EDITAR</button><button type="button" onclick="deleteProduct('${productId}')" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
             });
         }
 
