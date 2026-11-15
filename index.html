@@ -3,6 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style id="heli-preflight-style">html.heli-preflight body{visibility:hidden!important}</style>
+    <script id="heli-preflight-refresh">
+    (function(){
+      'use strict';
+      const params=new URLSearchParams(window.location.search);
+      if(params.has('__heli_entry_refresh')){
+        params.delete('__heli_entry_refresh');
+        const cleanUrl=new URL(window.location.href);
+        cleanUrl.search=params.toString();
+        window.history.replaceState({},document.title,cleanUrl.toString());
+        return;
+      }
+      if(params.has('__heli_login_refresh')||params.has('__heli_refresh'))return;
+      document.documentElement.classList.add('heli-preflight');
+      const freshUrl=new URL(window.location.href);
+      freshUrl.searchParams.set('__heli_entry_refresh',String(Date.now()));
+      window.location.replace(freshUrl.toString());
+    })();
+    </script>
   
     <title>Heligrafes-Gestão Premium v52 - Sistema Completo</title>
     
