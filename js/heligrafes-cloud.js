@@ -124,8 +124,7 @@ async function syncLegacyEmployeesToCloud(){
  const payload=legacy.filter(emp=>emp&&emp.id!==undefined&&String(emp.name||'').trim()).map(emp=>{
   const key=normalizeStaffName(emp.name),matches=profiles.filter(p=>normalizeStaffName(p.full_name)===key);
   const linked=matches.length===1&&nameCounts.get(key)===1?matches[0].user_id:null;
-  const hireDate=/^\d{4}-\d{2}-\d{2}$/.test(String(emp.startDate||''))?String(emp.startDate):null;
-  return {organization_id:window.HELI_ORG.id,legacy_employee_id:String(emp.id),full_name:String(emp.name).trim(),role_title:String(emp.role||'').trim()||null,phone:String(emp.phone||'').trim()||null,hire_date:hireDate,is_active:emp.active!==false,linked_user_id:linked};
+  return {organization_id:window.HELI_ORG.id,legacy_employee_id:String(emp.id),full_name:String(emp.name).trim(),is_active:emp.active!==false,linked_user_id:linked};
  });
  if(!payload.length)return;
  const synced=[];
@@ -150,7 +149,7 @@ async function syncLegacyEmployeesToCloud(){
   if(!employee.linked_user_id)continue;
   const locations=[...new Set(assignments.filter(a=>a.user_id===employee.linked_user_id&&a.location_id).map(a=>a.location_id))];
   if(locations.length!==1)continue;
-  const existing=await client.from('employee_locations').select('id').eq('organization_id',window.HELI_ORG.id).eq('employee_id',employee.id).eq('location_id',locations[0]).maybeSingle();
+  const existing=await client.from('employee_locations').select('id').eq('organization_id',window.HELI_ORG.id).eq('employee_id',employee.id).eq('location_id',locations[0]).limit(1).maybeSingle();
   if(existing.error)throw existing.error;
   if(!existing.data){const inserted=await client.from('employee_locations').insert({organization_id:window.HELI_ORG.id,employee_id:employee.id,location_id:locations[0]});if(inserted.error)throw inserted.error;}
  }
