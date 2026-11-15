@@ -1290,13 +1290,58 @@ window.onload = function() {
                 String(location.code || '').trim().toLowerCase() === current
             ) || (allowed.length === 1 ? allowed[0] : null);
         }
+        function isCloudProductUuid(value) {
+            return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(value || '').trim());
+        }
+        async function resolveCloudProductId(product) {
+            if (!product || !window.heliSupabase || !window.HELI_ORG?.id) {
+                throw new Error('Catálogo online indisponível. Verifique a ligação à conta.');
+            }
+            if (isCloudProductUuid(product.id)) return product.id;
+
+            // Produtos antigos podem ter IDs numéricos (timestamp). Nunca os enviar
+            // para product_id, que é UUID. Tentar associar pelo nome sem adivinhar.
+            const name = String(product.name || '').trim();
+            if (!name) throw new Error('Este produto antigo não tem nome para associação ao catálogo online.');
+
+            const db = window.heliSupabase;
+            const exact = await db.from('products').select('id,name,sale_price,cost_price,track_stock')
+                .eq('organization_id', window.HELI_ORG.id).eq('is_active', true)
+                .eq('name', name).limit(2);
+            if (exact.error) throw exact.error;
+            let matches = exact.data || [];
+
+            if (matches.length === 0) {
+                const escaped = name.replace(/[\\%_]/g, ch => '\\' + ch);
+                const partial = await db.from('products').select('id,name,sale_price,cost_price,track_stock')
+                    .eq('organization_id', window.HELI_ORG.id).eq('is_active', true)
+                    .ilike('name', '%' + escaped + '%').limit(2);
+                if (partial.error) throw partial.error;
+                matches = partial.data || [];
+            }
+
+            if (matches.length !== 1 || !isCloudProductUuid(matches[0]?.id)) {
+                throw new Error(matches.length > 1
+                    ? 'Há mais de um produto semelhante no catálogo online. O administrador deve associar este produto ao registo correcto.'
+                    : 'Produto antigo não encontrado no catálogo online. Cadastre-o ou associe-o ao produto cloud antes de vender.');
+            }
+
+            const cloudProduct = matches[0];
+            product.id = cloudProduct.id;
+            if (cloudProduct.sale_price !== null && cloudProduct.sale_price !== undefined) product.price = Number(cloudProduct.sale_price);
+            if (cloudProduct.cost_price !== null && cloudProduct.cost_price !== undefined) product.cost = Number(cloudProduct.cost_price);
+            if (cloudProduct.track_stock !== null && cloudProduct.track_stock !== undefined) product.track_stock = cloudProduct.track_stock;
+            localStorage.setItem('multi_products_v52', JSON.stringify(products));
+            return product.id;
+        }
         async function refreshCurrentProductStock(product) {
-            if (!product || !product.id || !window.heliSupabase || !window.HELI_ORG?.id) throw new Error('Produto ainda não está ligado ao catálogo online.');
+            if (!product || !window.heliSupabase || !window.HELI_ORG?.id) throw new Error('Produto ainda não está ligado ao catálogo online.');
             const location = resolveCurrentStockLocation();
             if (!location) throw new Error('O local deste caixa não está associado à sua conta. Confirme o local da sessão.');
+            const cloudProductId = await resolveCloudProductId(product);
             const result = await window.heliSupabase.from('stock_balances').select('quantity')
                 .eq('organization_id', window.HELI_ORG.id).eq('location_id', location.id)
-                .eq('product_id', product.id).maybeSingle();
+                .eq('product_id', cloudProductId).maybeSingle();
             if (result.error) throw result.error;
             product.stock = Number(result.data?.quantity || 0);
             return { location, quantity: product.stock };
