@@ -106,6 +106,110 @@ async function restoreCloudState(){
  if(missing.length)await pushCloudState(missing);
  return changed;
 }
+
+function normalizeStaffName(value){return String(value||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('pt-PT');}
+function formatAttendanceClock(value){if(!value)return '-';const date=new Date(value);if(Number.isNaN(date.getTime()))return '-';return new Intl.DateTimeFormat('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date);}
+async function syncLegacyEmployeesToCloud(){
+ if(!window.HELI_USER||!window.HELI_HAS_ROLE?.('owner','admin')||!window.HELI_ORG?.id||window.HELI_OFFLINE_MODE)return;
+ let legacy=[];try{legacy=JSON.parse(localStorage.getItem('multi_employees_v52')||'[]');}catch(_){}
+ if(!Array.isArray(legacy)||!legacy.length)return;
+ const [profilesQ,assignmentsQ]=await Promise.all([
+  client.from('user_profiles').select('user_id,full_name,is_active').eq('organization_id',window.HELI_ORG.id),
+  client.from('user_role_assignments').select('user_id,location_id').eq('organization_id',window.HELI_ORG.id)
+ ]);
+ if(profilesQ.error)throw profilesQ.error;if(assignmentsQ.error)throw assignmentsQ.error;
+ const profiles=(profilesQ.data||[]).filter(p=>p.is_active),nameCounts=new Map();
+ legacy.forEach(emp=>{const key=normalizeStaffName(emp?.name);if(key)nameCounts.set(key,(nameCounts.get(key)||0)+1);});
+ const payload=legacy.filter(emp=>emp&&emp.id!==undefined&&String(emp.name||'').trim()).map(emp=>{
+  const key=normalizeStaffName(emp.name),matches=profiles.filter(p=>normalizeStaffName(p.full_name)===key);
+  const linked=matches.length===1&&nameCounts.get(key)===1?matches[0].user_id:null;
+  const hireDate=/^\d{4}-\d{2}-\d{2}$/.test(String(emp.startDate||''))?String(emp.startDate):null;
+  return {organization_id:window.HELI_ORG.id,legacy_employee_id:String(emp.id),full_name:String(emp.name).trim(),role_title:String(emp.role||'').trim()||null,phone:String(emp.phone||'').trim()||null,hire_date:hireDate,is_active:emp.active!==false,linked_user_id:linked};
+ });
+ if(!payload.length)return;
+ const upsert=await client.from('employees').upsert(payload,{onConflict:'organization_id,legacy_employee_id'}).select('id,legacy_employee_id,linked_user_id');
+ if(upsert.error)throw upsert.error;
+ const assignments=assignmentsQ.data||[];
+ for(const employee of upsert.data||[]){
+  if(!employee.linked_user_id)continue;
+  const locations=[...new Set(assignments.filter(a=>a.user_id===employee.linked_user_id&&a.location_id).map(a=>a.location_id))];
+  if(locations.length!==1)continue;
+  const existing=await client.from('employee_locations').select('id').eq('organization_id',window.HELI_ORG.id).eq('employee_id',employee.id).eq('location_id',locations[0]).maybeSingle();
+  if(existing.error)throw existing.error;
+  if(!existing.data){const inserted=await client.from('employee_locations').insert({organization_id:window.HELI_ORG.id,employee_id:employee.id,location_id:locations[0]});if(inserted.error)throw inserted.error;}
+ }
+}
+async function syncCloudAttendanceToLegacy(){
+ if(!window.HELI_USER||!window.HELI_HAS_ROLE?.('owner','admin')||!window.HELI_ORG?.id||window.HELI_OFFLINE_MODE)return;
+ const [employeesQ,recordsQ]=await Promise.all([
+  client.from('employees').select('id,legacy_employee_id').eq('organization_id',window.HELI_ORG.id).not('legacy_employee_id','is',null),
+  client.from('attendance_records').select('id,employee_id,work_date,check_in,check_out,status').eq('organization_id',window.HELI_ORG.id)
+ ]);
+ if(employeesQ.error)throw employeesQ.error;if(recordsQ.error)throw recordsQ.error;
+ const legacyIdByEmployee=new Map((employeesQ.data||[]).map(e=>[e.id,String(e.legacy_employee_id)]));
+ let local=[];try{local=JSON.parse(localStorage.getItem('multi_attendance_v52')||'[]');}catch(_){}
+ if(!Array.isArray(local))local=[];
+ const byKey=new Map();
+ local.forEach(row=>{const empId=String(row.empId??''),date=String(row.date||'').slice(0,10);if(empId&&date)byKey.set(empId+'|'+date,row);});
+ for(const row of recordsQ.data||[]){
+  const legacyId=legacyIdByEmployee.get(row.employee_id),date=String(row.work_date||'').slice(0,10);if(!legacyId||!date)continue;
+  const key=legacyId+'|'+date,previous=byKey.get(key)||{},status=row.status==='late'?'ATRASO':row.status==='absent'?'FALTA':row.status==='leave'?'LICENÇA':'PRESENTE';
+  byKey.set(key,{...previous,id:previous.id??('cloud-'+row.id),cloudId:row.id,empId:legacyId,date,entry:formatAttendanceClock(row.check_in),exit:formatAttendanceClock(row.check_out),status,penalty:status==='ATRASO'?200:status==='FALTA'?1000:0,cloudSynced:true});
+ }
+ const merged=[...byKey.values()];
+ if(typeof attendance!=='undefined'&&Array.isArray(attendance))attendance.splice(0,attendance.length,...merged);
+ localStorage.setItem('multi_attendance_v52',JSON.stringify(merged));
+ if(typeof renderRH==='function')renderRH();
+}
+let employeeSyncTimer=null,employeeSyncRunning=false;
+async function syncLegacyHrWithCloud(){
+ if(employeeSyncRunning||!window.HELI_HAS_ROLE?.('owner','admin')||window.HELI_OFFLINE_MODE)return;
+ employeeSyncRunning=true;
+ try{await syncLegacyEmployeesToCloud();await syncCloudAttendanceToLegacy();}
+ catch(error){console.warn('[Heligrafes] Sincronização segura do RH:',error.message||error);}
+ finally{employeeSyncRunning=false;}
+}
+function scheduleLegacyHrSync(){if(!window.HELI_HAS_ROLE?.('owner','admin')||window.HELI_OFFLINE_MODE)return;clearTimeout(employeeSyncTimer);employeeSyncTimer=setTimeout(()=>{void syncLegacyHrWithCloud();},1800);}
+window.HeligrafesScheduleEmployeeSync=scheduleLegacyHrSync;
+
+function attendanceGateMarkup(message,showMark){
+ const root=el('heli-auth-root');if(!root)return;
+ document.documentElement.classList.add('heli-auth-lock');
+ root.innerHTML='<main class="heli-auth-card"><div class="heli-auth-mark">H</div><p class="heli-auth-eyebrow">GRUPO HELIGRAFES · RECURSOS HUMANOS</p><h1>Controlo de Presença</h1><p class="heli-auth-subtitle">'+esc(message)+'</p>'+(showMark?'<button id="heli-attendance-mark" type="button" style="width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#059669;color:#fff;font-weight:800;cursor:pointer">☀️ MARCAR ENTRADA</button>':'')+'<button id="heli-attendance-signout" type="button" style="width:100%;margin-top:10px;padding:11px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#334155;font-weight:700;cursor:pointer">Terminar sessão</button><p id="heli-attendance-feedback" role="status" style="margin-top:12px;font-size:12px"></p></main>';
+ el('heli-attendance-signout')?.addEventListener('click',async()=>{const result=await client.auth.signOut();if(result.error){const feedback=el('heli-attendance-feedback');if(feedback)feedback.textContent=result.error.message;return;}window.location.reload();});
+}
+async function enforceEmployeeAttendanceBeforeLaunch(){
+ let status;
+ try{const result=await client.rpc('heli_attendance_bootstrap');if(result.error)throw result.error;status=result.data||{};}
+ catch(error){attendanceGateMarkup(error.message||'Não foi possível validar o seu cadastro RH.',false);return false;}
+ window.HELI_ATTENDANCE_REQUIRED=true;window.HELI_ATTENDANCE_EMPLOYEE=status;
+ if(status.closed||status.check_out){attendanceGateMarkup('A sua saída já foi registada hoje. O acesso operacional está encerrado. Contacte a administração se precisar de reabrir a sessão.',false);return false;}
+ if(status.check_in){window.HELI_ATTENDANCE_ENTERED=true;return true;}
+ attendanceGateMarkup('Antes de entrar na área de trabalho, confirme a sua presença. A hora será registada automaticamente. Limite de pontualidade: 08:30.',true);
+ return await new Promise(resolve=>{
+  const button=el('heli-attendance-mark');
+  button?.addEventListener('click',async()=>{
+   button.disabled=true;button.textContent='A registar presença...';
+   const result=await client.rpc('heli_mark_attendance',{p_action:'IN'});
+   if(result.error){const feedback=el('heli-attendance-feedback');if(feedback)feedback.textContent=result.error.message||'Não foi possível registar a entrada.';button.disabled=false;button.textContent='☀️ TENTAR NOVAMENTE';return;}
+   window.HELI_ATTENDANCE_ENTERED=true;window.HELI_ATTENDANCE_EMPLOYEE=result.data||status;resolve(true);
+  });
+ });
+}
+window.HeligrafesMarkAttendanceExit=async function(){
+ if(!window.HELI_ATTENDANCE_REQUIRED||window.HELI_ATTENDANCE_EXITED)return true;
+ const result=await client.rpc('heli_mark_attendance',{p_action:'OUT'});if(result.error)throw result.error;
+ window.HELI_ATTENDANCE_EXITED=true;return true;
+};
+window.HeligrafesRequireLogout=function(){
+ if(!window.HELI_ATTENDANCE_REQUIRED||el('heli-attendance-logout-lock'))return;
+ const overlay=document.createElement('div');overlay.id='heli-attendance-logout-lock';
+ overlay.style.cssText='position:fixed;inset:0;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.82)';
+ overlay.innerHTML='<section style="width:min(440px,100%);padding:28px;border-radius:20px;background:#fff;text-align:center;box-shadow:0 24px 70px #0005"><div style="font-size:34px">🌙</div><h2 style="margin:8px 0;font-size:22px;font-weight:900;color:#0f172a">Fecho concluído</h2><p style="font-size:14px;color:#475569">A saída foi registada. Para terminar o procedimento, encerre agora a sua sessão.</p><button id="heli-attendance-final-signout" type="button" style="width:100%;margin-top:20px;padding:14px;border:0;border-radius:12px;background:#0f172a;color:#fff;font-weight:900;cursor:pointer">Terminar sessão</button><p id="heli-attendance-logout-feedback" style="margin-top:10px;font-size:12px;color:#b91c1c"></p></section>';
+ document.body.appendChild(overlay);
+ el('heli-attendance-final-signout')?.addEventListener('click',async()=>{const button=el('heli-attendance-final-signout');if(button){button.disabled=true;button.textContent='A terminar sessão...';}const result=await client.auth.signOut();if(result.error){const feedback=el('heli-attendance-logout-feedback');if(feedback)feedback.textContent=result.error.message;if(button){button.disabled=false;button.textContent='Tentar novamente';}return;}window.location.reload();});
+};
+
 function setCloudStatus(t){const n=el('heli-cloud-status');if(n)n.textContent=t;}
 function scheduleCloudSave(){if(!identity||!window.HELI_CAN_CLOUD_SYNC())return;clearTimeout(timer);timer=setTimeout(()=>pushCloudState(),1500);}
 async function addSessionBar(){
@@ -120,7 +224,7 @@ async function addSessionBar(){
  if(identity.profile.avatar_path&&avatar){
   try{const signed=await client.storage.from('heligrafes-private').createSignedUrl(identity.profile.avatar_path,3600);if(!signed.error&&signed.data?.signedUrl){avatar.src=signed.data.signedUrl;avatar.hidden=false;if(fallback)fallback.hidden=true;}}catch(err){console.warn('[Heligrafes] Foto de perfil indisponível:',err.message);}
  }
- el('heli-signout').addEventListener('click',async()=>{if(!confirm('Pretende terminar a sessão?'))return;await client.auth.signOut();window.location.reload();});
+ el('heli-signout').addEventListener('click',async()=>{if(!confirm('Pretende terminar a sessão?'))return;if(window.HELI_ATTENDANCE_REQUIRED&&!window.HELI_ATTENDANCE_EXITED){try{await window.HeligrafesMarkAttendanceExit();}catch(err){alert(err.message||'Não foi possível registar a saída.');return;}}const result=await client.auth.signOut();if(result.error){alert(result.error.message);return;}window.location.reload();});
 }
 let productChannel=null;
 async function syncProductCatalog(){
@@ -146,11 +250,12 @@ async function launch(user){
   if(prepareUserLocalState(user,window.HELI_HAS_ROLE('owner','admin'))){window.location.reload();return;}
   if(!window.HELI_OFFLINE_MODE){const login=await client.rpc('heli_register_login');if(login.error)console.warn('[Heligrafes] Registo de entrada:',login.error.message);else window.HELI_LOGIN_SESSION_ID=login.data;}
   const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
+  const canAdmin=window.HELI_HAS_ROLE('owner','admin');
+  if(!canAdmin&&!window.HELI_OFFLINE_MODE){const attendanceAllowed=await enforceEmployeeAttendanceBeforeLaunch();if(!attendanceAllowed)return;}
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
   started=true;document.documentElement.classList.remove('heli-auth-lock');el('heli-auth-root')?.remove();addSessionBar();
   window.dispatchEvent(new CustomEvent('heli-auth-ready'));
   if(!window.HELI_OFFLINE_MODE){await syncProductCatalog();subscribeProductCatalog();}
-  const canAdmin=window.HELI_HAS_ROLE('owner','admin');
   if(!canAdmin){
    ['heli-admin-nav-heading','btn-gestao-produtos','btn-stocks','btn-relatorios','btn-historico'].forEach(id=>{const n=el(id);if(n)n.style.display='none';});
   }
@@ -165,6 +270,7 @@ async function launch(user){
    window.__heliStorageWrapped=true;
   }
   if(typeof originalOnload==='function')originalOnload.call(window,new Event('load'));
+  if(canAdmin&&!window.HELI_OFFLINE_MODE)await syncLegacyHrWithCloud();
   setCloudStatus(window.HELI_OFFLINE_MODE?'Modo offline • vendas serão guardadas neste dispositivo':(window.HELI_CAN_CLOUD_SYNC()?'Cloud ligada • sincronização automática':'Sessão activa • acesso cloud restrito'));
   if(!window.HELI_OFFLINE_MODE&&window.HELI_CAN_CLOUD_SYNC())await pushCloudState();
  }catch(err){console.error('[Heligrafes] Erro de arranque:',err);showLogin(err.message||'Não foi possível iniciar a aplicação.');}
