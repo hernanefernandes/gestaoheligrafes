@@ -953,15 +953,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Funcionário autenticado</label>
                                     <input type="text" id="chat-user" class="big-input" placeholder="Ex: Balcão, Produção, Gerência" oninput="saveChatProfile()">
                                 </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Sala</label>
-                                    <select id="chat-room" class="big-input" onchange="renderChatMessages()">
-                                        <option value="GERAL">Geral</option>
-                                        <option value="PRODUCAO">Produção</option>
-                                        <option value="STOCKS">Gestão de Stocks</option>
-                                        <option value="ENTREGAS">Entregas</option>
-                                    </select>
-                                </div>
+                                <input type="hidden" id="chat-room" value="GERAL">
                                 <div>
                                     <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Falar com</label>
                                     <select id="chat-recipient" class="big-input" onchange="renderChatMessages()">
@@ -1012,7 +1004,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                             <div class="border-t border-slate-200 p-4 bg-white">
                                 <div id="chat-emoji-picker" class="hidden mb-3 flex flex-wrap gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
                                 <div id="chat-file-preview" class="hidden mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3"></div>
-                                <div class="flex items-center gap-3 mb-3"><span class="relative inline-flex shrink-0"><img id="chat-own-avatar" class="w-11 h-11 rounded-full object-cover border-2 border-indigo-200 bg-slate-100" alt="Foto de perfil" src=""><i id="chat-own-online-dot" title="Estado da sessão" class="absolute -right-0.5 -bottom-0.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-green-500"></i></span><span id="chat-own-name" class="text-xs font-black text-slate-700"></span><label for="chat-avatar-file" class="px-3 py-2 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-black cursor-pointer">📷 Alterar foto</label><input id="chat-avatar-file" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="uploadChatAvatar(event)"><span id="chat-avatar-status" class="text-[10px] text-slate-500">A sua foto aparece nas conversas.</span></div><label class="block text-[10px] font-bold uppercase text-slate-500 mb-1" for="chat-delivery-at">Data/hora prevista de entrega (opcional)</label><input id="chat-delivery-at" type="datetime-local" class="w-full mb-3 p-2 border border-slate-200 rounded-lg text-xs"><textarea id="chat-message" class="w-full h-20 p-3 border-2 border-slate-200 rounded-xl outline-none font-medium resize-none" placeholder="Escreva a mensagem..." oninput="markChatTyping()"></textarea>
+                                <div class="flex items-center gap-3 mb-3"><span class="relative inline-flex shrink-0"><img id="chat-own-avatar" class="w-11 h-11 rounded-full object-cover border-2 border-indigo-200 bg-slate-100" alt="Foto de perfil" src=""><i id="chat-own-online-dot" title="Estado da sessão" class="absolute -right-0.5 -bottom-0.5 w-3.5 h-3.5 rounded-full border-2 border-white bg-green-500"></i></span><span id="chat-own-name" class="text-xs font-black text-slate-700"></span><label for="chat-avatar-file" class="px-3 py-2 rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 text-xs font-black cursor-pointer">📷 Alterar foto</label><input id="chat-avatar-file" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" onchange="uploadChatAvatar(event)"><span id="chat-avatar-status" class="text-[10px] text-slate-500">A sua foto aparece nas conversas.</span></div><textarea id="chat-message" class="w-full h-20 p-3 border-2 border-slate-200 rounded-xl outline-none font-medium resize-none" placeholder="Escreva a mensagem..." oninput="markChatTyping()"></textarea>
                                 <div class="flex flex-wrap gap-3 items-center mt-3">
                                     <button onclick="toggleEmojiPicker()" class="px-4 py-3 rounded-xl border border-slate-200 text-slate-600 font-black text-xs">EMOJI</button>
                                     <input type="file" id="chat-file" class="text-xs flex-1" onchange="previewSelectedChatFile()">
@@ -1576,27 +1568,17 @@ window.onload = function() {
 
         function renderLocationProfitReport() {
             const stats = getLocationProfitStats();
-            const html = stats.map(item => `
-                <div class="rounded-xl border ${item.location === getCurrentBusinessLocation() ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white'} p-4 shadow-sm">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="text-[10px] font-black text-slate-400 uppercase">Lucro por local</p>
-                            <h4 class="text-lg font-black text-slate-800">${item.location}</h4>
-                        </div>
-                        <span class="text-[10px] font-black px-2 py-1 rounded-full ${item.profit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${item.salesCount} vendas</span>
-                    </div>
-                    <div class="mt-3 text-2xl font-black ${item.profit >= 0 ? 'text-emerald-600' : 'text-rose-600'}">${item.profit.toLocaleString()} Kz</div>
-                    <div class="grid grid-cols-2 gap-2 mt-3 text-[11px] text-slate-500">
-                        <div>Entradas: <b class="text-slate-700">${(item.revenue + item.debtPaid).toLocaleString()} Kz</b></div>
-                        <div>Custos: <b class="text-slate-700">${item.cost.toLocaleString()} Kz</b></div>
-                        <div>Despesas: <b class="text-rose-600">${item.expenses.toLocaleString()} Kz</b></div>
-                        <div>Dividas pagas: <b class="text-emerald-600">${item.debtPaid.toLocaleString()} Kz</b></div>
-                    </div>
-                </div>`).join('');
+            const card = item => '<div class="rounded-xl border '+(item.location === getCurrentBusinessLocation() ? 'border-indigo-300 bg-indigo-50' : 'border-slate-200 bg-white')+' p-4 shadow-sm"><div class="flex justify-between items-start"><div><p class="text-[10px] font-black text-slate-400 uppercase">Lucro por local</p><h4 class="text-lg font-black text-slate-800">'+item.location+'</h4></div><span class="text-[10px] font-black px-2 py-1 rounded-full '+(item.profit >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700')+'">'+item.salesCount+' vendas</span></div><div class="mt-3 text-2xl font-black '+(item.profit >= 0 ? 'text-emerald-600' : 'text-rose-600')+'">'+item.profit.toLocaleString()+' Kz</div><div class="grid grid-cols-2 gap-2 mt-3 text-[11px] text-slate-500"><div>Entradas: <b class="text-slate-700">'+item.revenue.toLocaleString()+' Kz</b></div><div>Custos: <b class="text-slate-700">'+item.cost.toLocaleString()+' Kz</b></div><div>Despesas: <b class="text-rose-600">'+item.expenses.toLocaleString()+' Kz</b></div><div>Dívidas pagas: <b class="text-emerald-600">'+item.debtPaid.toLocaleString()+' Kz</b></div></div></div>';
             const stockTarget = document.getElementById('location-profit-summary');
             const reportTarget = document.getElementById('report-location-profit-summary');
-            if (stockTarget) stockTarget.innerHTML = html;
-            if (reportTarget) reportTarget.innerHTML = html;
+            if (stockTarget) stockTarget.innerHTML = stats.map(card).join('');
+            if (reportTarget) {
+                const selectedId = typeof heliLocationViews !== 'undefined' ? heliLocationViews.selected : '*';
+                const selectedLocation = selectedId === '*' ? null : heliViewLocations().find(x => x.id === selectedId);
+                const selectedName = selectedLocation?.name || selectedLocation?.code || getCurrentBusinessLocation();
+                const visible = selectedId === '*' ? stats : stats.filter(x => String(x.location).toLowerCase() === String(selectedName).toLowerCase() || String(x.location).toLowerCase() === String(selectedLocation?.code || '').toLowerCase());
+                reportTarget.innerHTML = visible.map(card).join('') || '<p class="text-sm text-slate-400">Sem dados financeiros registados para este local.</p>';
+            }
         }
 
         function setClockMode(mode) {
@@ -1835,8 +1817,8 @@ window.onload = function() {
           const ownName=document.getElementById('chat-own-name');if(ownName)ownName.textContent=window.HELI_PROFILE?.full_name||window.HELI_USER?.email||'Meu perfil';
           const list=document.getElementById('chat-messages'),counter=document.getElementById('chat-count'),room=document.getElementById('chat-room')?.value||'GERAL',recipient=document.getElementById('chat-recipient')?.value||'TODOS',me=window.HELI_USER?.id||'';
           if(!list)return;
-          const rows=chatMessages.filter(m=>m.room===room&&(m.senderId===me||!m.recipientId||m.recipientId===me)&&(recipient==='TODOS'||m.senderId===recipient||m.recipientId===recipient||m.senderId===me&&m.recipientId===recipient)).slice(-200);
-          list.innerHTML=rows.length?rows.map(m=>{const file=renderChatFilePreview(m),person=heliChatRecipients.find(p=>p.user_id===m.senderId),avatar=person?.avatar_url||'',color=getChatUserColor(m.user||'Sistema'),mine=m.senderId===me,loc=heliChatLocations.find(x=>x.id===m.location_id)?.name||'Local não atribuído',to=m.to&&m.to!=='TODOS'?' → '+escapeChatHtml(m.to):'',unread=chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)),delivery=m.deliveryAt?'<div class="text-[10px] text-indigo-600 mt-1">📦 Entrega prevista: '+new Date(m.deliveryAt).toLocaleString('pt-PT',{timeZone:'Africa/Luanda'})+'</div>':'',online=!!window.HeligrafesIsOnline?.(m.senderId),avatarFace=avatar?'<img src="'+escapeChatHtml(avatar)+'" alt="" class="w-9 h-9 rounded-full object-cover border border-slate-200">':'<span class="w-9 h-9 rounded-full flex items-center justify-center text-white font-black" style="background:'+color+'">'+escapeChatHtml((m.user||'F').slice(0,1).toUpperCase())+'</span>',avatarHtml='<span class="relative inline-flex shrink-0">'+avatarFace+'<i title="'+(online?'Online':'Offline')+'" class="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-white '+(online?'bg-green-500':'bg-red-500')+'"></i></span>';return '<div data-chat-message-id="'+escapeChatHtml(String(m.id))+'" onclick="markChatMessageRead(\''+escapeChatHtml(String(m.id))+'\')" class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm cursor-pointer '+(mine?'ml-10':'mr-10')+(unread?' ring-2 ring-amber-300':'')+'" style="border-left:6px solid '+color+'"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2">'+avatarHtml+'<span class="text-[10px] font-bold uppercase" style="color:'+color+'">'+escapeChatHtml(m.user||'Funcionário')+to+(unread?' · NOVA':'')+'</span></div><span class="text-[10px] text-slate-400">'+m.date+' '+m.time+'</span></div><div class="text-[10px] text-slate-500 mt-1">📍 '+escapeChatHtml(loc)+'</div>'+delivery+'<p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">'+formatChatBody(m.text||'')+'</p>'+file+'</div>';}).join(''):'<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
+          const rows=chatMessages.filter(m=>m.room===room&&(m.senderId===me||!m.recipientId||m.recipientId===me)&&(recipient==='TODOS'?!m.recipientId:(m.senderId===me&&m.recipientId===recipient||m.senderId===recipient&&m.recipientId===me))).slice(-200);
+          list.innerHTML=rows.length?rows.map(m=>{const file=renderChatFilePreview(m),person=heliChatRecipients.find(p=>p.user_id===m.senderId),avatar=person?.avatar_url||'',color=getChatUserColor(m.user||'Sistema'),mine=m.senderId===me,loc=heliChatLocations.find(x=>x.id===m.location_id)?.name||'Local não atribuído',to=m.to&&m.to!=='TODOS'?' → '+escapeChatHtml(m.to):'',unread=chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)),online=!!window.HeligrafesIsOnline?.(m.senderId),avatarFace=avatar?'<img src="'+escapeChatHtml(avatar)+'" alt="" class="w-9 h-9 rounded-full object-cover border border-slate-200">':'<span class="w-9 h-9 rounded-full flex items-center justify-center text-white font-black" style="background:'+color+'">'+escapeChatHtml((m.user||'F').slice(0,1).toUpperCase())+'</span>',avatarHtml='<span class="relative inline-flex shrink-0">'+avatarFace+'<i title="'+(online?'Online':'Offline')+'" class="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-white '+(online?'bg-green-500':'bg-red-500')+'"></i></span>';return '<div data-chat-message-id="'+escapeChatHtml(String(m.id))+'" onclick="markChatMessageRead(\''+escapeChatHtml(String(m.id))+'\')" class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm cursor-pointer '+(mine?'ml-10':'mr-10')+(unread?' ring-2 ring-amber-300':'')+'" style="border-left:6px solid '+color+'"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2">'+avatarHtml+'<span class="text-[10px] font-bold uppercase" style="color:'+color+'">'+escapeChatHtml(m.user||'Funcionário')+to+(unread?' · NOVA':'')+'</span></div><span class="text-[10px] text-slate-400">'+m.date+' '+m.time+'</span></div><div class="text-[10px] text-slate-500 mt-1">📍 '+escapeChatHtml(loc)+'</div>+'<p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">'+formatChatBody(m.text||'')+'</p>'+file+'</div>';}).join(''):'<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
           if(counter)counter.innerText=rows.length+' mensagem(ns)';list.scrollTop=list.scrollHeight;renderChatTypingStatus();updateChatUnreadBadge();
         }
 
@@ -1845,20 +1827,19 @@ window.onload = function() {
         }
 
         async function sendChatMessage(){
-          const db=window.heliSupabase,user=window.HELI_USER,code=document.getElementById('chat-room')?.value||'GERAL',to=document.getElementById('chat-recipient')?.value||'TODOS',text=(document.getElementById('chat-message')?.value||'').trim(),file=document.getElementById('chat-file')?.files?.[0],deliveryInput=document.getElementById('chat-delivery-at')?.value||'';
+          const db=window.heliSupabase,user=window.HELI_USER,code=document.getElementById('chat-room')?.value||'GERAL',to=document.getElementById('chat-recipient')?.value||'TODOS',text=(document.getElementById('chat-message')?.value||'').trim(),file=document.getElementById('chat-file')?.files?.[0];
           if(!db||!user||!window.HELI_ORG)return alert('Inicie sessão para utilizar o chat online.');
           if(!text&&!file)return alert('Escreva uma mensagem ou seleccione um ficheiro.');
           if(file&&to==='TODOS')return alert('Para enviar ficheiros sem armazenamento na nuvem, escolha um colega específico em “Falar com”.');
           if(file&&file.size>20*1024*1024)return alert('Por segurança, a transferência directa está limitada a 20 MB por ficheiro.');
-          if(deliveryInput&&Number.isNaN(new Date(deliveryInput).getTime()))return alert('Data/hora de entrega inválida.');
           const room=heliChatRooms[code];if(!room)return alert('Sala não encontrada. Actualize a página.');
           const btn=document.querySelector('button[onclick="sendChatMessage()"]');if(btn){btn.disabled=true;btn.textContent='A enviar...';}
           try{
             const location=heliChatLocations.find(x=>(x.code||'').toUpperCase()===getCurrentBusinessLocation()||(x.name||'').toUpperCase()===getCurrentBusinessLocation());
             const attachment=file?JSON.stringify({fileName:file.name,fileType:file.type||'application/octet-stream',transfer:'p2p'}):null;
-            const payload={organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:to==='TODOS'?null:to,body:text||('📎 '+(file?.name||'')),attachment_path:attachment,sender_name:window.HELI_PROFILE?.full_name||user.email||'Funcionário',location_id:location?.id||null,delivery_at:deliveryInput?new Date(deliveryInput).toISOString():null};
+            const payload={organization_id:window.HELI_ORG.id,room_id:room.id,sender_id:user.id,recipient_id:to==='TODOS'?null:to,body:text||('📎 '+(file?.name||'')),attachment_path:attachment,sender_name:window.HELI_PROFILE?.full_name||user.email||'Funcionário',location_id:location?.id||null };
             const q=await db.from('chat_messages').insert(payload).select('id').single();if(q.error)throw q.error;
-            document.getElementById('chat-message').value='';document.getElementById('chat-file').value='';document.getElementById('chat-delivery-at').value='';clearSelectedChatFilePreview();await loadSupabaseChatMessages();renderChatMessages();
+            document.getElementById('chat-message').value='';document.getElementById('chat-file').value='';clearSelectedChatFilePreview();await loadSupabaseChatMessages();renderChatMessages();
             if(file){try{await transferChatFileDirect(q.data.id,file,to);const sent=chatMessages.find(m=>String(m.id)===String(q.data.id));if(sent){sent.fileData=URL.createObjectURL(file);sent.fileName=file.name;sent.fileType=file.type||'application/octet-stream';renderChatMessages();}}catch(transferError){alert('A mensagem de texto foi enviada, mas o ficheiro não foi transferido: '+(transferError.message||transferError));}}
           }catch(err){console.error('[Heligrafes Chat] Envio:',err);alert('Não foi possível enviar: '+(err.message||err));}
           finally{if(btn){btn.disabled=false;btn.textContent='Enviar';}}
@@ -3779,7 +3760,7 @@ function printDailyReport(copies = 1) {
                 await syncHeliLocationViews();
             }
             if(kind==='pm')await renderProductSalesManagementCloud();
-            if(kind==='report')await renderLocationCloudReport();
+            if(kind==='report'){renderReports();await renderLocationCloudReport();}
             if(kind==='stock')renderStockLocationSummary();
         }
         async function heliFetchSalesEvents() {
