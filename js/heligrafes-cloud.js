@@ -94,7 +94,7 @@ function addSessionBar(){
 let productChannel=null;
 async function syncProductCatalog(){
  if(!window.heliSupabase||!window.HELI_ORG)return;
- const q=await client.from('products').select('id,sku,name,sale_price,cost_price,min_stock,unit,category_id,is_active,track_stock').eq('organization_id',window.HELI_ORG.id).eq('is_active',true);
+ const q=await client.from('products').select('id,sku,name,sale_price,cost_price,min_stock,unit,category_id,is_active,track_stock,image_path').eq('organization_id',window.HELI_ORG.id).eq('is_active',true);
  if(q.error){console.warn('[Heligrafes] Catálogo cloud:',q.error.message);return;}
  (q.data||[]).forEach(p=>window.HeligrafesApplyCloudProduct?.(p));
 }
