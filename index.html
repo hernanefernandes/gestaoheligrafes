@@ -3752,7 +3752,58 @@ function printDailyReport(copies = 1) {
             document.getElementById('new-prod-name').focus();
         }
 
-        function updateProductExisting(id) {
+        async function heliSaveProductToCloud(product) {
+            if (!window.heliSupabase || !window.HELI_USER || !window.HELI_ORG?.id) throw new Error('É necessário iniciar sessão com ligação à cloud para partilhar o produto.');
+            const image = String(product.img || '');
+            const payload = {
+                organization_id: window.HELI_ORG.id,
+                name: String(product.name || '').trim(),
+                sale_price: Number(product.price) || 0,
+                cost_price: Number(product.cost) || 0,
+                track_stock: true,
+                is_active: true,
+                updated_at: new Date().toISOString()
+            };
+            if (/^https?:\/\//i.test(image)) payload.image_path = image;
+            let existing = null;
+            if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(product.id || ''))) {
+                const q = await window.heliSupabase.from('products').select('id').eq('id', product.id).eq('organization_id', window.HELI_ORG.id).maybeSingle();
+                if (q.error) throw q.error;
+                existing = q.data;
+            }
+            if (!existing) {
+                const q = await window.heliSupabase.from('products').select('id').eq('organization_id', window.HELI_ORG.id).eq('name', payload.name).limit(1).maybeSingle();
+                if (q.error) throw q.error;
+                existing = q.data;
+            }
+            if (existing) {
+                const q = await window.heliSupabase.from('products').update(payload).eq('id', existing.id).eq('organization_id', window.HELI_ORG.id).select('id').single();
+                if (q.error) throw q.error;
+                return q.data.id;
+            }
+            const q = await window.heliSupabase.from('products').insert(payload).select('id').single();
+            if (q.error) throw q.error;
+            return q.data.id;
+        }
+
+        async function heliSetInitialProductStock(productId, quantity, unitCost) {
+            if (!(Number(quantity) > 0)) return;
+            const allowed = window.HELI_ALLOWED_LOCATIONS || [];
+            const locationName = getCurrentBusinessLocation();
+            const location = allowed.find(l => String(l.name).toLowerCase() === String(locationName).toLowerCase())
+                || (window.HELI_DEFAULT_LOCATION_ID ? allowed.find(l => l.id === window.HELI_DEFAULT_LOCATION_ID) : null);
+            if (!location) throw new Error('Produto criado nos cinco locais com stock zero. Seleccione um local autorizado para lançar o stock inicial.');
+            const result = await window.heliSupabase.rpc('heli_admin_restock', {
+                p_product_id: productId,
+                p_location_id: location.id,
+                p_quantity: Number(quantity),
+                p_unit_cost: Number(unitCost) || 0,
+                p_notes: 'Stock inicial do registo de produto'
+            });
+            if (result.error) throw result.error;
+        }
+
+        async function updateProductExisting(id) {
             const name = document.getElementById('new-prod-name').value.trim();
             const priceRaw = document.getElementById('new-prod-price').value;
             const costRaw = document.getElementById('new-prod-cost').value;
@@ -3770,16 +3821,13 @@ function printDailyReport(copies = 1) {
 
             const current = products[idx];
             const imgDraft = getProductDraftImage();
-            products[idx] = {
-                ...current,
-                name,
-                price,
-                cost,
-                stock,
-                img: imgDraft || current.img || '',
-                updatedAt: new Date().toISOString()
-            };
-
+            const updated = { ...current, name, price, cost, stock, img: imgDraft || current.img || '', updatedAt: new Date().toISOString() };
+            try {
+                updated.id = await heliSaveProductToCloud(updated);
+            } catch (error) {
+                return alert('Não foi possível sincronizar a edição do produto para os cinco locais: ' + (error.message || error));
+            }
+            products[idx] = updated;
             saveData();
             renderStockList();
             updateRestockSelect();
@@ -3808,7 +3856,7 @@ function printDailyReport(copies = 1) {
             document.getElementById('btn-cancel-edit').classList.add('hidden');
         }
 
-        function addNewProduct() {
+        async function addNewProduct() {
             const name = document.getElementById('new-prod-name').value.trim();
             const priceRaw = document.getElementById('new-prod-price').value;
             const costRaw = document.getElementById('new-prod-cost').value;
@@ -3823,7 +3871,16 @@ function printDailyReport(copies = 1) {
             if (!Number.isFinite(cost) || cost < 0) return alert('O preço de compra não pode ser negativo.');
             if (!Number.isInteger(stock) || stock < 0) return alert('A quantidade em stock deve ser um número inteiro igual ou superior a zero.');
 
-            products.push({ id: Date.now(), name, price, cost, stock, img, updatedAt: new Date().toISOString() });
+            let cloudId;
+            try {
+                cloudId = await heliSaveProductToCloud({ name, price, cost, img });
+                await heliSetInitialProductStock(cloudId, stock, cost);
+            } catch (error) {
+                if (!cloudId) return alert('Produto não registado. Não foi possível sincronizar com a cloud: ' + (error.message || error));
+                console.warn('[Heligrafes] Produto sincronizado; stock inicial pendente:', error.message || error);
+                alert('Produto partilhado pelos cinco locais, mas o stock inicial não foi lançado: ' + (error.message || error));
+            }
+            products.push({ id: cloudId, name, price, cost, stock, img, track_stock: true, updatedAt: new Date().toISOString() });
             saveData();
             renderStockList();
             updateRestockSelect();
@@ -4451,7 +4508,7 @@ function selectAcademicPage(value) {
 <script src="./js/supabase-config.js"></script>
 <script src="./js/heligrafes-cloud.js?v=20261115-13"></script>
 <script src="./js/heligrafes-sales-live.js?v=20261113-5"></script>
-<script src="./js/heligrafes-admin.js?v=20261115-2"></script>
+<script src="./js/heligrafes-admin.js?v=20261115-20261115-14"></script>
 <script id="heli-auto-update-checker">
 (function(){
   'use strict';
