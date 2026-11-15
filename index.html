@@ -1512,7 +1512,7 @@ window.onload = function() {
 
             if (matches.length === 0) {
                 const escaped = name.replace(/[\\%_]/g, ch => '\\' + ch);
-                const partial = await db.from('products').select('id,name,sale_price,cost_price,track_stock')
+                const partial = await db.from('products').select('id,name,sale_price,cost_price,track_stock,min_stock,max_stock')
                     .eq('organization_id', window.HELI_ORG.id).eq('is_active', true)
                     .ilike('name', '%' + escaped + '%').limit(2);
                 if (partial.error) throw partial.error;
