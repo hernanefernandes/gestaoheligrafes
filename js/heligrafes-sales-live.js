@@ -136,14 +136,14 @@ function subscribe(){
 async function loadPresenceRoster(){
  if(!db()||!window.HELI_HAS_ROLE?.('owner','admin'))return;
  const [profiles,assignments,roles,locations]=await Promise.all([
-  db().from('user_profiles').select('user_id,full_name,email,is_active').eq('organization_id',window.HELI_ORG.id).order('full_name'),
+  db().from('user_profiles').select('user_id,full_name,email,avatar_path,is_active').eq('organization_id',window.HELI_ORG.id).order('full_name'),
   db().from('user_role_assignments').select('user_id,location_id,role_id').eq('organization_id',window.HELI_ORG.id),
   db().from('roles').select('id,code,name'),
   db().from('locations').select('id,name').eq('organization_id',window.HELI_ORG.id)
  ]);
  for(const q of [profiles,assignments,roles,locations])if(q.error)throw q.error;
  const rm=new Map((roles.data||[]).map(x=>[x.id,x])),lm=new Map((locations.data||[]).map(x=>[x.id,x.name]));
- presenceRoster=(profiles.data||[]).filter(p=>p.is_active).map(p=>{const a=(assignments.data||[]).find(x=>x.user_id===p.user_id);return {...p,role:rm.get(a?.role_id)?.name||'Funcionário',location:lm.get(a?.location_id)||'Sem local'};});
+ presenceRoster=await Promise.all((profiles.data||[]).filter(p=>p.is_active).map(async p=>{const a=(assignments.data||[]).find(x=>x.user_id===p.user_id);let avatar_url='';if(p.avatar_path){try{const signed=await db().storage.from('heligrafes-private').createSignedUrl(p.avatar_path,3600);if(!signed.error)avatar_url=signed.data?.signedUrl||'';}catch(_){}}return {...p,avatar_url,role:rm.get(a?.role_id)?.name||'Funcionário',location:lm.get(a?.location_id)||'Sem local'};}));
  renderPresence();
 }
 function currentPresenceUsers(){
@@ -154,9 +154,12 @@ function currentPresenceUsers(){
 function renderPresence(){
  const root=$('heli-live-presence');if(!root)return;
  const online=currentPresenceUsers();
+ window.HeligrafesIsOnline=id=>online.has(id);
+ window.HeligrafesRefreshChatPresence?.();
  root.innerHTML=presenceRoster.map(p=>{
-  const on=online.has(p.user_id),loc=online.get(p.user_id)?.location_name||p.location;
-  return '<div class="heli-live-presence-row"><span class="heli-live-dot '+(on?'online':'offline')+'"></span><div><b>'+esc(p.full_name||p.email||'Funcionário')+'</b><small>'+esc(p.email||'')+' · '+esc(loc)+' · '+esc(p.role)+'</small></div><strong class="'+(on?'online-text':'offline-text')+'">'+(on?'ONLINE':'OFFLINE')+'</strong></div>';
+  const on=online.has(p.user_id),loc=online.get(p.user_id)?.location_name||p.location,name=p.full_name||p.email||'Funcionário',initials=name.trim().split(/\\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'F';
+  const avatar=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="" class="heli-live-avatar">':'<span class="heli-live-avatar-fallback">'+esc(initials)+'</span>';
+  return '<div class="heli-live-presence-row">'+avatar+'<span class="heli-live-dot '+(on?'online':'offline')+'"></span><div><b>'+esc(name)+'</b><small>'+esc(p.email||'')+' · '+esc(loc)+' · '+esc(p.role)+'</small></div><strong class="'+(on?'online-text':'offline-text')+'">'+(on?'ONLINE':'OFFLINE')+'</strong></div>';
  }).join('')||'<p class="heli-muted">Não existem funcionários activos.</p>';
 }
 async function startPresence(){
@@ -173,7 +176,7 @@ async function startPresence(){
 function installStyles(){
  if($('heli-live-style'))return;
  const st=document.createElement('style');st.id='heli-live-style';st.textContent=`
-.heli-live-presence{display:grid;gap:7px}.heli-live-presence-row{display:flex;align-items:center;gap:9px;background:white;border:1px solid #dce8f5;border-radius:10px;padding:9px 11px}.heli-live-presence-row>div{min-width:0;flex:1}.heli-live-presence-row b{display:block;font-size:12px}.heli-live-presence-row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748b}.heli-live-dot{width:11px;height:11px;flex:0 0 11px;border-radius:50%}.heli-live-dot.online{background:#16a34a;box-shadow:0 0 0 3px #dcfce7}.heli-live-dot.offline{background:#dc2626;box-shadow:0 0 0 3px #fee2e2}.online-text{color:#15803d;font-size:10px}.offline-text{color:#b91c1c;font-size:10px}
+.heli-live-presence{display:grid;gap:7px}.heli-live-presence-row{display:flex;align-items:center;gap:9px;background:white;border:1px solid #dce8f5;border-radius:10px;padding:9px 11px}.heli-live-presence-row>div{min-width:0;flex:1}.heli-live-presence-row b{display:block;font-size:12px}.heli-live-presence-row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748b}.heli-live-avatar,.heli-live-avatar-fallback{width:34px;height:34px;flex:0 0 34px;border-radius:50%;object-fit:cover;border:2px solid #dbeafe}.heli-live-avatar-fallback{display:flex;align-items:center;justify-content:center;background:#eff6ff;color:#0755ad;font-size:11px;font-weight:900}.heli-live-dot{width:11px;height:11px;flex:0 0 11px;border-radius:50%}.heli-live-dot.online{background:#16a34a;box-shadow:0 0 0 3px #dcfce7}.heli-live-dot.offline{background:#dc2626;box-shadow:0 0 0 3px #fee2e2}.online-text{color:#15803d;font-size:10px}.offline-text{color:#b91c1c;font-size:10px}
 #heli-live-open{position:fixed;right:18px;bottom:18px;z-index:10000;background:#063b8f;color:white;border:0;border-radius:12px;padding:12px 16px;font-weight:800;box-shadow:0 8px 24px #063b8f44;cursor:pointer}
 #heli-live-panel{position:fixed;z-index:10001;right:0;top:0;width:min(520px,100vw);height:100dvh;background:#f7faff;box-shadow:-16px 0 50px #102b4a33;transform:translateX(110%);transition:transform .25s;display:flex;flex-direction:column;color:#17324d}
 #heli-live-panel.open{transform:translateX(0)}
