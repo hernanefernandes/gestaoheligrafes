@@ -172,10 +172,10 @@ async function syncLegacyHrWithCloud(){
 function scheduleLegacyHrSync(){if(!window.HELI_HAS_ROLE?.('owner','admin')||window.HELI_OFFLINE_MODE)return;clearTimeout(employeeSyncTimer);employeeSyncTimer=setTimeout(()=>{void syncLegacyHrWithCloud();},1800);}
 window.HeligrafesScheduleEmployeeSync=scheduleLegacyHrSync;
 
-function attendanceGateMarkup(message,showMark){
+function attendanceGateMarkup(message,showMark,showContinue){
  const root=el('heli-auth-root');if(!root)return;
  document.documentElement.classList.add('heli-auth-lock');
- root.innerHTML='<main class="heli-auth-card"><div class="heli-auth-mark">H</div><p class="heli-auth-eyebrow">GRUPO HELIGRAFES · RECURSOS HUMANOS</p><h1>Controlo de Presença</h1><p class="heli-auth-subtitle">'+esc(message)+'</p>'+(showMark?'<button id="heli-attendance-mark" type="button" style="width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#059669;color:#fff;font-weight:800;cursor:pointer">☀️ MARCAR ENTRADA</button>':'')+'<button id="heli-attendance-signout" type="button" style="width:100%;margin-top:10px;padding:11px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#334155;font-weight:700;cursor:pointer">Terminar sessão</button><p id="heli-attendance-feedback" role="status" style="margin-top:12px;font-size:12px"></p></main>';
+ root.innerHTML='<main class="heli-auth-card"><div class="heli-auth-mark">H</div><p class="heli-auth-eyebrow">GRUPO HELIGRAFES · RECURSOS HUMANOS</p><h1>Controlo de Presença</h1><p class="heli-auth-subtitle">'+esc(message)+'</p>'+(showMark?'<button id="heli-attendance-mark" type="button" style="width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#059669;color:#fff;font-weight:800;cursor:pointer">☀️ MARCAR ENTRADA</button>':'')+(showContinue?'<button id="heli-attendance-continue" type="button" style="width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer">ENTRADA REGISTADA · CONTINUAR</button>':'')+'<button id="heli-attendance-signout" type="button" style="width:100%;margin-top:10px;padding:11px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#334155;font-weight:700;cursor:pointer">Terminar sessão</button><p id="heli-attendance-feedback" role="status" style="margin-top:12px;font-size:12px"></p></main>';
  el('heli-attendance-signout')?.addEventListener('click',async()=>{const result=await client.auth.signOut();if(result.error){const feedback=el('heli-attendance-feedback');if(feedback)feedback.textContent=result.error.message;return;}window.location.reload();});
 }
 async function enforceEmployeeAttendanceBeforeLaunch(){
@@ -184,8 +184,8 @@ async function enforceEmployeeAttendanceBeforeLaunch(){
  catch(error){attendanceGateMarkup(error.message||'Não foi possível validar o seu cadastro RH.',false);return false;}
  window.HELI_ATTENDANCE_REQUIRED=true;window.HELI_ATTENDANCE_EMPLOYEE=status;
  if(status.closed||status.check_out){attendanceGateMarkup('A sua saída já foi registada hoje. O acesso operacional está encerrado. Contacte a administração se precisar de reabrir a sessão.',false);return false;}
- if(status.check_in){window.HELI_ATTENDANCE_ENTERED=true;return true;}
- attendanceGateMarkup('Antes de entrar na área de trabalho, confirme a sua presença. A hora será registada automaticamente. Limite de pontualidade: 08:30.',true);
+ if(status.check_in){window.HELI_ATTENDANCE_ENTERED=true;attendanceGateMarkup('A sua entrada já foi registada às '+formatAttendanceClock(status.check_in)+'. Confirme para aceder à área de trabalho.',false,true);return await new Promise(resolve=>el('heli-attendance-continue')?.addEventListener('click',()=>resolve(true)));}
+ attendanceGateMarkup('Antes de entrar na área de trabalho, confirme a sua presença. A hora será registada automaticamente. Limite de pontualidade: 08:30.',true,false);
  return await new Promise(resolve=>{
   const button=el('heli-attendance-mark');
   button?.addEventListener('click',async()=>{
@@ -196,6 +196,21 @@ async function enforceEmployeeAttendanceBeforeLaunch(){
   });
  });
 }
+window.HeligrafesPromptAttendanceExit=function(){
+ if(!window.HELI_ATTENDANCE_REQUIRED||window.HELI_ATTENDANCE_EXITED)return Promise.resolve(true);
+ return new Promise(resolve=>{
+  const overlay=document.createElement('div');overlay.id='heli-attendance-exit-prompt';
+  overlay.style.cssText='position:fixed;inset:0;z-index:2147483646;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.72)';
+  overlay.innerHTML='<section style="width:min(440px,100%);padding:26px;border-radius:20px;background:#fff;text-align:center;box-shadow:0 24px 70px #0005"><div style="font-size:34px">🌙</div><h2 style="margin:8px 0;font-size:21px;font-weight:900;color:#0f172a">Marcar saída</h2><p style="font-size:14px;color:#475569">A hora será registada automaticamente. Depois desta marcação, o fecho será impresso e a sessão terá de ser terminada.</p><button id="heli-attendance-confirm-exit" type="button" style="width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#0f172a;color:#fff;font-weight:900;cursor:pointer">🌙 MARCAR SAÍDA</button><button id="heli-attendance-cancel-exit" type="button" style="width:100%;margin-top:9px;padding:11px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#334155;font-weight:700;cursor:pointer">Cancelar fecho</button><p id="heli-attendance-exit-feedback" style="margin-top:10px;font-size:12px;color:#b91c1c"></p></section>';
+  document.body.appendChild(overlay);
+  el('heli-attendance-cancel-exit')?.addEventListener('click',()=>{overlay.remove();resolve(false);});
+  el('heli-attendance-confirm-exit')?.addEventListener('click',async()=>{
+   const button=el('heli-attendance-confirm-exit');if(button){button.disabled=true;button.textContent='A registar saída...';}
+   try{await window.HeligrafesMarkAttendanceExit();overlay.remove();resolve(true);}
+   catch(error){const feedback=el('heli-attendance-exit-feedback');if(feedback)feedback.textContent=error.message||'Não foi possível registar a saída.';if(button){button.disabled=false;button.textContent='🌙 TENTAR NOVAMENTE';}}
+  });
+ });
+};
 window.HeligrafesMarkAttendanceExit=async function(){
  if(!window.HELI_ATTENDANCE_REQUIRED||window.HELI_ATTENDANCE_EXITED)return true;
  const result=await client.rpc('heli_mark_attendance',{p_action:'OUT'});if(result.error)throw result.error;
