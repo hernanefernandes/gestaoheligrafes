@@ -3587,6 +3587,12 @@ function printDailyReport(copies = 1) {
         // --- RELATÓRIOS ---
         function renderReports() {
             renderLocationProfitReport();
+            const selectedId = typeof heliLocationViews !== 'undefined' ? heliLocationViews.selected : '*';
+            const selectedLocation = selectedId === '*' ? null : heliViewLocations().find(x => x.id === selectedId);
+            const selectedNames = selectedLocation ? [selectedLocation.name, selectedLocation.code].filter(Boolean).map(x => String(x).trim().toLowerCase()) : [];
+            const inSelectedLocation = item => selectedId === '*' || selectedNames.includes(String(item.location || 'LOCAL 1').trim().toLowerCase());
+            const scopedSales = sales.filter(inSelectedLocation);
+            const scopedDebtPayments = debtPayments.filter(inSelectedLocation);
             const today = new Date().toLocaleDateString();
             const now = new Date();
             const currentMonth = now.getMonth();
@@ -3596,10 +3602,9 @@ function printDailyReport(copies = 1) {
             let dailyExp = 0, monthlyExp = 0, totalExp = 0;
             let paymentStats = {}, monthlyStats = new Array(12).fill(0), productStats = {};
 
-            sales.forEach(s => {
-                const parts = s.date.split('/');
-                const sDate = new Date(parts[2], parts[1]-1, parts[0]);
-
+            scopedSales.forEach(s => {
+                const parts = String(s.date || '').split('/');
+                const sDate = parts.length === 3 ? new Date(parts[2], parts[1]-1, parts[0]) : new Date(s.id);
                 if (s.category === 'EXPENSE') {
                     const val = parseFloat(s.total || 0);
                     totalExp += val;
@@ -3618,19 +3623,19 @@ function printDailyReport(copies = 1) {
                 }
             });
 
-            const debtPaidToday = getDebtPaymentsTotal(today);
-            const debtPaidMonth = debtPayments.reduce((sum, item) => {
-                const parts = item.date.split('/');
+            const debtPaidToday = scopedDebtPayments.filter(item => item.date === today).reduce((sum,item)=>sum+(parseFloat(item.amount)||0),0);
+            const debtPaidMonth = scopedDebtPayments.reduce((sum, item) => {
+                const parts = String(item.date || '').split('/');
                 const itemDate = parts.length === 3 ? new Date(parts[2], parts[1]-1, parts[0]) : new Date(item.id);
                 return itemDate.getMonth() === currentMonth && itemDate.getFullYear() === currentYear ? sum + (parseFloat(item.amount) || 0) : sum;
             }, 0);
-            debtPayments.forEach(item => {
-                const parts = item.date.split('/');
+            scopedDebtPayments.forEach(item => {
+                const parts = String(item.date || '').split('/');
                 const itemDate = parts.length === 3 ? new Date(parts[2], parts[1]-1, parts[0]) : new Date(item.id);
                 if (itemDate.getFullYear() === currentYear) monthlyStats[itemDate.getMonth()] += parseFloat(item.amount || 0);
             });
             monthlyGross += debtPaidMonth;
-            totalGross += debtPayments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
+            totalGross += scopedDebtPayments.reduce((sum, item) => sum + (parseFloat(item.amount) || 0), 0);
             dailyGross += debtPaidToday;
 
             document.getElementById('rep-daily-gross').innerText = dailyGross.toLocaleString() + ' Kz';
@@ -3652,11 +3657,20 @@ function printDailyReport(copies = 1) {
             document.getElementById('rep-total-year').innerText = monthlyStats.reduce((a, b) => a + b, 0).toLocaleString() + ' Kz';
 
             const sortedProducts = Object.entries(productStats).sort(([,a],[,b]) => b - a).slice(0, 10);
-            document.getElementById('rep-top-products').innerHTML = sortedProducts.map((p, i) => `<div class="flex justify-between items-center text-xs border-b border-slate-100 py-2"><span class="font-bold text-slate-600 truncate w-2/3">${i+1}. ${p[0]}</span><span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold">${p[1]} un</span></div>`).join('');
+            document.getElementById('rep-top-products').innerHTML = sortedProducts.map((p, i) => '<div class="flex justify-between items-center text-xs border-b border-slate-100 py-2"><span class="font-bold text-slate-600 truncate w-2/3">'+(i+1)+'. '+p[0]+'</span><span class="bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold">'+p[1]+' un</span></div>').join('') || '<p class="text-xs text-slate-400 py-3">Sem vendas de produtos neste local.</p>';
 
+            const heading = document.querySelector('#relatorios #report-content-area');
+            if (heading) {
+                const label = selectedLocation ? (selectedLocation.name || selectedLocation.code) : 'Todos os locais';
+                const existing = document.getElementById('report-current-scope');
+                if (existing) existing.textContent = 'Indicadores apresentados: '+label;
+                else {
+                    const note = document.createElement('p'); note.id='report-current-scope'; note.className='col-span-full text-xs font-bold text-slate-500'; note.textContent='Indicadores apresentados: '+label;
+                    heading.parentNode.insertBefore(note,heading);
+                }
+            }
             renderCharts(paymentStats, monthlyStats, monthNames);
         }
-
         function renderCharts(paymentData, monthlyData, labels) {
             const ctxPay = document.getElementById('chart-payment'); if(charts.pay) charts.pay.destroy();
             charts.pay = new Chart(ctxPay, { type: 'doughnut', data: { labels: Object.keys(paymentData), datasets: [{ data: Object.values(paymentData), backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 9 } } } } } });
