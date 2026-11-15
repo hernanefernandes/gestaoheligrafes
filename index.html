@@ -1504,7 +1504,7 @@ window.onload = function() {
             if (!name) throw new Error('Este produto antigo não tem nome para associação ao catálogo online.');
 
             const db = window.heliSupabase;
-            const exact = await db.from('products').select('id,name,sale_price,cost_price,track_stock')
+            const exact = await db.from('products').select('id,name,sale_price,cost_price,track_stock,min_stock,max_stock')
                 .eq('organization_id', window.HELI_ORG.id).eq('is_active', true)
                 .eq('name', name).limit(2);
             if (exact.error) throw exact.error;
@@ -1530,6 +1530,8 @@ window.onload = function() {
             if (cloudProduct.sale_price !== null && cloudProduct.sale_price !== undefined) product.price = Number(cloudProduct.sale_price);
             if (cloudProduct.cost_price !== null && cloudProduct.cost_price !== undefined) product.cost = Number(cloudProduct.cost_price);
             if (cloudProduct.track_stock !== null && cloudProduct.track_stock !== undefined) product.track_stock = cloudProduct.track_stock;
+            if (cloudProduct.min_stock !== null && cloudProduct.min_stock !== undefined) { product.min_stock = Number(cloudProduct.min_stock); product.replenishmentLevel = Number(cloudProduct.min_stock); }
+            if (cloudProduct.max_stock !== null && cloudProduct.max_stock !== undefined) product.max_stock = Number(cloudProduct.max_stock);
             localStorage.setItem('multi_products_v52', JSON.stringify(products));
             return product.id;
         }
@@ -3292,7 +3294,7 @@ window.HeligrafesApplyCloudProduct = function(p) {
     if (!p || !p.id || !p.name) return;
     const index = products.findIndex(x => String(x.id) === String(p.id) || normalizeProductName(x.name) === normalizeProductName(p.name));
     const previous = index >= 0 ? products[index] : null;
-    const item = { id: p.id, name: p.name, price: Number(p.sale_price || 0), cost: Number(p.cost_price || 0), stock: Number(previous?.stock || 0), track_stock: p.track_stock !== false, replenishmentLevel: Number(p.min_stock || 0), category: p.category || 'Geral', img: p.image_path || previous?.img || '' };
+    const item = { id: p.id, name: p.name, price: Number(p.sale_price || 0), cost: Number(p.cost_price || 0), stock: Number(previous?.stock || 0), min_stock: Number(p.min_stock || 0), max_stock: Number(p.max_stock || 0), track_stock: p.track_stock !== false, replenishmentLevel: Number(p.min_stock || 0), category: p.category || 'Geral', img: p.image_path || previous?.img || '' };
     if (index >= 0) products[index] = { ...previous, ...item };
     else products.push(item);
     localStorage.setItem('multi_products_v52', JSON.stringify(products));
@@ -4486,7 +4488,7 @@ async function printDailyReport(copies = 1) {
             document.getElementById('new-prod-image-file').value = '';
             setProductImagePreview('');
             const btn = document.getElementById('btn-add-prod');
-            btn.innerHTML = 'CRIAR PRODUTO';
+            btn.innerHTML = '＋ ADICIONAR À LISTA';
             btn.classList.remove('bg-emerald-600');
             btn.classList.add('bg-blue-600');
             btn.onclick = stageProductDraft;
