@@ -113,12 +113,13 @@ async function syncLegacyEmployeesToCloud(){
  if(!window.HELI_USER||!window.HELI_HAS_ROLE?.('owner','admin')||!window.HELI_ORG?.id||window.HELI_OFFLINE_MODE)return;
  let legacy=[];try{legacy=JSON.parse(localStorage.getItem('multi_employees_v52')||'[]');}catch(_){}
  if(!Array.isArray(legacy)||!legacy.length)return;
- const [profilesQ,assignmentsQ]=await Promise.all([
+ const [profilesQ,assignmentsQ,existingQ]=await Promise.all([
   client.from('user_profiles').select('user_id,full_name,is_active').eq('organization_id',window.HELI_ORG.id),
-  client.from('user_role_assignments').select('user_id,location_id').eq('organization_id',window.HELI_ORG.id)
+  client.from('user_role_assignments').select('user_id,location_id').eq('organization_id',window.HELI_ORG.id),
+  client.from('employees').select('id,legacy_employee_id,full_name').eq('organization_id',window.HELI_ORG.id)
  ]);
- if(profilesQ.error)throw profilesQ.error;if(assignmentsQ.error)throw assignmentsQ.error;
- const profiles=(profilesQ.data||[]).filter(p=>p.is_active),nameCounts=new Map();
+ if(profilesQ.error)throw profilesQ.error;if(assignmentsQ.error)throw assignmentsQ.error;if(existingQ.error)throw existingQ.error;
+ const profiles=(profilesQ.data||[]).filter(p=>p.is_active),existingRows=existingQ.data||[],nameCounts=new Map();
  legacy.forEach(emp=>{const key=normalizeStaffName(emp?.name);if(key)nameCounts.set(key,(nameCounts.get(key)||0)+1);});
  const payload=legacy.filter(emp=>emp&&emp.id!==undefined&&String(emp.name||'').trim()).map(emp=>{
   const key=normalizeStaffName(emp.name),matches=profiles.filter(p=>normalizeStaffName(p.full_name)===key);
@@ -127,10 +128,25 @@ async function syncLegacyEmployeesToCloud(){
   return {organization_id:window.HELI_ORG.id,legacy_employee_id:String(emp.id),full_name:String(emp.name).trim(),role_title:String(emp.role||'').trim()||null,phone:String(emp.phone||'').trim()||null,hire_date:hireDate,is_active:emp.active!==false,linked_user_id:linked};
  });
  if(!payload.length)return;
- const upsert=await client.from('employees').upsert(payload,{onConflict:'organization_id,legacy_employee_id'}).select('id,legacy_employee_id,linked_user_id');
- if(upsert.error)throw upsert.error;
+ const synced=[];
+ const pending=[];
+ for(const row of payload){
+  const byLegacy=existingRows.find(item=>String(item.legacy_employee_id||'')===row.legacy_employee_id);
+  const byName=existingRows.filter(item=>!item.legacy_employee_id&&normalizeStaffName(item.full_name)===normalizeStaffName(row.full_name));
+  const match=byLegacy||(byName.length===1?byName[0]:null);
+  if(match){
+   const updated=await client.from('employees').update(row).eq('id',match.id).eq('organization_id',window.HELI_ORG.id).select('id,legacy_employee_id,linked_user_id').single();
+   if(updated.error)throw updated.error;
+   synced.push(updated.data);
+  }else pending.push(row);
+ }
+ if(pending.length){
+  const upsert=await client.from('employees').upsert(pending,{onConflict:'organization_id,legacy_employee_id'}).select('id,legacy_employee_id,linked_user_id');
+  if(upsert.error)throw upsert.error;
+  synced.push(...(upsert.data||[]));
+ }
  const assignments=assignmentsQ.data||[];
- for(const employee of upsert.data||[]){
+ for(const employee of synced){
   if(!employee.linked_user_id)continue;
   const locations=[...new Set(assignments.filter(a=>a.user_id===employee.linked_user_id&&a.location_id).map(a=>a.location_id))];
   if(locations.length!==1)continue;
@@ -154,7 +170,7 @@ async function syncCloudAttendanceToLegacy(){
  for(const row of recordsQ.data||[]){
   const legacyId=legacyIdByEmployee.get(row.employee_id),date=String(row.work_date||'').slice(0,10);if(!legacyId||!date)continue;
   const key=legacyId+'|'+date,previous=byKey.get(key)||{},status=row.status==='late'?'ATRASO':row.status==='absent'?'FALTA':row.status==='leave'?'LICENÇA':'PRESENTE';
-  byKey.set(key,{...previous,id:previous.id??('cloud-'+row.id),cloudId:row.id,empId:legacyId,date,entry:formatAttendanceClock(row.check_in),exit:formatAttendanceClock(row.check_out),status,penalty:status==='ATRASO'?200:status==='FALTA'?1000:0,cloudSynced:true});
+  byKey.set(key,{...previous,id:previous.id??('cloud-'+row.id),cloudId:row.id,empId:legacyId,date,entry:row.check_in?formatAttendanceClock(row.check_in):'-',exit:row.check_out?formatAttendanceClock(row.check_out):null,status,penalty:status==='ATRASO'?200:status==='FALTA'?1000:0,cloudSynced:true});
  }
  const merged=[...byKey.values()];
  if(typeof attendance!=='undefined'&&Array.isArray(attendance))attendance.splice(0,attendance.length,...merged);
