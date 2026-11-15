@@ -3823,9 +3823,22 @@ function printDailyReport(copies = 1) {
             const imgDraft = getProductDraftImage();
             const updated = { ...current, name, price, cost, stock, img: imgDraft || current.img || '', updatedAt: new Date().toISOString() };
             try {
-                updated.id = await heliSaveProductToCloud(updated);
+                const cloudId = await heliSaveProductToCloud(updated);
+                if (Number(stock) !== Number(current.stock)) {
+                    const allowed = window.HELI_ALLOWED_LOCATIONS || [];
+                    const locName = getCurrentBusinessLocation();
+                    const loc = allowed.find(l => String(l.name).toLowerCase() === String(locName).toLowerCase())
+                        || (window.HELI_DEFAULT_LOCATION_ID ? allowed.find(l => l.id === window.HELI_DEFAULT_LOCATION_ID) : null);
+                    if (!loc) throw new Error('Não foi possível identificar o local para ajustar o stock.');
+                    const adjustment = await window.heliSupabase.rpc('heli_admin_set_stock_balance', {
+                        p_product_id: cloudId, p_location_id: loc.id, p_quantity: Number(stock),
+                        p_notes: 'Ajuste efectuado na edição do produto'
+                    });
+                    if (adjustment.error) throw adjustment.error;
+                }
+                updated.id = cloudId;
             } catch (error) {
-                return alert('Não foi possível sincronizar a edição do produto para os cinco locais: ' + (error.message || error));
+                return alert('A edição não foi concluída na cloud: ' + (error.message || error));
             }
             products[idx] = updated;
             saveData();
