@@ -142,6 +142,16 @@
         .topbar-company h4 { color: var(--heli-blue-deep); }
         .topbar-session { border-color: #dbe8f7; background: #fff; box-shadow: 0 8px 22px rgba(20, 59, 110, .08); }
         .topbar-session #topbar-chat-notifications { flex:0 0 40px; width:40px; height:40px; margin:0 auto; }
+        /* Navegação rápida dos quatro departamentos principais */
+        .app-topbar > div:first-child { order:1; }
+        .app-topbar > .topbar-session { order:2; }
+        .app-topbar > #heli-session-bar { order:3; }
+        .heli-department-nav { order:4; flex:1 1 100%; display:flex; align-items:center; gap:10px; min-width:0; padding:10px 0 0; border-top:1px solid #e2eaf4; }
+        .heli-department-tab { display:inline-flex; flex:1 1 0; min-width:0; min-height:42px; align-items:center; justify-content:center; gap:9px; padding:8px 14px; border:1px solid #dbe7f5; border-radius:12px; background:#fff; color:#36516f; font-size:12px; font-weight:900; white-space:nowrap; box-shadow:0 3px 10px rgba(20,59,110,.05); transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease; cursor:pointer; }
+        .heli-department-tab > span:first-child { font-size:17px; }
+        .heli-department-tab:hover { border-color:#8bb9e8; background:#f2f8ff; transform:translateY(-1px); }
+        .heli-department-tab.active { border-color:#0b55a4; background:linear-gradient(110deg,#073b86,#1262b4); color:#fff; box-shadow:0 6px 16px rgba(7,59,134,.2); }
+        @media(max-width:760px) { .heli-department-nav { overflow-x:auto; padding:9px 0 2px; scrollbar-width:thin; } .heli-department-tab { flex:0 0 auto; min-width:max-content; padding:9px 13px; } }
         #heli-session-bar .heli-session-profile{display:flex;align-items:center;gap:8px;min-width:0}
         #heli-session-bar .heli-session-avatar-wrap{position:relative;display:flex;width:38px;height:38px;flex:0 0 38px;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;background:#dbeafe;border:2px solid #86efac;box-shadow:0 0 0 3px #16a34a22}
         #heli-session-bar .heli-session-avatar{width:100%;height:100%;object-fit:cover;border-radius:50%}
@@ -418,6 +428,12 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                     <p class="text-sm font-black text-blue-700" id="sales-session-label">Local / Vendedor</p>
                 </div>
             </div>
+            <nav id="heli-department-nav" class="heli-department-nav no-print" aria-label="Navegação dos departamentos">
+                <button type="button" class="heli-department-tab active" data-tab="tabacaria" onclick="showTab('tabacaria')" aria-current="page"><span>⚡</span><span>Venda Diária</span></button>
+                <button type="button" class="heli-department-tab" data-tab="academico" onclick="showTab('academico')"><span>🎓</span><span>Trabalho Académico</span></button>
+                <button type="button" class="heli-department-tab" data-tab="tshirts" onclick="showTab('tshirts')"><span>👕</span><span>T-Shirts &amp; Brindes</span></button>
+                <button type="button" class="heli-department-tab" data-tab="outros" onclick="showTab('outros')"><span>📦</span><span>Papelaria &amp; Decoração</span></button>
+            </nav>
         </header>
 
         <div class="workspace-scroll flex-1 overflow-y-auto px-10 pb-10">
@@ -2494,8 +2510,13 @@ window.onload = function() {
             if(!document.getElementById('tabacaria').classList.contains('hidden') && vrCart.length > 0 && id !== 'tabacaria') return alert("Finalize a venda no carrinho!"); 
             document.querySelectorAll('.tab-content').forEach(t => t.classList.add('hidden')); 
             document.getElementById(id).classList.remove('hidden'); 
-            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active')); 
-            if(document.getElementById('btn-'+id)) document.getElementById('btn-'+id).classList.add('active'); 
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            if(document.getElementById('btn-'+id)) document.getElementById('btn-'+id).classList.add('active');
+            document.querySelectorAll('.heli-department-tab').forEach(tab => {
+                const active = tab.dataset.tab === id;
+                tab.classList.toggle('active', active);
+                if(active) tab.setAttribute('aria-current', 'page'); else tab.removeAttribute('aria-current');
+            }); 
             
             if(id === 'outros') updateStockSelect(); 
             if(id === 'tabacaria') updateProductDatalist(); 
