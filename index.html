@@ -997,9 +997,8 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                                     <div id="new-prod-image-preview" class="product-image-preview" aria-label="Pré-visualização da imagem do produto">📦</div>
                                     <div class="min-w-0">
                                         <label class="block text-[10px] font-black uppercase tracking-wider text-blue-600">Imagem do produto</label>
-                                        <input type="file" id="new-prod-image-file" accept="image/png,image/jpeg,image/webp" onchange="handleProductImageUpload(event)" class="mt-2 block w-full text-xs font-medium text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-2 file:text-xs file:font-black file:text-white hover:file:bg-blue-700">
-                                        <p class="mt-2 text-[10px] font-medium text-slate-500">Pode escolher uma imagem JPG, PNG ou WEBP (até 1,5 MB).</p>
-                                        <input type="text" id="new-prod-img" oninput="previewProductImageFromUrl()" placeholder="ou cole a URL da imagem (opcional)" class="big-input mt-2 py-2 text-xs">
+                                        <input type="file" id="new-prod-image-file" accept="image/jpeg,image/png,image/webp" onchange="handleProductImageUpload(event)" required aria-required="true" class="mt-2 block w-full text-xs font-medium text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-2 file:text-xs file:font-black file:text-white hover:file:bg-blue-700">
+                                        <p class="mt-2 text-[10px] font-bold text-rose-600">Obrigatório: carregue a fotografia real deste produto. Não são aceites imagens genéricas, resultados automáticos nem apenas links. A imagem será comprimida antes de guardar.</p>
                                         <input type="hidden" id="new-prod-image-data" value="">
                                     </div>
                                 </div>
@@ -3301,7 +3300,6 @@ window.HeligrafesApplyCloudProduct = function(p) {
     updateProductDatalist();
     if (typeof renderStockList === 'function') renderStockList();
     if (typeof renderProductSalesManagement === 'function') renderProductSalesManagement();
-    if (!item.img) void HeligrafesFindProductImage(item);
 };
 function updateProductDatalist() {
     const dl = document.getElementById('vr-products');
@@ -3397,62 +3395,11 @@ document.addEventListener('click', event => {
 });
 
 const heliProductImageJobs = new Map();
-async function HeligrafesFindProductImage(product) {
-    if (!product?.id || !product?.name || product.img || !window.heliSupabase || !window.HELI_USER) return null;
-    const key = String(product.id);
-    if (heliProductImageJobs.has(key)) return heliProductImageJobs.get(key);
-    const attemptKey = 'heli_product_image_attempt_' + key;
-    const lastAttempt = Number(localStorage.getItem(attemptKey) || 0);
-    if (Date.now() - lastAttempt < 7 * 24 * 60 * 60 * 1000) return null;
-    const job = (async () => {
-        localStorage.setItem(attemptKey, String(Date.now()));
-        try {
-            const url = new URL('https://api.openverse.org/v1/images/');
-            url.searchParams.set('q', product.name);
-            url.searchParams.set('page_size', '5');
-            url.searchParams.set('mature', 'false');
-            const response = await fetch(url.toString(), { method: 'GET', mode: 'cors', credentials: 'omit', headers: { 'Accept': 'application/json' } });
-            if (!response.ok) throw new Error('Pesquisa de imagens indisponível (' + response.status + ').');
-            const data = await response.json();
-            const results = Array.isArray(data.results) ? data.results : [];
-            const tokens = String(product.name).toLocaleLowerCase().split(/[^\p{L}\p{N}]+/u).filter(x => x.length > 2);
-            const match = results.find(item => {
-                const haystack = [item.title, ...(item.tags || []).map(tag => tag.name)].join(' ').toLocaleLowerCase();
-                return item.thumbnail && tokens.some(token => haystack.includes(token));
-            });
-            if (!match?.thumbnail || !/^https:\/\/api\.openverse\.org\//i.test(match.thumbnail)) {
-                console.info('[Heligrafes] Nenhuma imagem aberta suficientemente relacionada com:', product.name);
-                return null;
-            }
-            const saved = await window.heliSupabase.rpc('heli_set_product_auto_image', {
-                p_product_id: product.id,
-                p_image_url: match.thumbnail,
-                p_source_url: match.foreign_landing_url || null,
-                p_attribution: match.attribution || (match.title || 'Imagem') + (match.creator ? ' — ' + match.creator : ''),
-                p_license: match.license || null,
-                p_license_url: match.license_url || null
-            });
-            if (saved.error) throw saved.error;
-            if (saved.data) {
-                product.img = match.thumbnail;
-                product.imageAttribution = match.attribution || '';
-                localStorage.setItem('multi_products_v52', JSON.stringify(products));
-                renderVrSelectedProduct(product);
-                if (typeof renderStockList === 'function') renderStockList();
-            }
-            return saved.data ? match : null;
-        } catch (error) {
-            console.warn('[Heligrafes] Imagem automática:', error.message || error);
-            return null;
-        }
-    })();
-    heliProductImageJobs.set(key, job);
-    try { return await job; } finally { heliProductImageJobs.delete(key); }
-}
-window.HeligrafesFindProductImage = HeligrafesFindProductImage;
+// Imagens automáticas/aleatórias foram desactivadas: cada produto deve ter a sua fotografia real carregada pelo administrador.
 function getSafeProductImageSrc(image) {
     const source = String(image || '').trim();
-    return /^(data:image\/(png|jpeg|jpg|webp);base64,|https?:\/\/)/i.test(source) ? source : '';
+    // Apenas fotografias carregadas e convertidas pelo próprio sistema são consideradas válidas.
+    return /^data:image\/webp;base64,/i.test(source) ? source : '';
 }
 
 function productImageMarkup(image, label = 'Produto', className = 'product-thumb') {
@@ -3476,7 +3423,6 @@ function renderVrSelectedProduct(product) {
     thumb.innerHTML = source ? `<img src="${escapeChatHtml(source)}" alt="${escapeChatHtml(String(product.name))}">` : '📦';
     name.innerText = product.name;
     container.classList.add('visible');
-    if (!source && product.id) void HeligrafesFindProductImage(product);
 }
 
 let vrAutoSaleInProgress = false;
@@ -4144,37 +4090,62 @@ async function printDailyReport(copies = 1) {
         }
 
         function getProductDraftImage() {
-            return document.getElementById('new-prod-image-data')?.value.trim() || document.getElementById('new-prod-img')?.value.trim() || '';
+            return document.getElementById('new-prod-image-data')?.value.trim() || '';
         }
 
-        function previewProductImageFromUrl() {
-            const url = document.getElementById('new-prod-img')?.value.trim() || '';
-            const data = document.getElementById('new-prod-image-data');
-            if (data) data.value = url;
-            setProductImagePreview(url);
-        }
-
-        function handleProductImageUpload(event) {
-            const file = event.target.files?.[0];
+        async function handleProductImageUpload(event) {
+            const input = event.target;
+            const file = input.files?.[0];
             if (!file) return;
             if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-                event.target.value = '';
-                return alert('Escolha uma imagem JPG, PNG ou WEBP.');
+                input.value = '';
+                return alert('Escolha uma fotografia JPG, PNG ou WEBP.');
             }
-            if (file.size > 1.5 * 1024 * 1024) {
-                event.target.value = '';
-                return alert('A imagem deve ter no máximo 1,5 MB para poder ser guardada no sistema.');
+            if (file.size > 12 * 1024 * 1024) {
+                input.value = '';
+                return alert('A fotografia original não pode ultrapassar 12 MB.');
             }
-            const reader = new FileReader();
-            reader.onload = () => {
-                const image = String(reader.result || '');
+            try {
+                const bitmap = await createImageBitmap(file);
+                const maxSide = 1200;
+                const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+                const canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+                canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+                const context = canvas.getContext('2d', { alpha: false });
+                if (!context) throw new Error('Não foi possível preparar a imagem neste navegador.');
+                context.fillStyle = '#ffffff';
+                context.fillRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+                bitmap.close?.();
+                let quality = 0.82;
+                let blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+                while (blob && blob.size > 380 * 1024 && quality > 0.42) {
+                    quality -= 0.08;
+                    blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+                }
+                if (!blob || blob.size > 480 * 1024) throw new Error('A imagem não pôde ser comprimida para o limite permitido. Escolha outra fotografia.');
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const image = String(reader.result || '');
+                    if (!image.startsWith('data:image/webp;base64,')) {
+                        input.value = '';
+                        return alert('Falha na conversão da fotografia. Tente novamente.');
+                    }
+                    const data = document.getElementById('new-prod-image-data');
+                    if (data) data.value = image;
+                    setProductImagePreview(image);
+                    const label = input.closest('.product-image-upload')?.querySelector('p');
+                    if (label) label.textContent = 'Fotografia carregada e comprimida: ' + Math.round(blob.size / 1024) + ' KB. Será guardada com este produto.';
+                };
+                reader.readAsDataURL(blob);
+            } catch (error) {
+                input.value = '';
                 const data = document.getElementById('new-prod-image-data');
-                const url = document.getElementById('new-prod-img');
-                if (data) data.value = image;
-                if (url) url.value = '';
-                setProductImagePreview(image);
-            };
-            reader.readAsDataURL(file);
+                if (data) data.value = '';
+                setProductImagePreview('');
+                alert(error.message || 'Não foi possível processar a fotografia.');
+            }
         }
 
         function renderStockList() {
@@ -4190,7 +4161,7 @@ async function printDailyReport(copies = 1) {
                 const profit = price - cost;
                 const margin = price > 0 ? ((profit / price) * 100).toFixed(0) : 0;
                 const productId = String(p.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
-                list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name || 'Produto sem nome'))}</span></div></td><td class="p-3 text-slate-500">${cost.toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-amber-700 font-bold">${minStock}</td><td class="p-3 text-slate-600 font-bold">${maxStock || '—'}</td><td class="p-3 text-blue-600 font-bold">${stock}</td><td class="p-3 text-right whitespace-nowrap"><button type="button" onclick="editProduct('${productId}')" class="text-blue-500 text-xs font-bold mr-2">✏️ EDITAR</button><button type="button" onclick="deleteProduct('${productId}')" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
+                list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name || 'Produto sem nome'))}</span>${getSafeProductImageSrc(p.img) ? '' : '<span class="ml-2 rounded bg-rose-100 px-2 py-1 text-[9px] font-black text-rose-700">FOTO EM FALTA</span>'}</div></td><td class="p-3 text-slate-500">${cost.toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-amber-700 font-bold">${minStock}</td><td class="p-3 text-slate-600 font-bold">${maxStock || '—'}</td><td class="p-3 text-blue-600 font-bold">${stock}</td><td class="p-3 text-right whitespace-nowrap"><button type="button" onclick="editProduct('${productId}')" class="text-blue-500 text-xs font-bold mr-2">✏️ EDITAR</button><button type="button" onclick="deleteProduct('${productId}')" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
             });
         }
 
@@ -4352,8 +4323,7 @@ async function printDailyReport(copies = 1) {
             document.getElementById('new-prod-min-stock').value = Number(prod.min_stock ?? prod.minStock) || 0;
             document.getElementById('new-prod-max-stock').value = Number(prod.max_stock ?? prod.maxStock) || 0;
             const source = prod.img || '';
-            document.getElementById('new-prod-img').value = /^data:image\\//i.test(source) ? '' : source;
-            document.getElementById('new-prod-image-data').value = source;
+            document.getElementById('new-prod-image-data').value = /^data:image\/webp;base64,/i.test(source) ? source : '';
             document.getElementById('new-prod-image-file').value = '';
             setProductImagePreview(source);
             const btn = document.getElementById('btn-add-prod');
@@ -4379,7 +4349,8 @@ async function printDailyReport(copies = 1) {
                 is_active: true,
                 updated_at: new Date().toISOString()
             };
-            if (/^https?:\/\//i.test(image)) payload.image_path = image;
+            if (!/^data:image\/webp;base64,/i.test(image)) throw new Error('A fotografia real do produto é obrigatória. O produto não pode ser guardado sem imagem WEBP comprimida.');
+            payload.image_path = image;
             let existing = null;
             if (/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(product.id || ''))) {
                 const q = await window.heliSupabase.from('products').select('id').eq('id', product.id).eq('organization_id', window.HELI_ORG.id).maybeSingle();
@@ -4436,6 +4407,8 @@ async function printDailyReport(copies = 1) {
 
             if (idx === -1) return alert('Não foi possível actualizar: produto não encontrado.');
             if (!name) return alert('Informe o nome do produto.');
+            const productImage = getProductDraftImage();
+            if (!/^data:image\/webp;base64,/i.test(productImage)) return alert('A fotografia real do produto é obrigatória. Carregue a imagem antes de adicionar à lista.');
             if (priceRaw === '' || !Number.isFinite(price) || price < 0) return alert('Informe um preço de venda válido.');
             if (!Number.isFinite(cost) || cost < 0) return alert('O preço de compra não pode ser negativo.');
             if (!Number.isInteger(stock) || stock < 0) return alert('A quantidade em stock deve ser um número inteiro igual ou superior a zero.');
@@ -4444,7 +4417,10 @@ async function printDailyReport(copies = 1) {
 
             const current = products[idx];
             const imgDraft = getProductDraftImage();
-            const updated = { ...current, name, price, cost, stock, min_stock: minStock, max_stock: maxStock, img: imgDraft || current.img || '', updatedAt: new Date().toISOString() };
+            const existingImage = String(current.img || '').trim();
+            const finalImage = imgDraft || (/^data:image\/webp;base64,/i.test(existingImage) ? existingImage : '');
+            if (!/^data:image\/webp;base64,/i.test(finalImage)) return alert('Este produto ainda não tem uma fotografia original válida. Carregue a imagem real antes de actualizar.');
+            const updated = { ...current, name, price, cost, stock, min_stock: minStock, max_stock: maxStock, img: finalImage, updatedAt: new Date().toISOString() };
             try {
                 const cloudId = await heliSaveProductToCloud(updated);
                 if (Number(stock) !== Number(current.stock)) {
@@ -4483,7 +4459,6 @@ async function printDailyReport(copies = 1) {
             document.getElementById('new-prod-min-stock').value = '0';
             document.getElementById('new-prod-max-stock').value = '0';
             document.getElementById('heli-product-stock-scope').value = '*';
-            document.getElementById('new-prod-img').value = '';
             document.getElementById('new-prod-image-data').value = '';
             document.getElementById('new-prod-image-file').value = '';
             setProductImagePreview('');
@@ -4538,7 +4513,7 @@ async function printDailyReport(copies = 1) {
             if (!Number.isFinite(cost) || cost < 0) return alert('O preço de compra não pode ser negativo.');
             if (![stock,minStock,maxStock].every(Number.isInteger) || stock < 0 || minStock < 0 || maxStock < 0 || (maxStock > 0 && maxStock < minStock)) return alert('Verifique stock inicial, mínimo e máximo. Use números inteiros não negativos; o máximo deve ser zero ou superior ao mínimo.');
             if (products.some(product => String(product.name || '').trim().toLowerCase() === name.toLowerCase()) || heliProductDrafts.some(item => item.name.toLowerCase() === name.toLowerCase())) return alert('Já existe um produto com este nome no inventário ou na lista.');
-            heliProductDrafts.push({ name, price, cost, stock, min_stock: minStock, max_stock: maxStock, img: getProductDraftImage(), _doneLocations: [] });
+            heliProductDrafts.push({ name, price, cost, stock, min_stock: minStock, max_stock: maxStock, img: productImage, _doneLocations: [] });
             renderProductDrafts();
             cancelEdit();
             alert('Produto adicionado à lista. Pode preparar o próximo.');
@@ -4621,6 +4596,9 @@ async function printDailyReport(copies = 1) {
             const img = getProductDraftImage();
 
             if (!name) return alert('Informe o nome do produto.');
+            const existingProduct = products.find(p => String(p.id) === String(id));
+            const currentImage = String(existingProduct?.img || '');
+            if (!/^data:image\/webp;base64,/i.test(getProductDraftImage() || currentImage)) return alert('Este produto ainda não tem uma fotografia original válida. Carregue a imagem real antes de actualizar.');
             if (priceRaw === '' || !Number.isFinite(price) || price < 0) return alert('Informe um preço de venda válido.');
             if (!Number.isFinite(cost) || cost < 0) return alert('O preço de compra não pode ser negativo.');
             if (!Number.isInteger(stock) || stock < 0) return alert('A quantidade em stock deve ser um número inteiro igual ou superior a zero.');
