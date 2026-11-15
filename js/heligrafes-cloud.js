@@ -11,11 +11,15 @@ function prepareUserLocalState(user,isGlobalAdmin){
  if(previousUser===user.id)return false;
  if(previousUser){
   for(const key of STATE_KEYS){const value=localStorage.getItem(key);if(value!==null)localStorage.setItem('heli_user_state_v1_'+previousUser+'_'+key,value);}
- }else if(isGlobalAdmin){
-  for(const key of STATE_KEYS){const value=localStorage.getItem(key);if(value!==null)localStorage.setItem('heli_user_state_v1_'+user.id+'_'+key,value);}
+ }else{
+  for(const key of STATE_KEYS){
+   const value=localStorage.getItem(key);
+   if(value!==null)localStorage.setItem(isGlobalAdmin?'heli_user_state_v1_'+user.id+'_'+key:'heli_legacy_unscoped_state_v1_'+key,value);
+  }
  }
  for(const key of STATE_KEYS){
-  const scoped=localStorage.getItem('heli_user_state_v1_'+user.id+'_'+key);
+  let scoped=localStorage.getItem('heli_user_state_v1_'+user.id+'_'+key);
+  if(scoped===null&&isGlobalAdmin)scoped=localStorage.getItem('heli_legacy_unscoped_state_v1_'+key);
   if(scoped===null)localStorage.removeItem(key);else localStorage.setItem(key,scoped);
  }
  localStorage.setItem(scopeKey,user.id);
