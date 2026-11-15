@@ -4864,7 +4864,7 @@ async function printDailyReport(copies = 1) {
             await archiveEmployee(id);
         }
 
-        function registerPoint(type) {
+        async function registerPoint(type) {
             const empId = document.getElementById('rh-employee-select').value;
             const employee = employees.find(emp => String(emp.id) === String(empId));
             if (!employee || employee.active === false) return alert('Selecione um colaborador ativo.');
@@ -4879,6 +4879,10 @@ async function printDailyReport(copies = 1) {
                 const late = now.getHours() > 8 || (now.getHours() === 8 && now.getMinutes() > 30);
                 const status = late ? 'ATRASO' : 'PRESENTE';
                 const penalty = late ? 200 : 0;
+                if (record?.cloudId && window.heliSupabase && window.HELI_ORG?.id) {
+                    const remote = await window.heliSupabase.from('attendance_records').update({ check_in: now.toISOString(), check_out: null, status: late ? 'late' : 'present' }).eq('id', record.cloudId).eq('organization_id', window.HELI_ORG.id);
+                    if (remote.error) return alert('Não foi possível actualizar a presença sincronizada: ' + remote.error.message);
+                }
                 if (record) Object.assign(record, { entry: time, exit: null, status, penalty, updatedAt: now.toISOString() });
                 else attendance.push({ id: Date.now(), empId: employee.id, date: dateKey, entry: time, exit: null, status, penalty, createdAt: now.toISOString(), updatedAt: now.toISOString() });
                 setRhPointStatus(`${employee.name}: entrada ${late ? 'com atraso' : 'registada'} às ${time}.`);
@@ -4886,13 +4890,16 @@ async function printDailyReport(copies = 1) {
             } else {
                 if (!record || !record.entry || record.entry === '-') return alert('Registe a entrada antes da saída.');
                 if (record.exit) return alert('A saída já foi registada hoje.');
+                if (record.cloudId && window.heliSupabase && window.HELI_ORG?.id) {
+                    const remote = await window.heliSupabase.from('attendance_records').update({ check_out: now.toISOString() }).eq('id', record.cloudId).eq('organization_id', window.HELI_ORG.id);
+                    if (remote.error) return alert('Não foi possível actualizar a saída sincronizada: ' + remote.error.message);
+                }
                 record.exit = time;
                 record.updatedAt = now.toISOString();
                 setRhPointStatus(`${employee.name}: saída registada às ${time}.`);
                 alert('Saída registada.');
             }
             saveData();
-            window.HeligrafesScheduleEmployeeSync?.();
             renderRH();
         }
 
