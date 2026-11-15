@@ -3884,16 +3884,16 @@ function printDailyReport(copies = 1) {
             if (!Number.isFinite(cost) || cost < 0) return alert('O preço de compra não pode ser negativo.');
             if (!Number.isInteger(stock) || stock < 0) return alert('A quantidade em stock deve ser um número inteiro igual ou superior a zero.');
 
-            let cloudId;
+            let cloudId, initialStockSaved = stock <= 0;
             try {
                 cloudId = await heliSaveProductToCloud({ name, price, cost, img });
-                await heliSetInitialProductStock(cloudId, stock, cost);
+                if (stock > 0) { await heliSetInitialProductStock(cloudId, stock, cost); initialStockSaved = true; }
             } catch (error) {
                 if (!cloudId) return alert('Produto não registado. Não foi possível sincronizar com a cloud: ' + (error.message || error));
                 console.warn('[Heligrafes] Produto sincronizado; stock inicial pendente:', error.message || error);
                 alert('Produto partilhado pelos cinco locais, mas o stock inicial não foi lançado: ' + (error.message || error));
             }
-            products.push({ id: cloudId, name, price, cost, stock, img, track_stock: true, updatedAt: new Date().toISOString() });
+            products.push({ id: cloudId, name, price, cost, stock: initialStockSaved ? stock : 0, img, track_stock: true, updatedAt: new Date().toISOString() });
             saveData();
             renderStockList();
             updateRestockSelect();
@@ -4519,9 +4519,9 @@ function selectAcademicPage(value) {
 
 <!-- Autenticação obrigatória: scripts carregados após o código principal -->
 <script src="./js/supabase-config.js"></script>
-<script src="./js/heligrafes-cloud.js?v=20261115-13"></script>
-<script src="./js/heligrafes-sales-live.js?v=20261113-5"></script>
-<script src="./js/heligrafes-admin.js?v=20261115-20261115-14"></script>
+<script src="./js/heligrafes-cloud.js?v=20261115-14"></script>
+<script src="./js/heligrafes-sales-live.js?v=20261115-14"></script>
+<script src="./js/heligrafes-admin.js?v=20261115-14"></script>
 <script id="heli-auto-update-checker">
 (function(){
   'use strict';
