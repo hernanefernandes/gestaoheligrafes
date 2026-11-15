@@ -191,18 +191,19 @@ async function syncLegacyHrWithCloud(){
 function scheduleLegacyHrSync(){if(!window.HELI_HAS_ROLE?.('owner','admin')||window.HELI_OFFLINE_MODE)return;clearTimeout(employeeSyncTimer);employeeSyncTimer=setTimeout(()=>{void syncLegacyHrWithCloud();},1800);}
 window.HeligrafesScheduleEmployeeSync=scheduleLegacyHrSync;
 
-function attendanceGateMarkup(message,showMark,showContinue){
+function attendanceGateMarkup(message,showMark,showContinue,showRetry=false){
  const root=el('heli-auth-root');if(!root)return;
  document.documentElement.classList.add('heli-auth-lock');
- root.innerHTML='<main class="heli-auth-card"><div class="heli-auth-mark">H</div><p class="heli-auth-eyebrow">GRUPO HELIGRAFES · RECURSOS HUMANOS</p><h1>Controlo de Presença</h1><p class="heli-auth-subtitle">'+esc(message)+'</p>'+(showMark?'<button id="heli-attendance-mark" type="button" style="width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#059669;color:#fff;font-weight:800;cursor:pointer">☀️ MARCAR ENTRADA</button>':'')+(showContinue?'<button id="heli-attendance-continue" type="button" style="width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer">ENTRADA REGISTADA · CONTINUAR</button>':'')+'<button id="heli-attendance-signout" type="button" style="width:100%;margin-top:10px;padding:11px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#334155;font-weight:700;cursor:pointer">Terminar sessão</button><p id="heli-attendance-feedback" role="status" style="margin-top:12px;font-size:12px"></p></main>';
+ root.innerHTML='<main class="heli-auth-card"><div class="heli-auth-mark">H</div><p class="heli-auth-eyebrow">GRUPO HELIGRAFES · RECURSOS HUMANOS</p><h1>Controlo de Presença</h1><p class="heli-auth-subtitle">'+esc(message)+'</p>'+(showMark?'<button id="heli-attendance-mark" type="button" style="width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#059669;color:#fff;font-weight:800;cursor:pointer">☀️ MARCAR ENTRADA</button>':'')+(showContinue?'<button id="heli-attendance-continue" type="button" style="width:100%;margin-top:18px;padding:14px;border:0;border-radius:12px;background:#2563eb;color:#fff;font-weight:800;cursor:pointer">ENTRADA REGISTADA · CONTINUAR</button>':'')+(showRetry?'<button id="heli-attendance-retry" type="button" style="width:100%;margin-top:10px;padding:12px;border:1px solid #2563eb;border-radius:12px;background:#eff6ff;color:#1d4ed8;font-weight:800;cursor:pointer">TENTAR NOVAMENTE</button>':'')+'<button id="heli-attendance-signout" type="button" style="width:100%;margin-top:10px;padding:11px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;color:#334155;font-weight:700;cursor:pointer">Terminar sessão</button><p id="heli-attendance-feedback" role="status" style="margin-top:12px;font-size:12px"></p></main>';
  el('heli-attendance-signout')?.addEventListener('click',async()=>{const result=await client.auth.signOut();if(result.error){const feedback=el('heli-attendance-feedback');if(feedback)feedback.textContent=result.error.message;return;}window.location.reload();});
+ el('heli-attendance-retry')?.addEventListener('click',()=>window.location.reload());
 }
 async function enforceEmployeeAttendanceBeforeLaunch(){
  let status;
  try{const result=await client.rpc('heli_attendance_bootstrap');if(result.error)throw result.error;status=result.data||{};}
- catch(error){attendanceGateMarkup(error.message||'Não foi possível validar o seu cadastro RH.',false);return false;}
+ catch(error){attendanceGateMarkup(error.message||'Não foi possível validar o seu cadastro RH.',false,false,true);return false;}
  window.HELI_ATTENDANCE_REQUIRED=true;window.HELI_ATTENDANCE_EMPLOYEE=status;
- if(status.closed||status.check_out){attendanceGateMarkup('A sua saída já foi registada hoje. O acesso operacional está encerrado. Contacte a administração se precisar de reabrir a sessão.',false);return false;}
+ if(status.closed||status.check_out){attendanceGateMarkup('A sua saída já foi registada hoje. O acesso operacional está encerrado. Contacte a administração se precisar de reabrir a sessão.',false,false,true);return false;}
  if(status.check_in){window.HELI_ATTENDANCE_ENTERED=true;attendanceGateMarkup('A sua entrada já foi registada às '+formatAttendanceClock(status.check_in)+'. Confirme para aceder à área de trabalho.',false,true);return await new Promise(resolve=>el('heli-attendance-continue')?.addEventListener('click',()=>resolve(true)));}
  attendanceGateMarkup('Antes de entrar na área de trabalho, confirme a sua presença. A hora será registada automaticamente. Limite de pontualidade: 08:30.',true,false);
  return await new Promise(resolve=>{
@@ -286,7 +287,7 @@ async function launch(user){
   const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
   const canAdmin=window.HELI_HAS_ROLE('owner','admin');
   if(!canAdmin){
-   if(window.HELI_OFFLINE_MODE){attendanceGateMarkup('A marcação de presença exige ligação ao servidor. Restabeleça a internet e entre novamente.',false);return;}
+   if(window.HELI_OFFLINE_MODE){attendanceGateMarkup('A marcação de presença exige ligação ao servidor. Restabeleça a internet e tente novamente.',false,false,true);return;}
    const attendanceAllowed=await enforceEmployeeAttendanceBeforeLaunch();if(!attendanceAllowed)return;
   }
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
