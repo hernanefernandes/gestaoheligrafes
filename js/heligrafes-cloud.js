@@ -6,6 +6,22 @@ const client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{pers
 window.heliSupabase=client;
 const STATE_KEYS=['multi_sales_v52','multi_products_v52','multi_employees_v52','multi_attendance_v52','multi_payroll_payments_v52','multi_shift_history_v52','multi_shift_audit_logs_v52','multi_extra_cash_v52','multi_debt_payments_v52','multi_chat_messages_v52','multi_chat_deleted_v52'];
 let identity=null,originalOnload=null,started=false,timer=null,saving=false,saveAgain=false;
+function prepareUserLocalState(user,isGlobalAdmin){
+ const scopeKey='heli_local_scope_user_v1',previousUser=localStorage.getItem(scopeKey)||'';
+ if(previousUser===user.id)return false;
+ if(previousUser){
+  for(const key of STATE_KEYS){const value=localStorage.getItem(key);if(value!==null)localStorage.setItem('heli_user_state_v1_'+previousUser+'_'+key,value);}
+ }else if(isGlobalAdmin){
+  for(const key of STATE_KEYS){const value=localStorage.getItem(key);if(value!==null)localStorage.setItem('heli_user_state_v1_'+user.id+'_'+key,value);}
+ }
+ for(const key of STATE_KEYS){
+  const scoped=localStorage.getItem('heli_user_state_v1_'+user.id+'_'+key);
+  if(scoped===null)localStorage.removeItem(key);else localStorage.setItem(key,scoped);
+ }
+ localStorage.setItem(scopeKey,user.id);
+ return true;
+}
+
 const el=id=>document.getElementById(id);
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function message(t,err=false){const n=el('heli-auth-message');if(n){n.textContent=t||'';n.style.color=err?'#b91c1c':'#475569';}}
@@ -45,10 +61,14 @@ async function loadIdentity(user){
  }
  window.HELI_USER=user;window.HELI_PROFILE=identity.profile;window.HELI_ORG=identity.organization;window.HELI_ROLES=identity.roles;window.HELI_LOCATIONS=identity.locations;
  window.HELI_HAS_ROLE=(...codes)=>identity.roles.some(role=>codes.includes(role.code));
- const globalAccess=window.HELI_HAS_ROLE('owner','admin')&&identity.assignments.some(a=>!a.location_id);
+ const globalAccess=window.HELI_HAS_ROLE('owner','admin');
  const assignedIds=[...new Set(identity.assignments.map(a=>a.location_id).filter(Boolean))];
+ if(!globalAccess&&assignedIds.length!==1)throw new Error('A sua conta deve ter exactamente um local atribuído pelo administrador. Contacte a administração.');
  window.HELI_ALLOWED_LOCATIONS=globalAccess?identity.locations:identity.locations.filter(l=>assignedIds.includes(l.id));
- window.HELI_DEFAULT_LOCATION_ID=window.HELI_ALLOWED_LOCATIONS.length===1?window.HELI_ALLOWED_LOCATIONS[0].id:null;
+ window.HELI_DEFAULT_LOCATION_ID=globalAccess?null:assignedIds[0];
+ const defaultLocation=identity.locations.find(l=>l.id===window.HELI_DEFAULT_LOCATION_ID);
+ window.HELI_DEFAULT_LOCATION_NAME=defaultLocation?.name||'';
+ if(!globalAccess&&!defaultLocation)throw new Error('O local atribuído à sua conta está inactivo ou indisponível. Contacte a administração.');
  window.HELI_CAN_CLOUD_SYNC=()=>window.HELI_HAS_ROLE('owner','admin');
 }
 async function pushCloudState(keys=STATE_KEYS){
@@ -112,6 +132,7 @@ async function launch(user){
  if(started)return;
  try{
   await loadIdentity(user);
+  if(!window.HELI_OFFLINE_MODE&&prepareUserLocalState(user,window.HELI_HAS_ROLE('owner','admin'))){window.location.reload();return;}
   if(!window.HELI_OFFLINE_MODE){const login=await client.rpc('heli_register_login');if(login.error)console.warn('[Heligrafes] Registo de entrada:',login.error.message);else window.HELI_LOGIN_SESSION_ID=login.data;}
   const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
