@@ -628,6 +628,8 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                     </div>
                 </div>
 
+                <div id="pm-location-tabs" class="mb-4 flex flex-wrap gap-2" aria-label="Navegação por local"></div>
+                <div id="pm-location-live-summary" class="mb-6"></div>
                 <div class="mb-6 grid grid-cols-12 gap-4">
                     <div class="col-span-12 sm:col-span-6 xl:col-span-3 rounded-2xl border border-blue-100 bg-white p-5 shadow-sm"><p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Produtos registados</p><p id="pm-total-products" class="mt-2 text-3xl font-black text-blue-800">0</p></div>
                     <div class="col-span-12 sm:col-span-6 xl:col-span-3 rounded-2xl border border-emerald-100 bg-emerald-50 p-5 shadow-sm"><p class="text-[10px] font-black uppercase tracking-wider text-emerald-600">Vendas de produtos</p><p id="pm-total-revenue" class="mt-2 text-2xl font-black text-emerald-800">0 Kz</p></div>
@@ -768,6 +770,8 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                         </div>
                     </div>
                     <div class="col-span-12">
+                        <div id="stock-location-tabs" class="mb-4 flex flex-wrap gap-2" aria-label="Navegação de stock por local"></div>
+                        <div id="stock-location-live-summary" class="mb-4"></div>
                         <div class="glass-panel p-5 bg-white shadow-lg border-l-4 border-indigo-600">
                             <div class="grid grid-cols-12 gap-4 items-end">
                                 <div class="col-span-12 lg:col-span-3">
@@ -858,6 +862,8 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                     </div>
                     <button onclick="renderReports()" class="bg-white border border-slate-300 px-4 py-2 rounded-lg font-bold text-slate-600 hover:bg-slate-50 transition-all shadow-sm">🔄 Atualizar Dados</button>
                 </div>
+                <div id="report-location-tabs" class="mb-4 flex flex-wrap gap-2 no-print" aria-label="Navegação dos relatórios por local"></div>
+                <div id="report-location-live-summary" class="mb-6 no-print"></div>
                 <div id="report-location-profit-summary" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 no-print"></div>
                 <div class="glass-panel bg-white p-5 mb-6 no-print border-l-4 border-slate-800">
                     <div class="flex justify-between items-center mb-3">
@@ -3742,6 +3748,150 @@ function printDailyReport(copies = 1) {
                 list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name || 'Produto sem nome'))}</span></div></td><td class="p-3 text-slate-500">${cost.toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-blue-600 font-bold">${stock}</td><td class="p-3 text-right flex justify-end gap-2"><button type="button" onclick="editProduct(${Number(p.id)})" class="text-blue-500 text-xs font-bold">✏️ EDITAR</button><button type="button" onclick="deleteProduct(${Number(p.id)})" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
             });
         }
+
+
+        // Vistas administrativas por local: os eventos POS e os saldos cloud são a fonte partilhada.
+        const heliLocationViews = { selected: '*', locations: [], channel: null, loading: false };
+        function heliViewLocations() {
+            return (window.HELI_ALLOWED_LOCATIONS || []).slice().sort((a,b)=>String(a.code||a.name).localeCompare(String(b.code||b.name),'pt'));
+        }
+        function heliViewMoney(value) { return (Number(value)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz'; }
+        function heliViewEscape(value) { return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+        function heliViewLocationName(id) { return heliViewLocations().find(x=>x.id===id)?.name || 'Local'; }
+        function renderHeliLocationTabs() {
+            const locations=heliViewLocations();
+            ['pm','stock','report'].forEach(kind=>{
+                const root=document.getElementById(kind+'-location-tabs');if(!root)return;
+                const options=[{id:'*',name:'Todos os locais'},...locations.map(x=>({id:x.id,name:x.name||x.code||'Local'}))];
+                root.innerHTML=options.map(x=>'<button type="button" onclick="selectHeliLocationView(\''+kind+'\',\''+heliViewEscape(x.id)+'\')" class="rounded-xl border px-4 py-2 text-xs font-black transition '+(heliLocationViews.selected===x.id?'border-blue-700 bg-blue-700 text-white shadow':'border-slate-200 bg-white text-slate-600 hover:bg-blue-50')+'">'+heliViewEscape(x.name)+'</button>').join('');
+            });
+        }
+        async function selectHeliLocationView(kind,id) {
+            heliLocationViews.selected=id;renderHeliLocationTabs();
+            if(id!=='*'&&kind==='stock'){
+                const loc=heliViewLocations().find(x=>x.id===id),select=document.getElementById('business-location');
+                if(loc&&select){
+                    const option=[...select.options].find(o=>[loc.name,loc.code].some(v=>String(v||'').toLowerCase()===String(o.value).toLowerCase()));
+                    if(option){select.value=option.value;saveBusinessLocation();}
+                }
+                await syncHeliLocationViews();
+                await syncCurrentLocationStocks();
+                renderStockList();
+            } else if(kind==='stock') {
+                await syncHeliLocationViews();
+            }
+            if(kind==='pm')await renderProductSalesManagementCloud();
+            if(kind==='report')await renderLocationCloudReport();
+            if(kind==='stock')renderStockLocationSummary();
+        }
+        async function heliFetchSalesEvents() {
+            const db=window.heliSupabase,org=window.HELI_ORG?.id;
+            if(!db||!org)return [];
+            const q=await db.from('pos_sales_events').select('id,location_id,local_sale_id,sale_payload,total,paid,category,seller_name,seller_email,occurred_at').eq('organization_id',org).order('occurred_at',{ascending:false}).limit(5000);
+            if(q.error)throw q.error;
+            return q.data||[];
+        }
+        async function heliFetchAllStockBalances() {
+            const db=window.heliSupabase,org=window.HELI_ORG?.id;
+            if(!db||!org)return [];
+            const q=await db.from('stock_balances').select('location_id,product_id,quantity,updated_at').eq('organization_id',org);
+            if(q.error)throw q.error;
+            return q.data||[];
+        }
+        function heliEventItems(event) {
+            const sale=event.sale_payload||{};
+            if(Array.isArray(sale.items)&&sale.items.length)return sale.items;
+            if(sale.desc)return [{name:sale.desc,qty:sale.qty||1,total:sale.total||event.total,price:sale.price||0,cost:sale.cost||0,productId:sale.productId}];
+            return [];
+        }
+        async function renderProductSalesManagementCloud() {
+            const body=document.getElementById('pm-products-body');if(!body||!window.heliSupabase)return;
+            const selected=heliLocationViews.selected;
+            body.innerHTML='<tr><td colspan="6" class="p-6 text-center text-slate-400">A carregar vendas e stock dos locais…</td></tr>';
+            try{
+                const [events,balances]=await Promise.all([heliFetchSalesEvents(),heliFetchAllStockBalances()]);
+                const rows=selected==='*'?events:events.filter(x=>x.location_id===selected);
+                const stockRows=selected==='*'?balances:balances.filter(x=>x.location_id===selected);
+                const stockMap=new Map();stockRows.forEach(x=>stockMap.set(String(x.product_id),(stockMap.get(String(x.product_id))||0)+Number(x.quantity||0)));
+                const analytics=products.map(product=>({product,units:0,revenue:0,cost:0,salesCount:0,stock:stockMap.get(String(product.id))||0}));
+                const byId=new Map(analytics.map(x=>[String(x.product.id),x]));
+                const byName=new Map(analytics.map(x=>[normalizeProductName(x.product.name),x]));
+                rows.filter(x=>x.category!=='EXPENSE').forEach(event=>{
+                    heliEventItems(event).forEach(item=>{
+                        const stat=(item.productId!=null?byId.get(String(item.productId)):null)||byName.get(normalizeProductName(item.name));
+                        if(!stat)return;
+                        const qty=Number(item.qty)||1,rev=Number(item.total)||(Number(item.price)||0)*qty,cost=(Number(item.cost)||Number(stat.product.cost)||0)*qty;
+                        stat.units+=qty;stat.revenue+=rev;stat.cost+=cost;stat.salesCount++;
+                    });
+                });
+                const sorted=analytics.slice().sort((a,b)=>b.units-a.units||b.revenue-a.revenue||String(a.product.name).localeCompare(String(b.product.name)));
+                const totalRevenue=sorted.reduce((a,x)=>a+x.revenue,0),totalUnits=sorted.reduce((a,x)=>a+x.units,0),top=sorted.find(x=>x.units>0);
+                const put=(id,value)=>{const n=document.getElementById(id);if(n)n.textContent=value;};
+                put('pm-total-products',sorted.length);put('pm-total-revenue',heliViewMoney(totalRevenue));put('pm-total-units',totalUnits.toLocaleString());
+                put('pm-top-product',top?.product.name||'Sem vendas');put('pm-top-product-detail',top?top.units+' unidade(s) · '+heliViewMoney(top.revenue):'Ainda não há produtos vendidos.');
+                const suggestions=sorted.filter(x=>x.stock<=0||(x.units>0&&x.stock<=Math.max(3,Math.ceil(x.units/5)))).slice(0,6);
+                put('pm-suggestion-count',suggestions.length+' prioridades');
+                const suggest=document.getElementById('pm-restock-suggestions');
+                if(suggest)suggest.innerHTML=suggestions.length?suggestions.map(x=>'<div class="rounded-xl border border-amber-200 bg-white p-4"><b>'+heliViewEscape(x.product.name)+'</b><p class="mt-1 text-xs text-slate-500">'+(x.stock<=0?'Sem stock disponível neste âmbito.':'Stock próximo do nível de reposição.')+'</p><div class="mt-2 flex justify-between text-[10px] font-bold"><span>Stock: '+x.stock+'</span><span>Vendidos: '+x.units+'</span></div></div>').join(''):'<p class="rounded-xl border border-dashed border-amber-300 p-4 text-sm text-amber-800">Sem reposições prioritárias nesta vista.</p>';
+                body.innerHTML=sorted.map((x,i)=>'<tr class="hover:bg-blue-50/40"><td class="p-4"><b>'+heliViewEscape(x.product.name)+'</b><div class="text-[10px] text-slate-400">Preço actual: '+heliViewMoney(x.product.price)+'</div></td><td class="p-4 text-center font-black">'+x.stock+'</td><td class="p-4 text-center font-black text-blue-700">'+x.units+'</td><td class="p-4 text-right font-black text-emerald-700">'+heliViewMoney(x.revenue)+'</td><td class="p-4 text-right font-black">'+heliViewMoney(x.revenue-x.cost)+'</td><td class="p-4 text-center text-xs font-black">'+(x.stock<=0?'ESGOTADO':x.units&&x.stock<=Math.max(3,Math.ceil(x.units/5))?'REPOR JÁ':'STOCK DISPONÍVEL')+'</td></tr>').join('')||'<tr><td colspan="6" class="p-8 text-center text-slate-400">Sem produtos registados.</td></tr>';
+                const scope=document.getElementById('pm-location-live-summary');
+                if(scope)scope.innerHTML='<div class="rounded-xl border border-blue-100 bg-blue-50 p-3 text-xs text-blue-800"><b>'+ (selected==='*'?'Consolidado dos locais':heliViewEscape(heliViewLocationName(selected)))+'</b> · '+rows.length+' venda(s) confirmada(s) na cloud · '+stockRows.length+' saldo(s) de stock. Os dados são filtrados pelo identificador real do local.</div>';
+            }catch(error){body.innerHTML='<tr><td colspan="6" class="p-6 text-center text-rose-600">Falha ao consultar os dados partilhados: '+heliViewEscape(error.message||error)+'</td></tr>';}
+        }
+        async function renderStockLocationSummary() {
+            const root=document.getElementById('stock-location-live-summary');if(!root)return;
+            try{
+                const balances=await heliFetchAllStockBalances(),locations=heliViewLocations();
+                const scoped=heliLocationViews.selected==='*'?balances:balances.filter(x=>x.location_id===heliLocationViews.selected);
+                const cards=(heliLocationViews.selected==='*'?locations:locations.filter(x=>x.id===heliLocationViews.selected)).map(loc=>{
+                    const rows=balances.filter(x=>x.location_id===loc.id),units=rows.reduce((a,x)=>a+Number(x.quantity||0),0),items=rows.filter(x=>Number(x.quantity)>0).length;
+                    return '<div class="rounded-xl border border-emerald-100 bg-white p-4 shadow-sm"><p class="text-[10px] font-black uppercase text-slate-400">'+heliViewEscape(loc.name||loc.code)+'</p><p class="mt-2 text-2xl font-black text-emerald-700">'+units.toLocaleString()+'</p><p class="text-xs text-slate-500">'+items+' produto(s) com saldo · '+rows.length+' registo(s)</p></div>';
+                }).join('');
+                root.innerHTML='<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">'+cards+'</div><p class="mt-2 text-[10px] text-slate-400">'+(heliLocationViews.selected==='*'?'Visão consolidada; os cartões preservam a separação por local.':'Inventário consultado directamente para o local seleccionado.')+'</p>';
+            }catch(error){root.innerHTML='<p class="text-sm text-rose-600">Não foi possível carregar os saldos: '+heliViewEscape(error.message||error)+'</p>';}
+        }
+        async function renderLocationCloudReport() {
+            const root=document.getElementById('report-location-live-summary');if(!root||!window.heliSupabase)return;
+            root.innerHTML='<p class="text-sm text-slate-400">A consultar os registos centralizados…</p>';
+            try{
+                const events=await heliFetchSalesEvents(),locations=heliViewLocations(),selected=heliLocationViews.selected;
+                const chosen=selected==='*'?locations:locations.filter(x=>x.id===selected);
+                const now=new Date(),today=now.toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'}),month=now.toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'}).slice(0,7);
+                const cards=chosen.map(loc=>{
+                    const rows=events.filter(x=>x.location_id===loc.id&&x.category!=='EXPENSE');
+                    const daily=rows.filter(x=>new Date(x.occurred_at).toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'})===today);
+                    const monthly=rows.filter(x=>new Date(x.occurred_at).toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'}).slice(0,7)===month);
+                    const sum=list=>list.reduce((a,x)=>a+Number(x.paid||0),0);
+                    return '<div class="rounded-xl border border-blue-100 bg-white p-4 shadow-sm"><p class="text-[10px] font-black uppercase text-slate-400">'+heliViewEscape(loc.name||loc.code)+'</p><div class="mt-2 text-xl font-black text-emerald-700">'+heliViewMoney(sum(daily))+'</div><p class="text-[10px] text-slate-500">Recebido hoje · '+daily.length+' venda(s)</p><div class="mt-3 border-t pt-2 text-sm font-bold text-blue-800">'+heliViewMoney(sum(monthly))+'</div><p class="text-[10px] text-slate-500">Recebido este mês · '+monthly.length+' venda(s)</p><p class="mt-2 text-[10px] text-slate-400">Acumulado: '+heliViewMoney(sum(rows))+' · '+rows.length+' venda(s)</p></div>';
+                }).join('');
+                const allRows=selected==='*'?events.filter(x=>x.category!=='EXPENSE'):events.filter(x=>x.location_id===selected&&x.category!=='EXPENSE');
+                root.innerHTML='<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">'+cards+'</div><div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900"><b>Fonte e limite dos dados:</b> vendas recebidas e contagem vêm de pos_sales_events no Supabase. Despesas, dívidas e alguns custos históricos não fazem parte deste registo central de vendas; não são apresentados como se estivessem sincronizados. Registos consultados: '+allRows.length+'.</div>';
+            }catch(error){root.innerHTML='<p class="text-sm text-rose-600">Falha ao carregar o relatório por local: '+heliViewEscape(error.message||error)+'</p>';}
+        }
+        async function syncHeliLocationViews() {
+            if(!window.heliSupabase||!window.HELI_ORG?.id)return;
+            renderHeliLocationTabs();
+            await Promise.all([renderStockLocationSummary()]);
+        }
+        function startHeliLocationViews() {
+            if(!window.heliSupabase||!window.HELI_ORG?.id||heliLocationViews.channel)return;
+            renderHeliLocationTabs();
+            heliLocationViews.channel=window.heliSupabase.channel('heli-location-views-'+window.HELI_ORG.id)
+                .on('postgres_changes',{event:'*',schema:'public',table:'pos_sales_events',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{
+                    if(!document.getElementById('gestao-produtos')?.classList.contains('hidden'))void renderProductSalesManagementCloud();
+                    if(!document.getElementById('relatorios')?.classList.contains('hidden'))void renderLocationCloudReport();
+                })
+                .on('postgres_changes',{event:'*',schema:'public',table:'stock_balances',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{
+                    if(!document.getElementById('stocks')?.classList.contains('hidden')){void syncHeliLocationViews();if(heliLocationViews.selected!=='*')void syncCurrentLocationStocks().then(renderStockList);}
+                    if(!document.getElementById('gestao-produtos')?.classList.contains('hidden'))void renderProductSalesManagementCloud();
+                })
+                .on('postgres_changes',{event:'*',schema:'public',table:'products',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{
+                    if(!document.getElementById('gestao-produtos')?.classList.contains('hidden'))void renderProductSalesManagementCloud();
+                    if(!document.getElementById('stocks')?.classList.contains('hidden'))void syncHeliLocationViews();
+                }).subscribe();
+            void syncHeliLocationViews();
+        }
+        window.addEventListener('heli-auth-ready',startHeliLocationViews);
 
         function editProduct(id) {
             const prod = products.find(p => String(p.id) === String(id));
