@@ -114,8 +114,8 @@ async function addSessionBar(){
  const fullName=identity.profile.full_name||identity.user.email||'Funcionário';
  const initials=fullName.trim().split(/\\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'F';
  bar.innerHTML='<div class="heli-session-profile"><span class="heli-session-avatar-wrap"><span class="heli-session-avatar-fallback">'+esc(initials)+'</span><img id="heli-session-avatar" class="heli-session-avatar" alt="Foto de perfil de '+esc(fullName)+'" hidden></span><span class="heli-session-user-wrap"><span class="heli-session-user">'+esc(fullName)+'</span><span class="heli-session-online"><i></i> ONLINE</span></span></div><div class="heli-session-meta"><span class="heli-session-time">Entrada: '+new Date().toLocaleString("pt-PT",{timeZone:"Africa/Luanda"})+'</span><span id="heli-cloud-status">Cloud ligada</span></div><button id="heli-signout" type="button">Terminar sessão</button>';
- const clock=document.querySelector('.clock-control');
- (clock||document.querySelector('.app-topbar')||document.body).appendChild(bar);
+ const topbar=document.querySelector('.app-topbar');
+ (topbar||document.body).appendChild(bar);
  const avatar=el('heli-session-avatar'),fallback=bar.querySelector('.heli-session-avatar-fallback');
  if(identity.profile.avatar_path&&avatar){
   try{const signed=await client.storage.from('heligrafes-private').createSignedUrl(identity.profile.avatar_path,3600);if(!signed.error&&signed.data?.signedUrl){avatar.src=signed.data.signedUrl;avatar.hidden=false;if(fallback)fallback.hidden=true;}}catch(err){console.warn('[Heligrafes] Foto de perfil indisponível:',err.message);}
