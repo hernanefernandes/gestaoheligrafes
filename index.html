@@ -4721,6 +4721,7 @@ async function printDailyReport(copies = 1) {
 
             if (added) {
                 saveData();
+                window.HeligrafesScheduleEmployeeSync?.();
                 if (document.getElementById('rh') && !document.getElementById('rh').classList.contains('hidden')) renderRH();
             }
             return added;
