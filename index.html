@@ -1138,22 +1138,46 @@ window.onload = function() {
 
         /* --- RELÓGIO & NOTIFICAÇÕES --- */
         /* --- SESSAO, LOCAIS E SINCRONIZACAO OPERACIONAL --- */
+        function heliIsGlobalAdmin() {
+            return !!window.HELI_USER && !!window.HELI_HAS_ROLE?.('owner','admin');
+        }
+
+        function heliUserLocationStorageKey() {
+            return 'heli_business_location_v1_' + (window.HELI_USER?.id || 'guest');
+        }
+
         function getCurrentBusinessLocation() {
-            return sessionStorage.getItem('multi_business_location_v52') || localStorage.getItem('multi_business_location_v52') || 'LOCAL 1';
+            if (window.HELI_USER && !heliIsGlobalAdmin()) return window.HELI_DEFAULT_LOCATION_NAME || '';
+            return sessionStorage.getItem(heliUserLocationStorageKey()) || localStorage.getItem(heliUserLocationStorageKey()) || 'LOCAL 1';
         }
 
         function getCurrentSeller() {
+            if (window.HELI_USER) return window.HELI_PROFILE?.full_name || window.HELI_USER.email || '';
             return sessionStorage.getItem('multi_sales_user_v52') || '';
         }
 
         function updateSalesSessionLabel() {
             const label = document.getElementById('sales-session-label');
-            if (label) label.innerText = `${getCurrentBusinessLocation()} / ${getCurrentSeller() || 'Sem vendedor'}`;
+            if (label) label.innerText = `${getCurrentBusinessLocation() || 'Local não atribuído'} / ${getCurrentSeller() || 'Sem vendedor'}`;
             const select = document.getElementById('business-location');
-            if (select) select.value = getCurrentBusinessLocation();
+            if (select) {
+                select.value = getCurrentBusinessLocation();
+                select.disabled = !!window.HELI_USER && !heliIsGlobalAdmin();
+                select.title = select.disabled ? 'Local definido pelo administrador para esta conta.' : '';
+                const alter = label?.parentElement?.querySelector('button');
+                if (alter) alter.hidden = !!window.HELI_USER && !heliIsGlobalAdmin();
+            }
         }
 
         function configureSalesSession(force = false) {
+            if (window.HELI_USER && !heliIsGlobalAdmin()) {
+                const assigned = window.HELI_DEFAULT_LOCATION_NAME || '';
+                if (!assigned) { alert('A sua conta não tem um local atribuído. Contacte o administrador.'); return false; }
+                sessionStorage.setItem('multi_business_location_v52', assigned);
+                sessionStorage.setItem('multi_sales_user_v52', getCurrentSeller());
+                updateSalesSessionLabel();
+                return true;
+            }
             let locationName = getCurrentBusinessLocation();
             let sellerName = getCurrentSeller();
             if (force || !BUSINESS_LOCATIONS.includes(locationName)) {
@@ -1166,21 +1190,26 @@ window.onload = function() {
                 const requestedSeller = prompt('Nome do usuario/vendedor para esta sessao:', sellerName || '');
                 if (requestedSeller === null && sellerName) return false;
                 sellerName = String(requestedSeller || '').trim();
-                if (!sellerName) {
-                    alert('Informe o nome do usuario para registar vendas nesta sessao.');
-                    return false;
-                }
+                if (!sellerName) { alert('Informe o nome do usuario para registar vendas nesta sessao.'); return false; }
             }
-            sessionStorage.setItem('multi_business_location_v52', locationName);
-            localStorage.setItem('multi_business_location_v52', locationName);
+            sessionStorage.setItem(heliUserLocationStorageKey(), locationName);
+            localStorage.setItem(heliUserLocationStorageKey(), locationName);
             sessionStorage.setItem('multi_sales_user_v52', sellerName);
             updateSalesSessionLabel();
             return true;
         }
 
         function initSalesSession() {
-            const savedLocation = localStorage.getItem('multi_business_location_v52') || 'LOCAL 1';
-            sessionStorage.setItem('multi_business_location_v52', sessionStorage.getItem('multi_business_location_v52') || savedLocation);
+            if (window.HELI_USER && !heliIsGlobalAdmin()) {
+                const assigned = window.HELI_DEFAULT_LOCATION_NAME || '';
+                if (!assigned) throw new Error('A sua conta não tem um local atribuído pelo administrador.');
+                sessionStorage.setItem('multi_business_location_v52', assigned);
+                sessionStorage.setItem('multi_sales_user_v52', getCurrentSeller());
+                updateSalesSessionLabel();
+                return;
+            }
+            const savedLocation = localStorage.getItem(heliUserLocationStorageKey()) || 'LOCAL 1';
+            sessionStorage.setItem(heliUserLocationStorageKey(), sessionStorage.getItem(heliUserLocationStorageKey()) || savedLocation);
             updateSalesSessionLabel();
             if (!getCurrentSeller()) setTimeout(() => configureSalesSession(false), 300);
         }
@@ -1188,8 +1217,13 @@ window.onload = function() {
         function saveBusinessLocation() {
             const select = document.getElementById('business-location');
             if (!select) return;
-            sessionStorage.setItem('multi_business_location_v52', select.value);
-            localStorage.setItem('multi_business_location_v52', select.value);
+            if (window.HELI_USER && !heliIsGlobalAdmin()) {
+                select.value = window.HELI_DEFAULT_LOCATION_NAME || '';
+                updateSalesSessionLabel();
+                return;
+            }
+            sessionStorage.setItem(heliUserLocationStorageKey(), select.value);
+            localStorage.setItem(heliUserLocationStorageKey(), select.value);
             updateSalesSessionLabel();
             renderLocationProfitReport();
         }
