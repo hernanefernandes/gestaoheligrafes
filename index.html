@@ -531,7 +531,6 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                     </div>
                     <div class="flex gap-2">
                         <button onclick="printDailyReport()" class="pos-action bg-slate-800 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-md hover:bg-slate-700 transition-all">🖨️ Imprimir Fecho</button>
-                        <button onclick="printDailyReport(3)" class="pos-action bg-blue-700 text-white px-4 py-2 rounded-xl font-bold text-sm shadow-md hover:bg-blue-800 transition-all">🗂️ Relatório 3 Vias</button>
                         <button onclick="sendDailyReport('whatsapp')" class="pos-action bg-green-100 text-green-700 px-4 py-2 rounded-xl font-bold text-sm border border-green-200 shadow-sm hover:bg-green-200 transition-all">🟢 WhatsApp</button>
                         <button onclick="sendDailyReport('email')" class="pos-action bg-blue-100 text-blue-700 px-4 py-2 rounded-xl font-bold text-sm border border-blue-200 shadow-sm hover:bg-blue-200 transition-all">📧 Email</button>
                     </div>
@@ -620,8 +619,17 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                         <div class="pos-side-panel glass-panel p-5 bg-white shadow-lg border-l-4 border-rose-500">
                             <h3 class="font-bold text-slate-700 mb-4 flex items-center gap-2">📉 Despesas do Dia</h3>
                             <div class="grid grid-cols-2 gap-2 mb-4">
-                                <input type="text" id="vr-expense-type" placeholder="O que pagou?" class="w-full h-10 px-3 bg-slate-50 border rounded-lg text-sm">
-                                <input type="number" id="vr-expense-price" placeholder="Valor Kz" class="w-full h-10 px-3 bg-slate-50 border rounded-lg text-sm">
+                                <select id="vr-expense-category" class="col-span-2 w-full h-10 px-3 bg-slate-50 border rounded-lg text-sm" aria-label="Categoria da despesa">
+                                    <option value="Alimentação">Alimentação</option>
+                                    <option value="Água e energia">Água e energia</option>
+                                    <option value="Internet e comunicações">Internet e comunicações</option>
+                                    <option value="Transporte">Transporte</option>
+                                    <option value="Manutenção">Manutenção</option>
+                                    <option value="Outros serviços">Outros serviços</option>
+                                    <option value="Outras despesas">Outras despesas</option>
+                                </select>
+                                <input type="text" id="vr-expense-type" placeholder="Descrição / fornecedor" class="w-full h-10 px-3 bg-slate-50 border rounded-lg text-sm">
+                                <input type="number" id="vr-expense-price" min="0.01" step="0.01" placeholder="Valor Kz" class="w-full h-10 px-3 bg-slate-50 border rounded-lg text-sm">
                             </div>
                             <button onclick="addExpense()" class="w-full py-2 bg-rose-500 text-white font-bold rounded-lg text-sm hover:bg-rose-600 transition-all mb-4">REGISTAR SAÍDA</button>
                             
@@ -3459,6 +3467,22 @@ async function removeVRCartItem(index) {
     if(await checkPermission()) { vrCart.splice(index, 1); renderVRCart(); }
 }
 
+function showVRSaleConfirmation(sale) {
+    const previous = document.getElementById('vr-sale-confirmation');
+    if (previous) previous.remove();
+    const fmt = value => (Number(value)||0).toLocaleString('pt-AO') + ' Kz';
+    const items = Array.isArray(sale?.items) ? sale.items : [];
+    const details = items.map(item => '<div class="flex justify-between gap-3 py-1 border-b border-slate-100 text-sm"><span>'+escapeReportText(item.qty+' × '+item.name)+'</span><b>'+fmt(item.total)+'</b></div>').join('');
+    const modal = document.createElement('div');
+    modal.id = 'vr-sale-confirmation';
+    modal.className = 'fixed inset-0 z-[10060] flex items-center justify-center bg-slate-950/60 p-4';
+    modal.setAttribute('role','dialog'); modal.setAttribute('aria-modal','true'); modal.setAttribute('aria-labelledby','vr-sale-confirmation-title');
+    modal.innerHTML = '<div class="w-full max-w-md rounded-2xl border border-emerald-100 bg-white p-5 shadow-2xl" style="animation:vrPickerIn .18s ease-out"><div class="mb-3 flex items-center gap-3"><span class="grid h-11 w-11 place-items-center rounded-full bg-emerald-100 text-2xl text-emerald-700">✓</span><div><h3 id="vr-sale-confirmation-title" class="text-lg font-black text-slate-800">Venda registada com sucesso</h3><p class="text-xs font-semibold text-emerald-700">Registo guardado no sistema</p></div></div><div class="mb-3 rounded-xl bg-slate-50 p-3">'+details+'</div><div class="grid grid-cols-2 gap-2 text-xs"><div class="rounded-lg bg-blue-50 p-2"><span class="block text-slate-500">Local</span><b>'+escapeReportText(sale.location||getCurrentBusinessLocation()||'—')+'</b></div><div class="rounded-lg bg-blue-50 p-2"><span class="block text-slate-500">Funcionário</span><b>'+escapeReportText(sale.seller||getCurrentSeller()||'—')+'</b></div><div class="rounded-lg bg-blue-50 p-2"><span class="block text-slate-500">Pagamento</span><b>'+escapeReportText(sale.method||'—')+'</b></div><div class="rounded-lg bg-emerald-50 p-2"><span class="block text-slate-500">Total recebido</span><b class="text-emerald-800">'+fmt(sale.paid??sale.total)+'</b></div></div><button id="vr-sale-confirmation-ok" type="button" class="mt-4 w-full rounded-xl bg-emerald-700 px-4 py-3 text-sm font-black text-white hover:bg-emerald-800">OK · Continuar</button></div>';
+    document.body.appendChild(modal);
+    document.getElementById('vr-sale-confirmation-ok')?.addEventListener('click',()=>{modal.remove();document.getElementById('vr-product')?.focus();});
+    document.getElementById('vr-sale-confirmation-ok')?.focus();
+}
+
 async function finalizeVRSale() {
     const method = document.getElementById('vr-payment-method').value;
     if (vrCart.length === 0) return;
@@ -3520,30 +3544,53 @@ async function finalizeVRSale() {
     renderVRCart();
     saveDailyPaymentMethod();
     scheduleDailyPaymentMethodPrompt(method);
+    showVRSaleConfirmation(savedSale);
 }
 
 // 2. ADICIONADA A LIMPEZA DE CAMPOS APÓS REGISTAR DESPESA
-function addExpense() { 
-    const type = document.getElementById('vr-expense-type').value;
-    const val = parseFloat(document.getElementById('vr-expense-price').value); 
-    
-    if(type && val) { 
-        saveData({ 
-            date: new Date().toLocaleDateString(), 
-            desc: type, 
-            total: val, 
-            paid: val, 
-            category: 'EXPENSE', 
-            client: "Interno" 
-        }); 
-        
-        // Limpa os campos
+async function addExpense() {
+    const type = document.getElementById('vr-expense-type')?.value.trim();
+    const val = Number(document.getElementById('vr-expense-price')?.value);
+    const category = document.getElementById('vr-expense-category')?.value || 'Outras despesas';
+    const db = window.heliSupabase, user = window.HELI_USER, organization = window.HELI_ORG?.id;
+    if (!type || !Number.isFinite(val) || val <= 0) return alert('Indique a descrição e um valor superior a zero.');
+    if (!db || !user?.id || !organization) return alert('Não foi possível registar a despesa centralmente. Inicie sessão e verifique a ligação à internet.');
+    const location = resolveCurrentStockLocation();
+    if (!location?.id) return alert('O local deste utilizador não está identificado. A despesa não foi registada para evitar atribuição ao local errado.');
+    const button = document.querySelector('button[onclick="addExpense()"]');
+    if (button) { button.disabled = true; button.textContent = 'A REGISTAR...'; }
+    try {
+        const incurredAt = new Date().toISOString();
+        const result = await db.from('expenses').insert({
+            organization_id: organization,
+            location_id: location.id,
+            category,
+            description: type,
+            amount: val,
+            created_by: user.id,
+            incurred_at: incurredAt
+        }).select('id').single();
+        if (result.error) throw result.error;
+        saveData({
+            date: new Date().toLocaleDateString(),
+            createdAt: incurredAt,
+            desc: type,
+            total: val,
+            paid: val,
+            category: 'EXPENSE',
+            expenseCategory: category,
+            client: 'Interno',
+            location: getCurrentBusinessLocation()
+        });
         document.getElementById('vr-expense-type').value = '';
         document.getElementById('vr-expense-price').value = '';
-        
-        alert("Despesa guardada."); 
-    } else {
-        alert("Preencha a descrição e o valor.");
+        document.getElementById('vr-expense-category').value = 'Alimentação';
+        alert('Despesa registada e sincronizada no controlo financeiro do local.');
+    } catch (error) {
+        console.error('[Financeiro] Registo de despesa:', error);
+        alert('A despesa não foi confirmada no sistema central: ' + (error.message || error));
+    } finally {
+        if (button) { button.disabled = false; button.textContent = 'REGISTAR SAÍDA'; }
     }
 }
 
