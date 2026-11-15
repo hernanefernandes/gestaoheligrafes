@@ -5293,6 +5293,13 @@ function selectAcademicPage(value) {
   const safeToReload = () => !pendingEdits && !isEditing() && !hasOpenDialog() &&
     document.visibilityState === 'visible' && Date.now() - lastInteraction > 5000;
 
+  function reloadFreshPage(){
+    const url=new URL(window.location.href);
+    url.searchParams.delete('__heli_version_check');
+    url.searchParams.set('__heli_refresh',String(Date.now()));
+    window.location.replace(url.toString());
+  }
+
   function showUpdateNotice(){
     if(document.getElementById('heli-update-notice')) return;
     const box=document.createElement('div');
@@ -5306,7 +5313,7 @@ function selectAcademicPage(value) {
     button.type='button';
     button.textContent='Actualizar agora';
     button.style.cssText='border:0;border-radius:9px;padding:8px 11px;background:#f4b51c;color:#102d55;font-weight:800;cursor:pointer;white-space:nowrap';
-    button.addEventListener('click',()=>{pendingEdits=false;window.location.reload();});
+    button.addEventListener('click',()=>{pendingEdits=false;reloadFreshPage();});
     box.appendChild(button);
     document.body.appendChild(box);
   }
@@ -5338,7 +5345,7 @@ function selectAcademicPage(value) {
     }finally{
       checking=false;
     }
-    if(updateAvailable && safeToReload()) window.location.reload();
+    if(updateAvailable && safeToReload()) reloadFreshPage();
   }
 
   document.addEventListener('input',()=>{pendingEdits=true;lastInteraction=Date.now();},true);
