@@ -4728,14 +4728,16 @@ async function printDailyReport(copies = 1) {
         }
 
         function renderRH() {
-            // O painel RH fica restrito aos três indicadores operacionais solicitados.
+            // Restringir o painel RH apenas às contas de funcionário.
+            // Owner/admin mantém acesso integral a cartões, período salarial e restantes ferramentas.
             const rhGrid = document.querySelector('#rh > .grid');
+            const isGlobalAdmin = heliIsGlobalAdmin();
             if (rhGrid) {
                 Array.from(rhGrid.children).forEach((panel, index) => {
-                    panel.classList.toggle('hidden', index >= 4);
+                    panel.classList.toggle('hidden', !isGlobalAdmin && index >= 4);
                 });
                 const salaryPeriod = document.getElementById('rh-period');
-                if (salaryPeriod) salaryPeriod.closest('div')?.classList.add('hidden');
+                if (salaryPeriod) salaryPeriod.closest('div')?.classList.toggle('hidden', !isGlobalAdmin);
             }
             migrateEmployeeMetadata();
             const period = getRhPeriod();
