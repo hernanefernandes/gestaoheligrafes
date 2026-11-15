@@ -151,7 +151,11 @@
         #heli-session-bar .heli-session-online i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px #22c55e30}
         @media(max-width:700px){#heli-session-bar{flex-wrap:wrap}#heli-session-bar .heli-session-time{display:none}}
 
-        .clock-control { display: grid; grid-template-columns: auto auto; grid-template-rows: auto auto; align-items: start; gap: 5px 12px; }
+        .clock-control { display: grid; grid-template-columns: minmax(0,auto) auto; grid-template-rows: auto auto auto; align-items: start; gap: 5px 12px; min-width: 0; width: max-content; max-width: 100%; }
+        .clock-control #heli-session-bar { grid-column: 1 / -1; grid-row: 3; width: 100%; }
+        .app-topbar { min-height: 0; height: auto; align-items: flex-start; gap: 18px; }
+        .app-topbar > div:first-child { min-width: 0; }
+        @media(max-width:760px){.clock-control{width:100%;grid-template-columns:minmax(0,1fr) auto}.clock-control #heli-session-bar{grid-column:1/-1;grid-row:3}.app-topbar{align-items:flex-start}.app-topbar>div:first-child{width:100%}}
         .clock-control #digital-clock-box, .clock-control #analog-clock { grid-column: 1; grid-row: 1 / span 2; }
         .clock-control .clock-toggle { grid-column: 2; grid-row: 2; align-self: end; margin-top: 4px; }
         .clock-control #topbar-chat-notifications { grid-column: 2; grid-row: 1; justify-self: end; }
@@ -360,7 +364,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                 </div>
                 <div class="topbar-company border-l-2 border-slate-300 pl-6">
                     <h4 class="text-lg font-bold text-slate-800 flex items-center gap-2">
-                        GRUPO HELIGRAFES, LDA - Painel de Controlo- 924 565 514-951 555 614
+                        GRUPO HELIGRAFES, LDA · 924 565 514 · 951 555 614
                         <span id="alert-badge" class="hidden bg-red-500 text-white text-[10px] px-2 rounded-full animate-bounce">!</span>
                     </h4>
                     <div class="mt-1 flex flex-wrap items-center gap-2"><p class="text-xs font-bold text-slate-500" id="delivery-alert-text">Sem alertas de entrega para amanhã.</p><a href="https://heligrafes-academico.vercel.app/" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-lg bg-indigo-600 px-3 py-1.5 text-[10px] font-black text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-400" aria-label="Abrir Heligrafes Académico numa nova aba">🎓 HELIGRAFES ACADÉMICO ↗</a></div>
@@ -371,11 +375,6 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                 <div class="text-right">
                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Sessao de Venda</p>
                     <p class="text-sm font-black text-blue-700" id="sales-session-label">Local / Vendedor</p>
-                    <button onclick="configureSalesSession(true)" class="text-[10px] font-black text-slate-500 underline">alterar</button>
-                </div>
-                <div class="text-right">
-                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Faturação Hoje</p>
-                    <p class="text-xl font-black text-slate-500" id="dash-revenue">Gestão de Stocks</p>
                 </div>
             </div>
         </header>
