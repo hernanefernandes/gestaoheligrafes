@@ -4800,6 +4800,7 @@ function printDailyReport(copies = 1) {
                 alert('Colaborador adicionado.');
             }
             saveData();
+            window.HeligrafesScheduleEmployeeSync?.();
             cancelEmployeeEdit();
             renderRH();
         }
@@ -4835,6 +4836,7 @@ function printDailyReport(copies = 1) {
             employee.active = false;
             employee.updatedAt = new Date().toISOString();
             saveData();
+            window.HeligrafesScheduleEmployeeSync?.();
             renderRH();
         }
 
@@ -4845,6 +4847,7 @@ function printDailyReport(copies = 1) {
             employee.active = true;
             employee.updatedAt = new Date().toISOString();
             saveData();
+            window.HeligrafesScheduleEmployeeSync?.();
             renderRH();
         }
 
@@ -4913,8 +4916,13 @@ function printDailyReport(copies = 1) {
 
         async function deleteAttendanceRecord(recordId) {
             if (!await checkPermission('Código para apagar registo de ponto:')) return;
-            if (!confirm('Apagar este registo de ponto?')) return;
-            attendance = attendance.filter(record => String(record.id) !== String(recordId));
+            const record = attendance.find(item => String(item.id) === String(recordId));
+            if (!record || !confirm('Apagar este registo de ponto?')) return;
+            if (record.cloudId && window.heliSupabase && window.HELI_ORG?.id) {
+                const remote = await window.heliSupabase.from('attendance_records').delete().eq('id', record.cloudId).eq('organization_id', window.HELI_ORG.id);
+                if (remote.error) return alert('Não foi possível apagar o registo sincronizado: ' + remote.error.message);
+            }
+            attendance = attendance.filter(item => String(item.id) !== String(recordId));
             saveData();
             renderRH();
         }
