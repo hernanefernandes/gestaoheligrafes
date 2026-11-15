@@ -150,7 +150,7 @@ async function syncCloudAttendanceToLegacy(){
  let local=[];try{local=JSON.parse(localStorage.getItem('multi_attendance_v52')||'[]');}catch(_){}
  if(!Array.isArray(local))local=[];
  const byKey=new Map();
- local.forEach(row=>{const empId=String(row.empId??''),date=String(row.date||'').slice(0,10);if(empId&&date)byKey.set(empId+'|'+date,row);});
+ local.forEach(row=>{const empId=String(row.empId??''),date=typeof getAttendanceDateKey==='function'?getAttendanceDateKey(row):String(row.date||'').slice(0,10);if(empId&&date)byKey.set(empId+'|'+date,row);});
  for(const row of recordsQ.data||[]){
   const legacyId=legacyIdByEmployee.get(row.employee_id),date=String(row.work_date||'').slice(0,10);if(!legacyId||!date)continue;
   const key=legacyId+'|'+date,previous=byKey.get(key)||{},status=row.status==='late'?'ATRASO':row.status==='absent'?'FALTA':row.status==='leave'?'LICENÇA':'PRESENTE';
