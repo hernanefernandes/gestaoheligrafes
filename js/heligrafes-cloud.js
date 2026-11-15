@@ -158,6 +158,32 @@ async function syncLegacyEmployeesToCloud(){
   }
  }
 }
+async function syncLegacyAbsencesToCloud(){
+ if(!window.HELI_USER||!window.HELI_HAS_ROLE?.('owner','admin')||!window.HELI_ORG?.id||window.HELI_OFFLINE_MODE)return;
+ let staff=[],records=[];
+ try{staff=JSON.parse(localStorage.getItem('multi_employees_v52')||'[]');records=JSON.parse(localStorage.getItem('multi_attendance_v52')||'[]');}catch(_){}
+ if(!Array.isArray(staff)||!Array.isArray(records)||!records.length)return;
+ const [employeesQ,linksQ]=await Promise.all([
+  client.from('employees').select('id,legacy_employee_id').eq('organization_id',window.HELI_ORG.id).not('legacy_employee_id','is',null),
+  client.from('employee_locations').select('employee_id,location_id').eq('organization_id',window.HELI_ORG.id)
+ ]);
+ if(employeesQ.error)throw employeesQ.error;if(linksQ.error)throw linksQ.error;
+ const employeeByLegacy=new Map((employeesQ.data||[]).map(row=>[String(row.legacy_employee_id),row]));
+ const locationsByEmployee=new Map();
+ (linksQ.data||[]).forEach(row=>{if(!locationsByEmployee.has(row.employee_id))locationsByEmployee.set(row.employee_id,new Set());locationsByEmployee.get(row.employee_id).add(row.location_id);});
+ const payload=[];
+ for(const record of records){
+  if(record?.status!=='FALTA')continue;
+  const employee=employeeByLegacy.get(String(record.empId??''));if(!employee)continue;
+  const locations=[...(locationsByEmployee.get(employee.id)||[])];if(locations.length!==1)continue;
+  const date=typeof getAttendanceDateKey==='function'?getAttendanceDateKey(record):String(record.date||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;
+  payload.push({organization_id:window.HELI_ORG.id,employee_id:employee.id,location_id:locations[0],work_date:date,status:'absent',check_in:null,check_out:null,notes:'Falta automática sincronizada pelo RH'});
+ }
+ if(!payload.length)return;
+ const result=await client.from('attendance_records').upsert(payload,{onConflict:'employee_id,work_date',ignoreDuplicates:true});
+ if(result.error)throw result.error;
+}
 async function syncCloudAttendanceToLegacy(){
  if(!window.HELI_USER||!window.HELI_HAS_ROLE?.('owner','admin')||!window.HELI_ORG?.id||window.HELI_OFFLINE_MODE)return;
  const [employeesQ,recordsQ]=await Promise.all([
@@ -184,7 +210,7 @@ let employeeSyncTimer=null,employeeSyncRunning=false;
 async function syncLegacyHrWithCloud(){
  if(employeeSyncRunning||!window.HELI_HAS_ROLE?.('owner','admin')||window.HELI_OFFLINE_MODE)return;
  employeeSyncRunning=true;
- try{await syncLegacyEmployeesToCloud();await syncCloudAttendanceToLegacy();}
+ try{await syncLegacyEmployeesToCloud();await syncLegacyAbsencesToCloud();await syncCloudAttendanceToLegacy();}
  catch(error){console.warn('[Heligrafes] Sincronização segura do RH:',error.message||error);}
  finally{employeeSyncRunning=false;}
 }
