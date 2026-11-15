@@ -177,6 +177,19 @@ async function createAccount(){
  finally{const btn=$('ha-account-submit');if(btn){btn.disabled=false;btn.textContent='Criar conta e enviar convite';}}
 }
 
+async function removeEmployeeAccount(uid,profiles){
+ const profile=profiles.find(p=>p.user_id===uid);
+ if(!profile)return status('Conta não encontrada.',true);
+ if(uid===window.HELI_USER?.id)return status('Não pode eliminar a sua própria conta administrativa.',true);
+ if(!confirm('Confirma a remoção do acesso de '+(profile.full_name||profile.email||uid)+'? A conta será desactivada e deixará de conseguir iniciar sessão. O histórico será preservado para auditoria.'))return;
+ try{
+  const result=await db().functions.invoke('delete-employee-account',{body:{user_id:uid,organization_id:org()}});
+  if(result.error)throw result.error;
+  if(result.data?.error)throw new Error(result.data.error);
+  status('Acesso do funcionário removido. O histórico foi preservado.');
+  await loadAccess();await loadAll();
+ }catch(e){status('Não foi possível remover o funcionário: '+(e.message||e),true);}
+}
 async function loadAccess(){
  const results=await Promise.all([
   db().from('user_profiles').select('user_id,full_name,email,is_active').eq('organization_id',org()).order('created_at'),
@@ -198,10 +211,12 @@ async function loadAccess(){
   const a=assignments.find(x=>x.user_id===p.user_id);
   const roleOptions=roles.map(r=>'<option value="'+r.id+'" '+(a?.role_id===r.id?'selected':'')+'>'+esc(r.name)+'</option>').join('');
   const locationOptions='<option value="">Sem local / global (apenas admin)</option>'+locs.map(l=>'<option value="'+l.id+'" '+(a?.location_id===l.id?'selected':'')+'>'+esc(l.name)+'</option>').join('');
-  return '<tr><td><b>'+esc(p.full_name||'Sem nome')+'</b><br><small>'+esc(p.email||'E-mail não sincronizado')+'</small></td><td><select data-role="'+p.user_id+'">'+roleOptions+'</select></td><td><select data-location="'+p.user_id+'">'+locationOptions+'</select></td><td><button data-save-access="'+p.user_id+'">Guardar</button></td></tr>';
+  const protectedAccount=(a&&roles.find(r=>r.id===a.role_id)?.code==='owner')||p.user_id===window.HELI_USER?.id;
+  return '<tr><td><b>'+esc(p.full_name||'Sem nome')+'</b><br><small>'+esc(p.email||'E-mail não sincronizado')+'</small></td><td><select data-role="'+p.user_id+'" '+(protectedAccount?'disabled':'')+'>'+roleOptions+'</select></td><td><select data-location="'+p.user_id+'" '+(protectedAccount?'disabled':'')+'>'+locationOptions+'</select></td><td><button data-save-access="'+p.user_id+'" '+(protectedAccount?'disabled':'')+'>Guardar</button> <button data-remove-account="'+p.user_id+'" '+(protectedAccount?'disabled':'')+' style="background:#b91c1c;color:white;border-radius:7px;padding:7px 10px">Eliminar</button></td></tr>';
  });
  $('ha-access-table').innerHTML=table(['Conta / funcionário','Função','Local autorizado','Acção'],accountRows,'Ainda não existem contas autorizadas.');
  document.querySelectorAll('[data-save-access]').forEach(b=>b.onclick=()=>saveAccess(b.dataset.saveAccess,assignments,roles));
+ document.querySelectorAll('[data-remove-account]').forEach(b=>b.onclick=()=>removeEmployeeAccount(b.dataset.removeAccount,profiles));
 }
 async function reviewAccessRequest(id){
  try{

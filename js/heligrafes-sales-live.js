@@ -2,7 +2,7 @@
 'use strict';
 const db=()=>window.heliSupabase;
 const DB_NAME='heli-sales-offline-v1', STORE='outbox', QUEUE_KEY='heli_sales_queue_v1';
-let idb=null, channel=null, soundEnabled=false, panelOpen=false, employeeSettings=null, notificationPermission=('Notification' in window?Notification.permission:'default');
+let idb=null, channel=null, presenceChannel=null, presenceRoster=[], soundEnabled=false, panelOpen=false, employeeSettings=null, notificationPermission=('Notification' in window?Notification.permission:'default');
 const $=id=>document.getElementById(id);
 const money=n=>(Number(n)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -118,7 +118,7 @@ function open(){if(!window.HELI_HAS_ROLE?.('owner','admin'))return alert('Acesso
 function buildPanel(){
  if($('heli-live-panel'))return;
  const btn=document.createElement('button');btn.id='heli-live-open';btn.type='button';btn.innerHTML='▣ Vendas em tempo real';btn.onclick=()=>open();
- const panel=document.createElement('section');panel.id='heli-live-panel';panel.innerHTML='<header><div><b>Central de vendas</b><small>Grupo Heligrafes · locais associados aos e-mails autorizados</small></div><button id="heli-live-close" type="button" aria-label="Fechar">×</button></header><div class="heli-live-body"><div class="heli-live-cards"><div><small>Total recebido hoje</small><strong id="heli-live-total">—</strong></div><div><small>Vendas sincronizadas</small><strong id="heli-live-count">—</strong></div></div><h3>Movimento por local</h3><div id="heli-live-locations"></div><h3>Vendas por funcionário e local</h3><div id="heli-live-sellers"></div><h3>Últimas vendas</h3><div id="heli-live-rows"></div><div class="heli-live-tools"><button id="heli-live-sound" type="button">Activar alertas sonoros</button><button id="heli-live-notify" type="button">Activar notificações</button></div><p id="heli-live-status" role="status">A ligar...</p></div>';
+ const panel=document.createElement('section');panel.id='heli-live-panel';panel.innerHTML='<header><div><b>Central de vendas</b><small>Grupo Heligrafes · locais associados aos e-mails autorizados</small></div><button id="heli-live-close" type="button" aria-label="Fechar">×</button></header><div class="heli-live-body"><div class="heli-live-cards"><div><small>Total recebido hoje</small><strong id="heli-live-total">—</strong></div><div><small>Vendas sincronizadas</small><strong id="heli-live-count">—</strong></div></div><h3>Estado dos funcionários</h3><div id="heli-live-presence" class="heli-live-presence"><p class="heli-muted">A consultar presenças...</p></div><h3>Movimento por local</h3><div id="heli-live-locations"></div><h3>Vendas por funcionário e local</h3><div id="heli-live-sellers"></div><h3>Últimas vendas</h3><div id="heli-live-rows"></div><div class="heli-live-tools"><button id="heli-live-sound" type="button">Activar alertas sonoros</button><button id="heli-live-notify" type="button">Activar notificações</button></div><p id="heli-live-status" role="status">A ligar...</p></div>';
  document.body.append(btn,panel);btn.style.display='none';
  $('heli-live-close').onclick=()=>{panelOpen=false;panel.classList.remove('open');};
  $('heli-live-sound').onclick=()=>{soundEnabled=!soundEnabled;$('heli-live-sound').textContent=soundEnabled?'Alertas sonoros activos':'Activar alertas sonoros';if(soundEnabled)playAlert();};
@@ -133,9 +133,47 @@ function subscribe(){
   if(panelOpen)loadDashboard();
  }).on('postgres_changes',{event:'*',schema:'public',table:'stock_balances',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{if(panelOpen)loadDashboard();}).on('postgres_changes',{event:'*',schema:'public',table:'products',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{if(panelOpen)loadDashboard();}).subscribe(s=>status(s==='SUBSCRIBED'?'Ligação em tempo real activa':'Realtime: '+s));
 }
+async function loadPresenceRoster(){
+ if(!db()||!window.HELI_HAS_ROLE?.('owner','admin'))return;
+ const [profiles,assignments,roles,locations]=await Promise.all([
+  db().from('user_profiles').select('user_id,full_name,email,is_active').eq('organization_id',window.HELI_ORG.id).order('full_name'),
+  db().from('user_role_assignments').select('user_id,location_id,role_id').eq('organization_id',window.HELI_ORG.id),
+  db().from('roles').select('id,code,name'),
+  db().from('locations').select('id,name').eq('organization_id',window.HELI_ORG.id)
+ ]);
+ for(const q of [profiles,assignments,roles,locations])if(q.error)throw q.error;
+ const rm=new Map((roles.data||[]).map(x=>[x.id,x])),lm=new Map((locations.data||[]).map(x=>[x.id,x.name]));
+ presenceRoster=(profiles.data||[]).filter(p=>p.is_active).map(p=>{const a=(assignments.data||[]).find(x=>x.user_id===p.user_id);return {...p,role:rm.get(a?.role_id)?.name||'Funcionário',location:lm.get(a?.location_id)||'Sem local'};});
+ renderPresence();
+}
+function currentPresenceUsers(){
+ const result=new Map(),state=presenceChannel?.presenceState?.()||{};
+ Object.values(state).flat().forEach(p=>{if(p?.user_id)result.set(p.user_id,p);});
+ return result;
+}
+function renderPresence(){
+ const root=$('heli-live-presence');if(!root)return;
+ const online=currentPresenceUsers();
+ root.innerHTML=presenceRoster.map(p=>{
+  const on=online.has(p.user_id),loc=online.get(p.user_id)?.location_name||p.location;
+  return '<div class="heli-live-presence-row"><span class="heli-live-dot '+(on?'online':'offline')+'"></span><div><b>'+esc(p.full_name||p.email||'Funcionário')+'</b><small>'+esc(p.email||'')+' · '+esc(loc)+' · '+esc(p.role)+'</small></div><strong class="'+(on?'online-text':'offline-text')+'">'+(on?'ONLINE':'OFFLINE')+'</strong></div>';
+ }).join('')||'<p class="heli-muted">Não existem funcionários activos.</p>';
+}
+async function startPresence(){
+ if(!db()||!window.HELI_USER||presenceChannel)return;
+ presenceChannel=db().channel('heli-presence-'+window.HELI_ORG.id,{config:{presence:{key:window.HELI_USER.id}}});
+ presenceChannel.on('presence',{event:'sync'},renderPresence).on('presence',{event:'join'},renderPresence).on('presence',{event:'leave'},renderPresence)
+ .subscribe(async state=>{
+  if(state==='SUBSCRIBED'){
+   await presenceChannel.track({user_id:window.HELI_USER.id,email:window.HELI_USER.email||'',full_name:window.HELI_PROFILE?.full_name||window.HELI_USER.email||'Funcionário',location_id:window.HELI_DEFAULT_LOCATION_ID||null,location_name:window.HELI_DEFAULT_LOCATION_NAME||'Administração',online_at:new Date().toISOString()});
+   if(window.HELI_HAS_ROLE?.('owner','admin'))await loadPresenceRoster();
+  }
+ });
+}
 function installStyles(){
  if($('heli-live-style'))return;
  const st=document.createElement('style');st.id='heli-live-style';st.textContent=`
+.heli-live-presence{display:grid;gap:7px}.heli-live-presence-row{display:flex;align-items:center;gap:9px;background:white;border:1px solid #dce8f5;border-radius:10px;padding:9px 11px}.heli-live-presence-row>div{min-width:0;flex:1}.heli-live-presence-row b{display:block;font-size:12px}.heli-live-presence-row small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#64748b}.heli-live-dot{width:11px;height:11px;flex:0 0 11px;border-radius:50%}.heli-live-dot.online{background:#16a34a;box-shadow:0 0 0 3px #dcfce7}.heli-live-dot.offline{background:#dc2626;box-shadow:0 0 0 3px #fee2e2}.online-text{color:#15803d;font-size:10px}.offline-text{color:#b91c1c;font-size:10px}
 #heli-live-open{position:fixed;right:18px;bottom:18px;z-index:10000;background:#063b8f;color:white;border:0;border-radius:12px;padding:12px 16px;font-weight:800;box-shadow:0 8px 24px #063b8f44;cursor:pointer}
 #heli-live-panel{position:fixed;z-index:10001;right:0;top:0;width:min(520px,100vw);height:100dvh;background:#f7faff;box-shadow:-16px 0 50px #102b4a33;transform:translateX(110%);transition:transform .25s;display:flex;flex-direction:column;color:#17324d}
 #heli-live-panel.open{transform:translateX(0)}
@@ -157,7 +195,9 @@ function installStyles(){
 async function start(){
  if(!window.HELI_USER||!window.HELI_ORG||!db())return;
  installStyles();
- if(window.HELI_HAS_ROLE?.('owner','admin')){buildPanel();subscribe();}
+ if(window.HELI_HAS_ROLE?.('owner','admin')){buildPanel();subscribe();await loadPresenceRoster().catch(e=>console.warn('[Heligrafes] Presenças:',e.message));}
+ await startPresence();
+ if(window.HELI_HAS_ROLE?.('owner','admin'))setInterval(()=>loadPresenceRoster().catch(e=>console.warn('[Heligrafes] Actualização de presenças:',e.message)),30000);
  window.addEventListener('online',flushQueue);
  await flushQueue();
  if('serviceWorker'in navigator){navigator.serviceWorker.register('./service-worker.js').catch(e=>console.warn('[Heligrafes] SW não registado',e));}
