@@ -141,6 +141,7 @@
         .topbar-company { border-left-color: var(--heli-yellow) !important; }
         .topbar-company h4 { color: var(--heli-blue-deep); }
         .topbar-session { border-color: #dbe8f7; background: #fff; box-shadow: 0 8px 22px rgba(20, 59, 110, .08); }
+        .topbar-session #topbar-chat-notifications { flex:0 0 40px; width:40px; height:40px; margin:0 auto; }
         #heli-session-bar .heli-session-profile{display:flex;align-items:center;gap:8px;min-width:0}
         #heli-session-bar .heli-session-avatar-wrap{position:relative;display:flex;width:38px;height:38px;flex:0 0 38px;align-items:center;justify-content:center;border-radius:50%;overflow:hidden;background:#dbeafe;border:2px solid #86efac;box-shadow:0 0 0 3px #16a34a22}
         #heli-session-bar .heli-session-avatar{width:100%;height:100%;object-fit:cover;border-radius:50%}
@@ -365,7 +366,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                     <div id="analog-clock" class="analog-clock hidden" aria-label="Relógio analógico">
                         <span id="clock-hour-hand" class="clock-hand hour"></span><span id="clock-minute-hand" class="clock-hand minute"></span><span id="clock-second-hand" class="clock-hand second"></span><span class="clock-center"></span>
                     </div>
-                    <button id="topbar-chat-notifications" type="button" onclick="openTopbarChatNotifications()" class="relative inline-flex items-center justify-center w-10 h-10 rounded-xl border border-blue-200 bg-white text-blue-800 shadow-sm hover:bg-blue-50 transition" aria-label="Ver notificações do chat" title="Notificações do chat">💬<span id="topbar-chat-unread-badge" class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-600 text-white text-[10px] font-black items-center justify-center">0</span></button>
+                    
                 </div>
                 <div class="topbar-company border-l-2 border-slate-300 pl-6">
                     <h4 class="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -376,8 +377,9 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                     <div id="pending-debts-header" class="mt-2 flex flex-wrap gap-2"></div>
                 </div>
             </div>
-            <div class="topbar-session flex items-center gap-6 bg-white/80 px-6 py-3 rounded-2xl border border-white shadow-sm">
-                <div class="text-right">
+            <div class="topbar-session flex flex-col items-center gap-2 bg-white/80 px-6 py-3 rounded-2xl border border-white shadow-sm">
+                <button id="topbar-chat-notifications" type="button" onclick="openTopbarChatNotifications()" class="relative inline-flex items-center justify-center w-10 h-10 rounded-xl border border-blue-200 bg-white text-blue-800 shadow-sm hover:bg-blue-50 transition" aria-label="Ver notificações do chat" title="Notificações do chat">💬<span id="topbar-chat-unread-badge" class="hidden absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-rose-600 text-white text-[10px] font-black items-center justify-center">0</span></button>
+                <div class="text-center">
                     <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Sessao de Venda</p>
                     <p class="text-sm font-black text-blue-700" id="sales-session-label">Local / Vendedor</p>
                 </div>
