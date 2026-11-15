@@ -143,7 +143,7 @@
         .topbar-session { border-color: #dbe8f7; background: #fff; box-shadow: 0 8px 22px rgba(20, 59, 110, .08); }
         .topbar-session #topbar-chat-notifications { flex:0 0 40px; width:40px; height:40px; margin:0 auto; }
         /* Navegação profissional: linha própria, abaixo dos dados da sessão */
-        .heli-department-nav { grid-column:1 / -1; grid-row:3; order:4; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); align-items:stretch; gap:12px; width:100%; min-width:0; margin:0; padding:12px 0 0; border-top:1px solid #e2eaf4; box-sizing:border-box; }
+        .heli-department-nav { grid-column:1 / -1; grid-row:3; order:4; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); align-items:stretch; gap:12px; width:100%; min-width:0; margin:0; padding:12px 0 0; border-top:1px solid #e2eaf4; box-sizing:border-box; }
         .heli-department-tab { display:flex; flex-direction:row; min-width:0; min-height:48px; align-items:center; justify-content:center; gap:10px; padding:9px 12px; border:1px solid #dbe7f5; border-radius:12px; background:linear-gradient(180deg,#fff,#f8fbff); color:#36516f; font-size:12px; line-height:1.25; font-weight:900; white-space:normal; text-align:center; box-shadow:0 3px 10px rgba(20,59,110,.05); transition:background .18s ease,border-color .18s ease,color .18s ease,transform .18s ease; cursor:pointer; }
         .heli-department-tab > span:first-child { flex:0 0 auto; display:inline-flex; align-items:center; justify-content:center; font-size:19px; }
         .heli-department-tab > span:last-child { min-width:0; }
@@ -432,6 +432,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                 <button type="button" class="heli-department-tab" data-tab="academico" onclick="showTab('academico')"><span>🎓</span><span>Trabalho Académico</span></button>
                 <button type="button" class="heli-department-tab" data-tab="tshirts" onclick="showTab('tshirts')"><span>👕</span><span>T-Shirts &amp; Brindes</span></button>
                 <button type="button" class="heli-department-tab" data-tab="outros" onclick="showTab('outros')"><span>📦</span><span>Papelaria &amp; Decoração</span></button>
+                <button type="button" class="heli-department-tab" data-tab="chat" onclick="showTab('chat')"><span>💬</span><span>Chat Interno</span></button>
             </nav>
         </header>
 
