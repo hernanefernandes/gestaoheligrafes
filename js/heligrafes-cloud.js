@@ -220,15 +220,9 @@ window.HeligrafesScheduleEmployeeSync=scheduleLegacyHrSync;
 let employeeAbsenceRefreshTimer=null;
 function renderEmployeeAbsenceCounter(value){
  const count=Math.max(0,Number(value)||0);
- let card=document.getElementById('heli-employee-absence-counter');
- if(!card){
-  card=document.createElement('aside');
-  card.id='heli-employee-absence-counter';
-  card.setAttribute('role','status');
-  card.style.cssText='position:fixed;right:18px;bottom:18px;z-index:2147483000;min-width:170px;padding:13px 16px;border:1px solid #fecaca;border-radius:15px;background:#fff;box-shadow:0 8px 28px #0f172a20;color:#0f172a;font:600 13px system-ui,sans-serif';
-  card.innerHTML='<div style="font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#64748b">O meu registo</div><div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:5px"><span>Faltas registadas</span><strong id="heli-employee-absence-value" style="font-size:24px;color:#be123c">0</strong></div><div style="margin-top:3px;font-size:10px;color:#94a3b8">Actualização automática</div>';
-  document.body.appendChild(card);
- }
+ const card=document.getElementById('heli-employee-absence-counter');
+ if(!card)return;
+ card.classList.remove('hidden');
  const valueNode=document.getElementById('heli-employee-absence-value');
  if(valueNode)valueNode.textContent=String(count);
 }
