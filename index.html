@@ -158,7 +158,7 @@
         @media(max-width:760px){.clock-control{width:100%;grid-template-columns:minmax(0,1fr) auto}.clock-control #heli-session-bar{grid-column:1/-1;grid-row:3}.app-topbar{align-items:flex-start}.app-topbar>div:first-child{width:100%}}
         .clock-control #digital-clock-box, .clock-control #analog-clock { grid-column: 1; grid-row: 1 / span 2; }
         .clock-control .clock-toggle { grid-column: 2; grid-row: 2; align-self: end; margin-top: 4px; }
-        .clock-control #topbar-chat-notifications { grid-column: 2; grid-row: 1; justify-self: end; }
+        .clock-control #topbar-chat-notifications { grid-column: 1 / -1; grid-row: 4; justify-self: center; }
         .digital-clock-box { position: relative; min-width: 178px; padding: 10px 14px 12px; border-radius: 16px; background: linear-gradient(135deg, var(--heli-blue-deep), var(--heli-blue)); color: white; box-shadow: 0 10px 20px rgba(6,59,143,.22); overflow: hidden; }
         .digital-clock-box::after { content: ''; position: absolute; left: 0; bottom: 0; width: var(--clock-progress, 0%); height: 4px; background: linear-gradient(90deg, var(--heli-yellow), var(--heli-orange)); transition: width .25s linear; }
         .digital-clock-box .vibrant-clock { color: #fff; background: none; -webkit-text-fill-color: initial; animation: none; }
