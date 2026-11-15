@@ -1813,6 +1813,9 @@ window.onload = function() {
             const signed=await db.storage.from('heligrafes-private').createSignedUrl(path,3600);if(signed.error)throw signed.error;
             const me=heliChatRecipients.find(p=>p.user_id===user.id);if(me){me.avatar_path=path;me.avatar_url=signed.data.signedUrl;}
             const own=document.getElementById('chat-own-avatar');if(own)own.src=signed.data.signedUrl;
+            if(window.HELI_PROFILE)window.HELI_PROFILE.avatar_path=path;
+            const sessionAvatar=document.getElementById('heli-session-avatar'),sessionFallback=document.querySelector('#heli-session-bar .heli-session-avatar-fallback');
+            if(sessionAvatar){sessionAvatar.src=signed.data.signedUrl;sessionAvatar.hidden=false;if(sessionFallback)sessionFallback.hidden=true;}
             renderChatMessages();if(status)status.textContent='Fotografia actualizada.';
           }catch(error){console.error('[Chat avatar]',error);if(status)status.textContent='Não foi possível guardar a fotografia: '+(error.message||error);}
           finally{event.target.value='';}
