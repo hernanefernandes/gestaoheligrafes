@@ -158,6 +158,32 @@ async function syncLegacyEmployeesToCloud(){
   }
  }
 }
+async function syncLegacyAbsencesToCloud(){
+ if(!window.HELI_USER||!window.HELI_HAS_ROLE?.('owner','admin')||!window.HELI_ORG?.id||window.HELI_OFFLINE_MODE)return;
+ let staff=[],records=[];
+ try{staff=JSON.parse(localStorage.getItem('multi_employees_v52')||'[]');records=JSON.parse(localStorage.getItem('multi_attendance_v52')||'[]');}catch(_){}
+ if(!Array.isArray(staff)||!Array.isArray(records)||!records.length)return;
+ const [employeesQ,linksQ]=await Promise.all([
+  client.from('employees').select('id,legacy_employee_id').eq('organization_id',window.HELI_ORG.id).not('legacy_employee_id','is',null),
+  client.from('employee_locations').select('employee_id,location_id').eq('organization_id',window.HELI_ORG.id)
+ ]);
+ if(employeesQ.error)throw employeesQ.error;if(linksQ.error)throw linksQ.error;
+ const employeeByLegacy=new Map((employeesQ.data||[]).map(row=>[String(row.legacy_employee_id),row]));
+ const locationsByEmployee=new Map();
+ (linksQ.data||[]).forEach(row=>{if(!locationsByEmployee.has(row.employee_id))locationsByEmployee.set(row.employee_id,new Set());locationsByEmployee.get(row.employee_id).add(row.location_id);});
+ const payload=[];
+ for(const record of records){
+  if(record?.status!=='FALTA')continue;
+  const employee=employeeByLegacy.get(String(record.empId??''));if(!employee)continue;
+  const locations=[...(locationsByEmployee.get(employee.id)||[])];if(locations.length!==1)continue;
+  const date=typeof getAttendanceDateKey==='function'?getAttendanceDateKey(record):String(record.date||'').slice(0,10);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;
+  payload.push({organization_id:window.HELI_ORG.id,employee_id:employee.id,location_id:locations[0],work_date:date,status:'absent',check_in:null,check_out:null,notes:'Falta automática sincronizada pelo RH'});
+ }
+ if(!payload.length)return;
+ const result=await client.from('attendance_records').upsert(payload,{onConflict:'employee_id,work_date',ignoreDuplicates:true});
+ if(result.error)throw result.error;
+}
 async function syncCloudAttendanceToLegacy(){
  if(!window.HELI_USER||!window.HELI_HAS_ROLE?.('owner','admin')||!window.HELI_ORG?.id||window.HELI_OFFLINE_MODE)return;
  const [employeesQ,recordsQ]=await Promise.all([
@@ -184,13 +210,41 @@ let employeeSyncTimer=null,employeeSyncRunning=false;
 async function syncLegacyHrWithCloud(){
  if(employeeSyncRunning||!window.HELI_HAS_ROLE?.('owner','admin')||window.HELI_OFFLINE_MODE)return;
  employeeSyncRunning=true;
- try{await syncLegacyEmployeesToCloud();await syncCloudAttendanceToLegacy();}
+ try{await syncLegacyEmployeesToCloud();await syncLegacyAbsencesToCloud();await syncCloudAttendanceToLegacy();}
  catch(error){console.warn('[Heligrafes] Sincronização segura do RH:',error.message||error);}
  finally{employeeSyncRunning=false;}
 }
 function scheduleLegacyHrSync(){if(!window.HELI_HAS_ROLE?.('owner','admin')||window.HELI_OFFLINE_MODE)return;clearTimeout(employeeSyncTimer);employeeSyncTimer=setTimeout(()=>{void syncLegacyHrWithCloud();},1800);}
 window.HeligrafesScheduleEmployeeSync=scheduleLegacyHrSync;
 
+let employeeAbsenceRefreshTimer=null;
+function renderEmployeeAbsenceCounter(value){
+ const count=Math.max(0,Number(value)||0);
+ let card=document.getElementById('heli-employee-absence-counter');
+ if(!card){
+  card=document.createElement('aside');
+  card.id='heli-employee-absence-counter';
+  card.setAttribute('role','status');
+  card.style.cssText='position:fixed;right:18px;bottom:18px;z-index:2147483000;min-width:170px;padding:13px 16px;border:1px solid #fecaca;border-radius:15px;background:#fff;box-shadow:0 8px 28px #0f172a20;color:#0f172a;font:600 13px system-ui,sans-serif';
+  card.innerHTML='<div style="font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#64748b">O meu registo</div><div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:5px"><span>Faltas registadas</span><strong id="heli-employee-absence-value" style="font-size:24px;color:#be123c">0</strong></div><div style="margin-top:3px;font-size:10px;color:#94a3b8">Actualização automática</div>';
+  document.body.appendChild(card);
+ }
+ const valueNode=document.getElementById('heli-employee-absence-value');
+ if(valueNode)valueNode.textContent=String(count);
+}
+function startEmployeeAbsenceCounter(initialValue){
+ if(window.HELI_HAS_ROLE?.('owner','admin'))return;
+ renderEmployeeAbsenceCounter(initialValue);
+ if(employeeAbsenceRefreshTimer)return;
+ employeeAbsenceRefreshTimer=setInterval(async()=>{
+  if(document.visibilityState==='hidden')return;
+  try{
+   const result=await client.rpc('heli_attendance_bootstrap');
+   if(result.error)throw result.error;
+   renderEmployeeAbsenceCounter(result.data?.absence_count);
+  }catch(error){console.warn('[Heligrafes] Não foi possível actualizar a contagem pessoal de faltas:',error.message||error);}
+ },30000);
+}
 function attendanceGateMarkup(message,showMark,showContinue,showRetry=false){
  const root=el('heli-auth-root');if(!root)return;
  document.documentElement.classList.add('heli-auth-lock');
@@ -203,6 +257,7 @@ async function enforceEmployeeAttendanceBeforeLaunch(){
  try{const result=await client.rpc('heli_attendance_bootstrap');if(result.error)throw result.error;status=result.data||{};}
  catch(error){attendanceGateMarkup(error.message||'Não foi possível validar o seu cadastro RH.',false,false,true);return false;}
  window.HELI_ATTENDANCE_REQUIRED=true;window.HELI_ATTENDANCE_EMPLOYEE=status;
+ startEmployeeAbsenceCounter(status.absence_count);
  if(status.closed||status.check_out){attendanceGateMarkup('A sua saída já foi registada hoje. O acesso operacional está encerrado. Contacte a administração se precisar de reabrir a sessão.',false,false,true);return false;}
  if(status.check_in){window.HELI_ATTENDANCE_ENTERED=true;attendanceGateMarkup('A sua entrada já foi registada às '+formatAttendanceClock(status.check_in)+'. Confirme para aceder à área de trabalho.',false,true);return await new Promise(resolve=>el('heli-attendance-continue')?.addEventListener('click',()=>resolve(true)));}
  attendanceGateMarkup('Antes de entrar na área de trabalho, confirme a sua presença. A hora será registada automaticamente. Limite de pontualidade: 08:30.',true,false);

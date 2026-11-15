@@ -4721,12 +4721,22 @@ async function printDailyReport(copies = 1) {
 
             if (added) {
                 saveData();
+                window.HeligrafesScheduleEmployeeSync?.();
                 if (document.getElementById('rh') && !document.getElementById('rh').classList.contains('hidden')) renderRH();
             }
             return added;
         }
 
         function renderRH() {
+            // O painel RH fica restrito aos três indicadores operacionais solicitados.
+            const rhGrid = document.querySelector('#rh > .grid');
+            if (rhGrid) {
+                Array.from(rhGrid.children).forEach((panel, index) => {
+                    panel.classList.toggle('hidden', index >= 4);
+                });
+                const salaryPeriod = document.getElementById('rh-period');
+                if (salaryPeriod) salaryPeriod.closest('div')?.classList.add('hidden');
+            }
             migrateEmployeeMetadata();
             const period = getRhPeriod();
             const activeEmployees = employees.filter(emp => emp.active !== false);
