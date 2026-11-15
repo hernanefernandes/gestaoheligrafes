@@ -4872,11 +4872,13 @@ async function printDailyReport(copies = 1) {
             const luandaParts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Luanda', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now);
             const luandaValue = key => luandaParts.find(part => part.type === key)?.value || '00';
             const dateKey = `${luandaValue('year')}-${luandaValue('month')}-${luandaValue('day')}`;
+            const luandaHour = Number(luandaValue('hour'));
+            const luandaMinute = Number(luandaValue('minute'));
             const time = `${luandaValue('hour')}:${luandaValue('minute')}`;
             let record = attendance.find(item => String(item.empId) === String(empId) && getAttendanceDateKey(item) === dateKey);
             if (type === 'ENTRADA') {
                 if (record && record.entry && record.entry !== '-') return alert('A entrada já foi registada hoje.');
-                const late = now.getHours() > 8 || (now.getHours() === 8 && now.getMinutes() > 30);
+                const late = luandaHour > 8 || (luandaHour === 8 && luandaMinute > 30);
                 const status = late ? 'ATRASO' : 'PRESENTE';
                 const penalty = late ? 200 : 0;
                 if (record?.cloudId && window.heliSupabase && window.HELI_ORG?.id) {
