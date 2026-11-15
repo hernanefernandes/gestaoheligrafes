@@ -191,6 +191,34 @@ async function syncLegacyHrWithCloud(){
 function scheduleLegacyHrSync(){if(!window.HELI_HAS_ROLE?.('owner','admin')||window.HELI_OFFLINE_MODE)return;clearTimeout(employeeSyncTimer);employeeSyncTimer=setTimeout(()=>{void syncLegacyHrWithCloud();},1800);}
 window.HeligrafesScheduleEmployeeSync=scheduleLegacyHrSync;
 
+let employeeAbsenceRefreshTimer=null;
+function renderEmployeeAbsenceCounter(value){
+ const count=Math.max(0,Number(value)||0);
+ let card=document.getElementById('heli-employee-absence-counter');
+ if(!card){
+  card=document.createElement('aside');
+  card.id='heli-employee-absence-counter';
+  card.setAttribute('role','status');
+  card.style.cssText='position:fixed;right:18px;bottom:18px;z-index:2147483000;min-width:170px;padding:13px 16px;border:1px solid #fecaca;border-radius:15px;background:#fff;box-shadow:0 8px 28px #0f172a20;color:#0f172a;font:600 13px system-ui,sans-serif';
+  card.innerHTML='<div style="font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;color:#64748b">O meu registo</div><div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:5px"><span>Faltas registadas</span><strong id="heli-employee-absence-value" style="font-size:24px;color:#be123c">0</strong></div><div style="margin-top:3px;font-size:10px;color:#94a3b8">Actualização automática</div>';
+  document.body.appendChild(card);
+ }
+ const valueNode=document.getElementById('heli-employee-absence-value');
+ if(valueNode)valueNode.textContent=String(count);
+}
+function startEmployeeAbsenceCounter(initialValue){
+ if(window.HELI_HAS_ROLE?.('owner','admin'))return;
+ renderEmployeeAbsenceCounter(initialValue);
+ if(employeeAbsenceRefreshTimer)return;
+ employeeAbsenceRefreshTimer=setInterval(async()=>{
+  if(document.visibilityState==='hidden')return;
+  try{
+   const result=await client.rpc('heli_attendance_bootstrap');
+   if(result.error)throw result.error;
+   renderEmployeeAbsenceCounter(result.data?.absence_count);
+  }catch(error){console.warn('[Heligrafes] Não foi possível actualizar a contagem pessoal de faltas:',error.message||error);}
+ },30000);
+}
 function attendanceGateMarkup(message,showMark,showContinue,showRetry=false){
  const root=el('heli-auth-root');if(!root)return;
  document.documentElement.classList.add('heli-auth-lock');
@@ -203,6 +231,7 @@ async function enforceEmployeeAttendanceBeforeLaunch(){
  try{const result=await client.rpc('heli_attendance_bootstrap');if(result.error)throw result.error;status=result.data||{};}
  catch(error){attendanceGateMarkup(error.message||'Não foi possível validar o seu cadastro RH.',false,false,true);return false;}
  window.HELI_ATTENDANCE_REQUIRED=true;window.HELI_ATTENDANCE_EMPLOYEE=status;
+ startEmployeeAbsenceCounter(status.absence_count);
  if(status.closed||status.check_out){attendanceGateMarkup('A sua saída já foi registada hoje. O acesso operacional está encerrado. Contacte a administração se precisar de reabrir a sessão.',false,false,true);return false;}
  if(status.check_in){window.HELI_ATTENDANCE_ENTERED=true;attendanceGateMarkup('A sua entrada já foi registada às '+formatAttendanceClock(status.check_in)+'. Confirme para aceder à área de trabalho.',false,true);return await new Promise(resolve=>el('heli-attendance-continue')?.addEventListener('click',()=>resolve(true)));}
  attendanceGateMarkup('Antes de entrar na área de trabalho, confirme a sua presença. A hora será registada automaticamente. Limite de pontualidade: 08:30.',true,false);
