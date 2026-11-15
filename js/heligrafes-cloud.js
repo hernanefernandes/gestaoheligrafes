@@ -399,7 +399,7 @@ async function boot(){
  const flow=new URLSearchParams(window.location.search).get('flow');
  const hashType=new URLSearchParams(window.location.hash.replace(/^#/,'')).get('type');
  if(session?.user&&(flow==='invite'||hashType==='invite'||hashType==='recovery')){showSetPassword(session.user);return;}
- if(session?.user)await launch(session.user);else message('Introduza o e-mail e a palavra-passe para entrar.');
+ if(session?.user){sessionStorage.removeItem('heli_login_refresh_user_v1');await launch(session.user);}else message('Introduza o e-mail e a palavra-passe para entrar.');
 }
 window.checkPermission=async function(text){if(!identity)return false;const ok=window.HELI_HAS_ROLE('owner','admin');if(!ok)alert(text||'Não tem permissão para esta operação.');return ok;};
 originalOnload=window.onload;window.onload=null;boot();
