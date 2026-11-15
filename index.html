@@ -4683,7 +4683,7 @@ async function printDailyReport(copies = 1) {
 
         function updateRhMarkerClock() {
             const target = document.getElementById('rh-marker-clock');
-            if (target) target.innerText = new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            if (target) target.innerText = new Date().toLocaleTimeString('pt-PT', { timeZone: 'Africa/Luanda', hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
 
         function startRhMarkerClock() {
@@ -4869,8 +4869,10 @@ async function printDailyReport(copies = 1) {
             const employee = employees.find(emp => String(emp.id) === String(empId));
             if (!employee || employee.active === false) return alert('Selecione um colaborador ativo.');
             const now = new Date();
-            const dateKey = getLocalDateKey(now);
-            const time = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+            const luandaParts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Africa/Luanda', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(now);
+            const luandaValue = key => luandaParts.find(part => part.type === key)?.value || '00';
+            const dateKey = `${luandaValue('year')}-${luandaValue('month')}-${luandaValue('day')}`;
+            const time = `${luandaValue('hour')}:${luandaValue('minute')}`;
             let record = attendance.find(item => String(item.empId) === String(empId) && getAttendanceDateKey(item) === dateKey);
             if (type === 'ENTRADA') {
                 if (record && record.entry && record.entry !== '-') return alert('A entrada já foi registada hoje.');
