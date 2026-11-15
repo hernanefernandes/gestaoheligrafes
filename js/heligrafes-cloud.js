@@ -132,7 +132,7 @@ async function launch(user){
  if(started)return;
  try{
   await loadIdentity(user);
-  if(!window.HELI_OFFLINE_MODE&&prepareUserLocalState(user,window.HELI_HAS_ROLE('owner','admin'))){window.location.reload();return;}
+  if(prepareUserLocalState(user,window.HELI_HAS_ROLE('owner','admin'))){window.location.reload();return;}
   if(!window.HELI_OFFLINE_MODE){const login=await client.rpc('heli_register_login');if(login.error)console.warn('[Heligrafes] Registo de entrada:',login.error.message);else window.HELI_LOGIN_SESSION_ID=login.data;}
   const restored=window.HELI_OFFLINE_MODE?false:await restoreCloudState();if(restored){window.location.reload();return;}
   ['multi_ops_github_config_v52','multi_ops_github_sha_v52','multi_chat_github_config_v52','multi_chat_github_sha_v52'].forEach(k=>localStorage.removeItem(k));
