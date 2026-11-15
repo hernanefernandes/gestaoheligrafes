@@ -202,6 +202,31 @@
         .product-image-preview img { width: 100%; height: 100%; object-fit: cover; }
         .vr-selected-product { display: none; align-items: center; gap: 10px; margin-bottom: 12px; padding: 10px 12px; border: 1px solid #d6e9f8; border-radius: 12px; background: #f6fbff; }
         .vr-selected-product.visible { display: flex; }
+        .vr-product-select-wrap{position:relative;width:100%;z-index:20}
+        .vr-product-input-row{display:flex;gap:7px;align-items:center}
+        .vr-product-input-row #vr-product{min-width:0;flex:1}
+        .vr-product-picker-toggle{width:46px;height:48px;flex:0 0 46px;border:1px solid #bfdbfe;border-radius:13px;background:linear-gradient(145deg,#eff6ff,#dbeafe);color:#0756a4;font-size:21px;font-weight:900;box-shadow:0 3px 10px #1d4ed812;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+        .vr-product-picker-toggle:hover{transform:translateY(-2px);box-shadow:0 7px 16px #1d4ed82b;background:#dbeafe}
+        .vr-product-picker{position:absolute;top:calc(100% + 9px);left:0;right:0;z-index:1000;padding:12px;border:1px solid #cbdff5;border-radius:17px;background:rgba(255,255,255,.98);box-shadow:0 18px 48px rgba(15,40,75,.2);transform-origin:top center;animation:vrPickerIn .18s ease-out;backdrop-filter:blur(12px)}
+        .vr-product-picker[hidden]{display:none}
+        @keyframes vrPickerIn{from{opacity:0;transform:translateY(-7px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+        .vr-product-picker-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;color:#173c68}
+        .vr-product-picker-head strong{display:block;font-size:13px;font-weight:900}
+        .vr-product-picker-head small{display:block;margin-top:2px;font-size:10px;color:#7b91aa}
+        .vr-product-picker-head button{width:28px;height:28px;border-radius:9px;background:#f1f5f9;color:#64748b;font-weight:900}
+        .vr-product-picker-search{width:100%;height:39px;padding:0 12px;border:1px solid #d7e3f1;border-radius:10px;background:#f8fbff;outline:none;font-size:12px;margin-bottom:10px}
+        .vr-product-picker-search:focus{border-color:#60a5fa;box-shadow:0 0 0 3px #dbeafe}
+        .vr-product-picker-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:260px;overflow:auto;padding:2px}
+        .vr-product-picker-card{display:flex;align-items:center;gap:9px;min-width:0;padding:9px;border:1px solid #e1eaf4;border-radius:12px;background:#fff;text-align:left;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
+        .vr-product-picker-card:hover{transform:translateY(-2px);border-color:#8dbcf0;box-shadow:0 6px 14px rgba(30,90,150,.1)}
+        .vr-product-picker-card:active{transform:scale(.98)}
+        .vr-product-picker-thumb{width:36px;height:36px;flex:0 0 36px;display:grid;place-items:center;overflow:hidden;border-radius:10px;background:#eff6ff;color:#3974ad;font-size:17px}
+        .vr-product-picker-thumb img{width:100%;height:100%;object-fit:cover}
+        .vr-product-picker-info{min-width:0;display:block}
+        .vr-product-picker-info strong{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#243f60}
+        .vr-product-picker-info small{display:block;margin-top:3px;font-size:10px;color:#0b8b63;font-weight:800}
+        .vr-product-picker-empty{grid-column:1/-1;padding:18px;text-align:center;color:#7b91aa;font-size:12px}
+        @media(max-width:640px){.vr-product-picker-grid{grid-template-columns:1fr;max-height:230px}.vr-product-picker{left:-2px;right:-2px}.vr-product-picker-toggle{width:43px;flex-basis:43px}}
         @media (max-width: 640px) { .pos-payment-strip { align-items: stretch; flex-direction: column; } .pos-payment-strip select { width: 100%; min-width: 0; } .pos-cart-scroll { max-height: 360px; } }
         @media (max-width: 1024px) { .app-sidebar { width: 15.5rem; } .app-topbar { padding: 16px 22px; } .workspace-scroll { padding: 22px; } }
 
@@ -535,8 +560,21 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                             <div class="grid grid-cols-12 gap-4 items-end">
                                 <div class="col-span-12 md:col-span-5">
                                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">📦 Produto</label>
-                                    <input list="vr-products" id="vr-product" onchange="findProductPrice()" class="w-full h-12 px-4 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-blue-500 transition-all" placeholder="Produto...">
-                                    <datalist id="vr-products"></datalist>
+                                    <div class="vr-product-select-wrap">
+                                        <div class="vr-product-input-row">
+                                            <input list="vr-products" id="vr-product" onchange="findProductPrice()" class="w-full h-12 px-4 bg-slate-50 border-2 border-slate-200 rounded-xl font-bold outline-none focus:border-blue-500 transition-all" placeholder="Pesquisar ou escolher produto...">
+                                            <button type="button" id="vr-product-picker-toggle" class="vr-product-picker-toggle" onclick="toggleVRProductPicker()" aria-label="Mostrar produtos" aria-expanded="false" title="Escolher produto">▦</button>
+                                        </div>
+                                        <datalist id="vr-products"></datalist>
+                                        <div id="vr-product-picker" class="vr-product-picker" aria-label="Escolher produto" hidden>
+                                            <div class="vr-product-picker-head">
+                                                <div><strong>Escolher produto</strong><small id="vr-product-picker-count">Catálogo disponível</small></div>
+                                                <button type="button" onclick="toggleVRProductPicker(false)" aria-label="Fechar lista">✕</button>
+                                            </div>
+                                            <input id="vr-product-picker-search" class="vr-product-picker-search" type="search" placeholder="Pesquisar no catálogo..." autocomplete="off">
+                                            <div id="vr-product-picker-grid" class="vr-product-picker-grid"></div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="col-span-4 md:col-span-3">
                                     <label class="block text-xs font-bold text-slate-500 uppercase mb-1 ml-1">💰 Preço</label>
@@ -3097,11 +3135,98 @@ window.HeligrafesApplyCloudProduct = function(p) {
     if (typeof renderProductSalesManagement === 'function') renderProductSalesManagement();
     if (!item.img) void HeligrafesFindProductImage(item);
 };
-function updateProductDatalist() { 
-    const dl = document.getElementById('vr-products'); 
-    dl.innerHTML = ''; 
-    products.forEach(p => dl.innerHTML += `<option value="${p.name}">`); 
+function updateProductDatalist() {
+    const dl = document.getElementById('vr-products');
+    if (dl) {
+        dl.innerHTML = '';
+        products.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.name;
+            dl.appendChild(option);
+        });
+    }
+    if (document.getElementById('vr-product-picker') && !document.getElementById('vr-product-picker').hidden) {
+        renderVRProductPicker(document.getElementById('vr-product-picker-search')?.value || '');
+    }
 }
+function toggleVRProductPicker(force) {
+    const panel = document.getElementById('vr-product-picker');
+    const toggle = document.getElementById('vr-product-picker-toggle');
+    const search = document.getElementById('vr-product-picker-search');
+    if (!panel) return;
+    const open = typeof force === 'boolean' ? force : panel.hidden;
+    panel.hidden = !open;
+    if (toggle) {
+        toggle.setAttribute('aria-expanded', String(open));
+        toggle.textContent = open ? '✕' : '▦';
+    }
+    if (open) {
+        renderVRProductPicker('');
+        if (search) { search.value = ''; setTimeout(() => search.focus(), 30); }
+    }
+}
+function renderVRProductPicker(query) {
+    const grid = document.getElementById('vr-product-picker-grid');
+    const count = document.getElementById('vr-product-picker-count');
+    if (!grid) return;
+    const term = String(query || '').trim().toLocaleLowerCase('pt');
+    const available = products.filter(p => p && p.name && (!term || String(p.name).toLocaleLowerCase('pt').includes(term)))
+        .sort((a,b) => String(a.name).localeCompare(String(b.name),'pt'));
+    if (count) count.textContent = available.length + (available.length === 1 ? ' produto' : ' produtos');
+    grid.replaceChildren();
+    if (!available.length) {
+        const empty = document.createElement('div');
+        empty.className = 'vr-product-picker-empty';
+        empty.textContent = 'Nenhum produto encontrado.';
+        grid.appendChild(empty);
+        return;
+    }
+    available.forEach(product => {
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'vr-product-picker-card';
+        card.setAttribute('aria-label','Seleccionar '+product.name);
+        const thumb = document.createElement('span');
+        thumb.className = 'vr-product-picker-thumb';
+        const imageSrc = getSafeProductImageSrc(product.img);
+        if (imageSrc) {
+            const img = document.createElement('img');
+            img.src = imageSrc; img.alt = ''; img.loading = 'lazy';
+            thumb.appendChild(img);
+        } else thumb.textContent = '📦';
+        const info = document.createElement('span');
+        info.className = 'vr-product-picker-info';
+        const title = document.createElement('strong'); title.textContent = product.name;
+        const price = document.createElement('small');
+        price.textContent = (Number(product.price)||0).toLocaleString('pt-AO') + ' Kz';
+        info.append(title,price);
+        card.append(thumb,info);
+        card.addEventListener('click', () => {
+            const input = document.getElementById('vr-product');
+            if (input) {
+                input.value = product.name;
+                findProductPrice();
+                toggleVRProductPicker(false);
+                input.focus();
+            }
+        });
+        grid.appendChild(card);
+    });
+}
+document.addEventListener('input', event => {
+    if (event.target?.id === 'vr-product-picker-search') renderVRProductPicker(event.target.value);
+});
+document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+        const panel = document.getElementById('vr-product-picker');
+        if (panel && !panel.hidden) toggleVRProductPicker(false);
+    }
+});
+document.addEventListener('click', event => {
+    const wrap = document.querySelector('.vr-product-select-wrap');
+    const panel = document.getElementById('vr-product-picker');
+    if (wrap && panel && !panel.hidden && !wrap.contains(event.target)) toggleVRProductPicker(false);
+});
 
 const heliProductImageJobs = new Map();
 async function HeligrafesFindProductImage(product) {
