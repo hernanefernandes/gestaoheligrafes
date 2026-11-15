@@ -280,6 +280,52 @@
         .workspace-scroll input:focus,.workspace-scroll select:focus,.workspace-scroll textarea:focus { border-color:var(--heli-sky); box-shadow:0 0 0 4px rgba(31,174,229,.12); outline:none; }
         .app-topbar { backdrop-filter:blur(18px); }
         @media (prefers-reduced-motion:reduce) { .app-sidebar *, .workspace-scroll button, .app-topbar button, .workspace-scroll .glass-panel { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+        /* Responsividade transversal dos módulos administrativos */
+        .workspace-scroll .tab-content{min-width:0;width:100%;max-width:100%}
+        .workspace-scroll .tab-content .overflow-x-auto{max-width:100%;-webkit-overflow-scrolling:touch}
+        .workspace-scroll .tab-content table{max-width:100%}
+        @media(min-width:761px) and (max-width:1100px){
+          .workspace-scroll{padding:20px}
+          .workspace-scroll .tab-content .glass-panel{min-width:0}
+          .workspace-scroll .tab-content .grid.grid-cols-12{column-gap:14px}
+        }
+        @media(max-width:760px){
+          .workspace-scroll .tab-content{overflow-x:hidden}
+          .workspace-scroll .tab-content .glass-panel{min-width:0}
+          .workspace-scroll .tab-content .flex.flex-wrap{gap:10px}
+          .workspace-scroll .tab-content h2{font-size:1.35rem;line-height:1.3}
+          .workspace-scroll .tab-content h3{line-height:1.35}
+          .workspace-scroll .tab-content button{min-height:40px}
+          .workspace-scroll .tab-content .overflow-x-auto{overflow-x:auto}
+        }
+        /* Painel administrativo adaptável: telefone, tablet e computador */
+        #stocks .glass-panel,#gestao-produtos .glass-panel{min-width:0}
+        #stocks .overflow-x-auto,#gestao-produtos .overflow-x-auto{max-width:100%;-webkit-overflow-scrolling:touch}
+        #stocks input,#stocks select,#stocks button,#gestao-produtos button{max-width:100%;touch-action:manipulation}
+        #stocks .product-image-upload{display:grid;grid-template-columns:88px minmax(0,1fr);gap:14px;align-items:center}
+        #stocks .product-image-upload>div{min-width:0}
+        #stocks .product-image-upload input[type=file]{max-width:100%}
+        @media(max-width:1024px){
+          #stocks>.grid{gap:16px}
+          #stocks .glass-panel{padding:16px}
+          #stocks .product-image-upload{grid-template-columns:76px minmax(0,1fr)}
+        }
+        @media(max-width:760px){
+          #stocks .grid.grid-cols-12>[class*="col-span-"]{grid-column:1/-1}
+          #stocks .glass-panel{border-radius:15px;padding:14px}
+          #stocks h3{font-size:1rem;line-height:1.35}
+          #stocks .product-image-upload{grid-template-columns:64px minmax(0,1fr);gap:10px}
+          #stocks .product-image-preview{width:64px;height:64px}
+          #stocks .big-input{min-height:44px;font-size:14px}
+          #stocks #heli-product-publish-btn,#stocks #btn-add-prod{min-height:46px}
+          #stocks .overflow-x-auto{overflow-x:auto}
+          #gestao-produtos .grid.grid-cols-12>[class*="col-span-"]{grid-column:1/-1}
+        }
+        @media(max-width:420px){
+          #stocks .product-image-upload{grid-template-columns:1fr}
+          #stocks .product-image-preview{width:76px;height:76px}
+          #stocks .flex.flex-col.sm\\:flex-row{align-items:stretch}
+        }
         @media (max-width: 760px) { .app-sidebar { width: 4.75rem; } .app-brand { margin: 12px 8px; padding: 6px; } .app-brand-logo { height: 48px; padding: 3px; } .app-sidebar nav { padding: 12px 8px; } .app-sidebar nav > p, .app-sidebar .sidebar-link span:last-child, .app-sidebar > div:last-child > div > div { display: none; } .app-sidebar .sidebar-link { justify-content: center; padding: 12px 4px; } .app-sidebar .sidebar-link span:first-child { margin-right: 0; } .app-sidebar > div:last-child { padding: 8px; } .app-sidebar > div:last-child > div { justify-content: center; padding: 10px; } .app-topbar { padding: 12px 14px; } .topbar-company { display: none; } .topbar-session { padding: 8px 10px; gap: 10px !important; } .topbar-session > div:nth-child(2) { display: none; } .clock-toggle button { padding: 5px 6px; font-size: 9px; } .workspace-scroll { padding: 16px; } .pos-screen .pos-heading { align-items: flex-start; gap: 12px; } .pos-screen .pos-heading > div:last-child { flex-wrap: wrap; justify-content: flex-end; } }
     </style>
 <style id="heli-supabase-auth-style">
@@ -937,7 +983,16 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                                     <div class="grid grid-cols-2 gap-3 mt-1"><input type="number" id="new-prod-cost" placeholder="Custo (Kz)" class="big-input" oninput="suggestPrice()"><input type="number" id="new-prod-price" placeholder="Venda (Kz)" class="big-input"></div>
                                     <div class="text-xs text-blue-600 mt-2 font-medium" id="price-suggestion">💡 Digite o custo para ver a sugestão.</div>
                                 </div>
-                                <input type="number" id="new-prod-qty" placeholder="Stock Inicial" class="big-input">
+                                <input type="number" id="new-prod-qty" placeholder="Stock inicial por local" min="0" step="1" inputmode="numeric" class="big-input">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Stock mínimo</label><input type="number" id="new-prod-min-stock" min="0" step="1" inputmode="numeric" value="0" placeholder="Alerta de reposição" class="big-input"></div>
+                                    <div><label class="block text-[10px] font-black uppercase text-slate-500 mb-1">Stock máximo</label><input type="number" id="new-prod-max-stock" min="0" step="1" inputmode="numeric" value="0" placeholder="Limite recomendado" class="big-input"></div>
+                                </div>
+                                <div class="rounded-xl border border-indigo-100 bg-indigo-50 p-3">
+                                    <label for="heli-product-stock-scope" class="block text-[10px] font-black uppercase tracking-wide text-indigo-700 mb-1">Onde lançar o stock inicial</label>
+                                    <select id="heli-product-stock-scope" class="big-input bg-white"><option value="*">Geral — todos os locais</option></select>
+                                    <p class="mt-1 text-[10px] text-indigo-700">A quantidade inicial indicada será lançada em cada local seleccionado. O produto fica disponível no catálogo geral.</p>
+                                </div>
                                 <div class="product-image-upload">
                                     <div id="new-prod-image-preview" class="product-image-preview" aria-label="Pré-visualização da imagem do produto">📦</div>
                                     <div class="min-w-0">
@@ -948,7 +1003,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                                         <input type="hidden" id="new-prod-image-data" value="">
                                     </div>
                                 </div>
-                                <div class="flex gap-2"><button id="btn-add-prod" onclick="addNewProduct()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">CRIAR PRODUTO</button><button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-4 bg-slate-200 text-slate-600 font-bold rounded-xl">✕</button></div>
+                                <div class="flex flex-col sm:flex-row gap-2"><button id="btn-add-prod" onclick="stageProductDraft()" class="w-full py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition">＋ ADICIONAR À LISTA</button><button id="btn-cancel-edit" onclick="cancelEdit()" class="hidden px-4 py-3 bg-slate-200 text-slate-600 font-bold rounded-xl">✕</button></div>
                             </div>
                         </div>
                     </div>
@@ -966,10 +1021,31 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                         </div>
                     </div>
                     <div class="col-span-12">
+                        <div class="glass-panel p-5 bg-white shadow-xl border border-indigo-100">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+                                <div><h3 class="text-lg font-black text-slate-800">📋 Lista de produtos a lançar</h3><p class="text-xs text-slate-500">Prepare vários produtos, reveja preços e quantidades e publique quando estiver tudo correcto.</p></div>
+                                <span id="heli-product-draft-count" class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-black text-indigo-700">0 produtos</span>
+                            </div>
+                            <div class="overflow-x-auto rounded-xl border border-slate-200">
+                                <table class="w-full min-w-[850px] text-left text-xs">
+                                    <thead class="bg-slate-100 text-slate-500 uppercase"><tr><th class="p-3">Produto</th><th class="p-3">Custo</th><th class="p-3">Venda</th><th class="p-3">Stock inicial/local</th><th class="p-3">Mínimo</th><th class="p-3">Máximo</th><th class="p-3">Estado</th><th class="p-3">Acção</th></tr></thead>
+                                    <tbody id="heli-product-draft-body" class="divide-y divide-slate-100"><tr><td colspan="8" class="p-4 text-center text-slate-400">Ainda não adicionou produtos à lista.</td></tr></tbody>
+                                </table>
+                            </div>
+                            <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <p class="text-[11px] text-slate-500">Confirme o destino no campo «Onde lançar o stock inicial» antes de publicar.</p>
+                                <div class="flex flex-col sm:flex-row gap-2">
+                                    <button type="button" onclick="clearProductDrafts()" class="rounded-xl border border-slate-300 px-4 py-3 text-xs font-black text-slate-600">LIMPAR LISTA</button>
+                                    <button type="button" id="heli-product-publish-btn" onclick="publishProductDrafts()" class="rounded-xl bg-emerald-600 px-5 py-3 text-xs font-black text-white shadow-lg hover:bg-emerald-700">PUBLICAR PRODUTOS E STOCK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-12">
                         <div class="glass-panel p-6 bg-white shadow-xl">
                             <h3 class="text-lg font-bold text-slate-700 mb-4">Inventário com Análise de Lucro</h3>
                             <div class="overflow-x-auto h-96 rounded-xl border border-slate-200">
-                                <table class="w-full text-left text-sm"><thead class="bg-slate-100 text-slate-500 uppercase font-bold text-xs sticky top-0"><tr><th class="p-3">Produto</th><th class="p-3">Custo</th><th class="p-3">Venda</th><th class="p-3 text-emerald-600">Lucro Est.</th><th class="p-3">Stock</th><th class="p-3 text-right">Ação</th></tr></thead><tbody id="stock-list-body" class="divide-y divide-slate-100"></tbody></table>
+                                <table class="w-full min-w-[900px] text-left text-sm"><thead class="bg-slate-100 text-slate-500 uppercase font-bold text-xs sticky top-0"><tr><th class="p-3">Produto</th><th class="p-3">Custo</th><th class="p-3">Venda</th><th class="p-3 text-emerald-600">Lucro Est.</th><th class="p-3">Stock mínimo</th><th class="p-3">Stock máximo</th><th class="p-3">Stock disponível</th><th class="p-3 text-right">Acção</th></tr></thead><tbody id="stock-list-body" class="divide-y divide-slate-100"></tbody></table>
                             </div>
                         </div>
                     </div>
@@ -1232,6 +1308,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
 
 window.onload = function() {
     initSalesSession();
+    refreshProductStockScopeOptions();
     initDailyPaymentMethod();
     migrateEmployeeMetadata();
     startRhMarkerClock();
@@ -1427,7 +1504,7 @@ window.onload = function() {
             if (!name) throw new Error('Este produto antigo não tem nome para associação ao catálogo online.');
 
             const db = window.heliSupabase;
-            const exact = await db.from('products').select('id,name,sale_price,cost_price,track_stock')
+            const exact = await db.from('products').select('id,name,sale_price,cost_price,track_stock,min_stock,max_stock')
                 .eq('organization_id', window.HELI_ORG.id).eq('is_active', true)
                 .eq('name', name).limit(2);
             if (exact.error) throw exact.error;
@@ -1435,7 +1512,7 @@ window.onload = function() {
 
             if (matches.length === 0) {
                 const escaped = name.replace(/[\\%_]/g, ch => '\\' + ch);
-                const partial = await db.from('products').select('id,name,sale_price,cost_price,track_stock')
+                const partial = await db.from('products').select('id,name,sale_price,cost_price,track_stock,min_stock,max_stock')
                     .eq('organization_id', window.HELI_ORG.id).eq('is_active', true)
                     .ilike('name', '%' + escaped + '%').limit(2);
                 if (partial.error) throw partial.error;
@@ -1453,6 +1530,8 @@ window.onload = function() {
             if (cloudProduct.sale_price !== null && cloudProduct.sale_price !== undefined) product.price = Number(cloudProduct.sale_price);
             if (cloudProduct.cost_price !== null && cloudProduct.cost_price !== undefined) product.cost = Number(cloudProduct.cost_price);
             if (cloudProduct.track_stock !== null && cloudProduct.track_stock !== undefined) product.track_stock = cloudProduct.track_stock;
+            if (cloudProduct.min_stock !== null && cloudProduct.min_stock !== undefined) { product.min_stock = Number(cloudProduct.min_stock); product.replenishmentLevel = Number(cloudProduct.min_stock); }
+            if (cloudProduct.max_stock !== null && cloudProduct.max_stock !== undefined) product.max_stock = Number(cloudProduct.max_stock);
             localStorage.setItem('multi_products_v52', JSON.stringify(products));
             return product.id;
         }
@@ -3215,7 +3294,7 @@ window.HeligrafesApplyCloudProduct = function(p) {
     if (!p || !p.id || !p.name) return;
     const index = products.findIndex(x => String(x.id) === String(p.id) || normalizeProductName(x.name) === normalizeProductName(p.name));
     const previous = index >= 0 ? products[index] : null;
-    const item = { id: p.id, name: p.name, price: Number(p.sale_price || 0), cost: Number(p.cost_price || 0), stock: Number(previous?.stock || 0), track_stock: p.track_stock !== false, replenishmentLevel: Number(p.min_stock || 0), category: p.category || 'Geral', img: p.image_path || previous?.img || '' };
+    const item = { id: p.id, name: p.name, price: Number(p.sale_price || 0), cost: Number(p.cost_price || 0), stock: Number(previous?.stock || 0), min_stock: Number(p.min_stock || 0), max_stock: Number(p.max_stock || 0), track_stock: p.track_stock !== false, replenishmentLevel: Number(p.min_stock || 0), category: p.category || 'Geral', img: p.image_path || previous?.img || '' };
     if (index >= 0) products[index] = { ...previous, ...item };
     else products.push(item);
     localStorage.setItem('multi_products_v52', JSON.stringify(products));
@@ -4106,9 +4185,12 @@ async function printDailyReport(copies = 1) {
                 const price = Number(p.price) || 0;
                 const cost = Number(p.cost) || 0;
                 const stock = Number(p.stock) || 0;
+                const minStock = Number(p.min_stock ?? p.minStock) || 0;
+                const maxStock = Number(p.max_stock ?? p.maxStock) || 0;
                 const profit = price - cost;
                 const margin = price > 0 ? ((profit / price) * 100).toFixed(0) : 0;
-                list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name || 'Produto sem nome'))}</span></div></td><td class="p-3 text-slate-500">${cost.toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-blue-600 font-bold">${stock}</td><td class="p-3 text-right flex justify-end gap-2"><button type="button" onclick="editProduct(${Number(p.id)})" class="text-blue-500 text-xs font-bold">✏️ EDITAR</button><button type="button" onclick="deleteProduct(${Number(p.id)})" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
+                const productId = String(p.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+                list.innerHTML += `<tr class="border-b hover:bg-slate-50"><td class="p-3"><div class="flex items-center gap-3">${productImageMarkup(p.img, p.name)}<span class="font-medium text-slate-700">${escapeChatHtml(String(p.name || 'Produto sem nome'))}</span></div></td><td class="p-3 text-slate-500">${cost.toLocaleString()} Kz</td><td class="p-3 font-bold text-slate-700">${price.toLocaleString()} Kz</td><td class="p-3 text-emerald-600 font-bold">+${profit.toLocaleString()} Kz <span class="text-[10px] bg-emerald-100 px-1 rounded">${margin}%</span></td><td class="p-3 text-amber-700 font-bold">${minStock}</td><td class="p-3 text-slate-600 font-bold">${maxStock || '—'}</td><td class="p-3 text-blue-600 font-bold">${stock}</td><td class="p-3 text-right whitespace-nowrap"><button type="button" onclick="editProduct('${productId}')" class="text-blue-500 text-xs font-bold mr-2">✏️ EDITAR</button><button type="button" onclick="deleteProduct('${productId}')" class="text-red-500 text-xs font-bold">🗑️</button></td></tr>`;
             });
         }
 
@@ -4257,7 +4339,7 @@ async function printDailyReport(copies = 1) {
                 }).subscribe();
             void syncHeliLocationViews();
         }
-        window.addEventListener('heli-auth-ready',startHeliLocationViews);
+        window.addEventListener('heli-auth-ready',() => { refreshProductStockScopeOptions(); startHeliLocationViews(); });
 
         function editProduct(id) {
             const prod = products.find(p => String(p.id) === String(id));
@@ -4267,6 +4349,8 @@ async function printDailyReport(copies = 1) {
             document.getElementById('new-prod-cost').value = Number(prod.cost) || 0;
             document.getElementById('new-prod-price').value = Number(prod.price) || 0;
             document.getElementById('new-prod-qty').value = Number(prod.stock) || 0;
+            document.getElementById('new-prod-min-stock').value = Number(prod.min_stock ?? prod.minStock) || 0;
+            document.getElementById('new-prod-max-stock').value = Number(prod.max_stock ?? prod.maxStock) || 0;
             const source = prod.img || '';
             document.getElementById('new-prod-img').value = /^data:image\\//i.test(source) ? '' : source;
             document.getElementById('new-prod-image-data').value = source;
@@ -4289,6 +4373,8 @@ async function printDailyReport(copies = 1) {
                 name: String(product.name || '').trim(),
                 sale_price: Number(product.price) || 0,
                 cost_price: Number(product.cost) || 0,
+                min_stock: Math.max(0, Number(product.min_stock ?? product.minStock) || 0),
+                max_stock: Math.max(0, Number(product.max_stock ?? product.maxStock) || 0),
                 track_stock: true,
                 is_active: true,
                 updated_at: new Date().toISOString()
@@ -4315,13 +4401,15 @@ async function printDailyReport(copies = 1) {
             return q.data.id;
         }
 
-        async function heliSetInitialProductStock(productId, quantity, unitCost) {
+        async function heliSetInitialProductStock(productId, quantity, unitCost, targetLocationId = null) {
             if (!(Number(quantity) > 0)) return;
             const allowed = window.HELI_ALLOWED_LOCATIONS || [];
             const locationName = getCurrentBusinessLocation();
-            const location = allowed.find(l => String(l.name).toLowerCase() === String(locationName).toLowerCase())
-                || (window.HELI_DEFAULT_LOCATION_ID ? allowed.find(l => l.id === window.HELI_DEFAULT_LOCATION_ID) : null);
-            if (!location) throw new Error('Produto criado nos cinco locais com stock zero. Seleccione um local autorizado para lançar o stock inicial.');
+            const location = targetLocationId
+                ? allowed.find(l => l.id === targetLocationId)
+                : allowed.find(l => String(l.name).toLowerCase() === String(locationName).toLowerCase())
+                    || (window.HELI_DEFAULT_LOCATION_ID ? allowed.find(l => l.id === window.HELI_DEFAULT_LOCATION_ID) : null);
+            if (!location) throw new Error('Não foi possível identificar o local de destino do stock.');
             const result = await window.heliSupabase.rpc('heli_admin_restock', {
                 p_product_id: productId,
                 p_location_id: location.id,
@@ -4337,9 +4425,13 @@ async function printDailyReport(copies = 1) {
             const priceRaw = document.getElementById('new-prod-price').value;
             const costRaw = document.getElementById('new-prod-cost').value;
             const stockRaw = document.getElementById('new-prod-qty').value;
+            const minStockRaw = document.getElementById('new-prod-min-stock').value;
+            const maxStockRaw = document.getElementById('new-prod-max-stock').value;
             const price = Number(priceRaw);
             const cost = costRaw === '' ? 0 : Number(costRaw);
             const stock = stockRaw === '' ? 0 : Number(stockRaw);
+            const minStock = minStockRaw === '' ? 0 : Number(minStockRaw);
+            const maxStock = maxStockRaw === '' ? 0 : Number(maxStockRaw);
             const idx = products.findIndex(p => String(p.id) === String(id));
 
             if (idx === -1) return alert('Não foi possível actualizar: produto não encontrado.');
@@ -4347,10 +4439,12 @@ async function printDailyReport(copies = 1) {
             if (priceRaw === '' || !Number.isFinite(price) || price < 0) return alert('Informe um preço de venda válido.');
             if (!Number.isFinite(cost) || cost < 0) return alert('O preço de compra não pode ser negativo.');
             if (!Number.isInteger(stock) || stock < 0) return alert('A quantidade em stock deve ser um número inteiro igual ou superior a zero.');
+            if (!Number.isInteger(minStock) || minStock < 0) return alert('O stock mínimo deve ser um número inteiro igual ou superior a zero.');
+            if (!Number.isInteger(maxStock) || maxStock < 0 || (maxStock > 0 && maxStock < minStock)) return alert('O stock máximo deve ser zero ou igual/superior ao stock mínimo.');
 
             const current = products[idx];
             const imgDraft = getProductDraftImage();
-            const updated = { ...current, name, price, cost, stock, img: imgDraft || current.img || '', updatedAt: new Date().toISOString() };
+            const updated = { ...current, name, price, cost, stock, min_stock: minStock, max_stock: maxStock, img: imgDraft || current.img || '', updatedAt: new Date().toISOString() };
             try {
                 const cloudId = await heliSaveProductToCloud(updated);
                 if (Number(stock) !== Number(current.stock)) {
@@ -4386,16 +4480,134 @@ async function printDailyReport(copies = 1) {
             document.getElementById('new-prod-cost').value = '';
             document.getElementById('new-prod-price').value = '';
             document.getElementById('new-prod-qty').value = '';
+            document.getElementById('new-prod-min-stock').value = '0';
+            document.getElementById('new-prod-max-stock').value = '0';
+            document.getElementById('heli-product-stock-scope').value = '*';
             document.getElementById('new-prod-img').value = '';
             document.getElementById('new-prod-image-data').value = '';
             document.getElementById('new-prod-image-file').value = '';
             setProductImagePreview('');
             const btn = document.getElementById('btn-add-prod');
-            btn.innerHTML = 'CRIAR PRODUTO';
+            btn.innerHTML = '＋ ADICIONAR À LISTA';
             btn.classList.remove('bg-emerald-600');
             btn.classList.add('bg-blue-600');
-            btn.onclick = addNewProduct;
+            btn.onclick = stageProductDraft;
             document.getElementById('btn-cancel-edit').classList.add('hidden');
+        }
+
+        // Lista temporária para registo em lote de produtos e distribuição de stock por local.
+        const heliProductDrafts = [];
+        function refreshProductStockScopeOptions() {
+            const select = document.getElementById('heli-product-stock-scope');
+            if (!select) return;
+            const locations = (window.HELI_ALLOWED_LOCATIONS || []).filter(location => location && location.id);
+            const current = select.value || '*';
+            select.innerHTML = '<option value="*">Geral — todos os locais</option>' + locations.map(location =>
+                '<option value="' + String(location.id).replace(/[^a-zA-Z0-9-]/g, '') + '">' + escapeChatHtml(location.name || location.code || 'Local') + '</option>'
+            ).join('');
+            select.value = current === '*' || locations.some(location => location.id === current) ? current : '*';
+        }
+        function renderProductDrafts() {
+            const body = document.getElementById('heli-product-draft-body');
+            const count = document.getElementById('heli-product-draft-count');
+            if (!body || !count) return;
+            count.textContent = heliProductDrafts.length + (heliProductDrafts.length === 1 ? ' produto' : ' produtos');
+            if (!heliProductDrafts.length) {
+                body.innerHTML = '<tr><td colspan="8" class="p-4 text-center text-slate-400">Ainda não adicionou produtos à lista.</td></tr>';
+                return;
+            }
+            body.innerHTML = heliProductDrafts.map((item, index) => {
+                const state = item._cloudId ? 'Parcial — continuar' : 'Pendente';
+                return '<tr><td class="p-3 font-bold text-slate-700">' + escapeChatHtml(item.name) + '</td><td class="p-3">' + item.cost.toLocaleString() + ' Kz</td><td class="p-3">' + item.price.toLocaleString() + ' Kz</td><td class="p-3">' + item.stock + '</td><td class="p-3">' + item.min_stock + '</td><td class="p-3">' + (item.max_stock || '—') + '</td><td class="p-3 text-xs font-bold ' + (item._cloudId ? 'text-amber-700' : 'text-slate-500') + '">' + state + '</td><td class="p-3"><button type="button" onclick="removeProductDraft(' + index + ')" class="font-bold text-rose-600">Remover</button></td></tr>';
+            }).join('');
+        }
+        function stageProductDraft() {
+            if (!window.HELI_HAS_ROLE?.('owner','admin')) return alert('Apenas o administrador pode preparar e lançar produtos.');
+            const name = document.getElementById('new-prod-name').value.trim();
+            const priceRaw = document.getElementById('new-prod-price').value;
+            const costRaw = document.getElementById('new-prod-cost').value;
+            const stockRaw = document.getElementById('new-prod-qty').value;
+            const minRaw = document.getElementById('new-prod-min-stock').value;
+            const maxRaw = document.getElementById('new-prod-max-stock').value;
+            const price = Number(priceRaw), cost = costRaw === '' ? 0 : Number(costRaw);
+            const stock = stockRaw === '' ? 0 : Number(stockRaw);
+            const minStock = minRaw === '' ? 0 : Number(minRaw);
+            const maxStock = maxRaw === '' ? 0 : Number(maxRaw);
+            if (!name) return alert('Informe o nome do produto.');
+            if (priceRaw === '' || !Number.isFinite(price) || price < 0) return alert('Informe um preço de venda válido.');
+            if (!Number.isFinite(cost) || cost < 0) return alert('O preço de compra não pode ser negativo.');
+            if (![stock,minStock,maxStock].every(Number.isInteger) || stock < 0 || minStock < 0 || maxStock < 0 || (maxStock > 0 && maxStock < minStock)) return alert('Verifique stock inicial, mínimo e máximo. Use números inteiros não negativos; o máximo deve ser zero ou superior ao mínimo.');
+            if (products.some(product => String(product.name || '').trim().toLowerCase() === name.toLowerCase()) || heliProductDrafts.some(item => item.name.toLowerCase() === name.toLowerCase())) return alert('Já existe um produto com este nome no inventário ou na lista.');
+            heliProductDrafts.push({ name, price, cost, stock, min_stock: minStock, max_stock: maxStock, img: getProductDraftImage(), _doneLocations: [] });
+            renderProductDrafts();
+            cancelEdit();
+            alert('Produto adicionado à lista. Pode preparar o próximo.');
+        }
+        function removeProductDraft(index) {
+            if (!Number.isInteger(index) || !heliProductDrafts[index]) return;
+            if (heliProductDrafts[index]._cloudId) return alert('Este produto já foi criado na cloud. Termine a distribuição pendente antes de o remover para evitar duplicações.');
+            heliProductDrafts.splice(index, 1);
+            renderProductDrafts();
+        }
+        function clearProductDrafts() {
+            if (!heliProductDrafts.length) return;
+            if (!confirm('Limpar todos os produtos ainda não publicados?')) return;
+            if (heliProductDrafts.some(item => item._cloudId)) return alert('Há produtos já criados na cloud. Conclua a distribuição pendente antes de limpar a lista.');
+            heliProductDrafts.splice(0, heliProductDrafts.length);
+            renderProductDrafts();
+        }
+        async function publishProductDrafts() {
+            if (!window.HELI_HAS_ROLE?.('owner','admin')) return alert('Apenas o administrador pode publicar produtos.');
+            if (!heliProductDrafts.length) return alert('Adicione pelo menos um produto à lista.');
+            if (!window.heliSupabase || !window.HELI_ORG?.id) return alert('A ligação à cloud não está disponível. Nenhum produto foi publicado.');
+            refreshProductStockScopeOptions();
+            const scope = document.getElementById('heli-product-stock-scope')?.value || '*';
+            const locations = (window.HELI_ALLOWED_LOCATIONS || []).filter(location => location && location.id);
+            const targets = scope === '*' ? locations : locations.filter(location => location.id === scope);
+            if (!targets.length) return alert('Não foi possível identificar os locais de destino. Actualize a sessão e tente novamente.');
+            const button = document.getElementById('heli-product-publish-btn');
+            if (button) { button.disabled = true; button.textContent = 'A PUBLICAR…'; }
+            let completed = 0, failures = [];
+            try {
+                for (const item of heliProductDrafts) {
+                    try {
+                        if (!item._cloudId) {
+                            item._targetLocationIds = targets.map(location => location.id);
+                            item._cloudId = await heliSaveProductToCloud(item);
+                            item._doneLocations = item._doneLocations || [];
+                        } else if (JSON.stringify(item._targetLocationIds || []) !== JSON.stringify(targets.map(location => location.id))) {
+                            throw new Error('O destino escolhido foi alterado durante uma publicação parcial. Seleccione o mesmo destino usado inicialmente para concluir sem duplicar stock.');
+                        }
+                        for (const location of targets) {
+                            if (item._doneLocations.includes(location.id)) continue;
+                            if (item.stock > 0) await heliSetInitialProductStock(item._cloudId, item.stock, item.cost, location.id);
+                            item._doneLocations.push(location.id);
+                        }
+                        const existingIndex = products.findIndex(product => String(product.id) === String(item._cloudId));
+                        const localQuantity = targets.some(location => String(location.name).toLowerCase() === String(getCurrentBusinessLocation()).toLowerCase()) ? item.stock : (existingIndex >= 0 ? Number(products[existingIndex].stock) || 0 : 0);
+                        const saved = { id: item._cloudId, name: item.name, price: item.price, cost: item.cost, stock: localQuantity, min_stock: item.min_stock, max_stock: item.max_stock, img: item.img, track_stock: true, updatedAt: new Date().toISOString() };
+                        if (existingIndex >= 0) products[existingIndex] = { ...products[existingIndex], ...saved };
+                        else products.push(saved);
+                        completed++;
+                    } catch (error) {
+                        failures.push(item.name + ': ' + (error.message || error));
+                        break;
+                    }
+                }
+                if (completed) {
+                    saveData(); renderStockList(); updateRestockSelect(); updateProductDatalist(); updateStockSelect();
+                    if (typeof syncHeliLocationViews === 'function') await syncHeliLocationViews();
+                }
+                for (let i = heliProductDrafts.length - 1; i >= 0; i--) {
+                    const item = heliProductDrafts[i];
+                    if (item._cloudId && (item._doneLocations || []).length === targets.length) heliProductDrafts.splice(i, 1);
+                }
+                renderProductDrafts();
+                if (failures.length) alert('Foram concluídos ' + completed + ' produto(s). A distribuição foi interrompida para evitar duplicações. Corrija a ligação/permissões e publique novamente para concluir o produto pendente.\n' + failures.join('\n'));
+                else alert(completed + ' produto(s) publicado(s) com sucesso em ' + targets.length + ' local(is).');
+            } finally {
+                if (button) { button.disabled = false; button.textContent = 'PUBLICAR PRODUTOS E STOCK'; }
+            }
         }
 
         async function addNewProduct() {
