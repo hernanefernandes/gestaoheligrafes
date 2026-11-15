@@ -152,10 +152,10 @@ function currentPresenceUsers(){
  return result;
 }
 function renderPresence(){
- const root=$('heli-live-presence');if(!root)return;
  const online=currentPresenceUsers();
  window.HeligrafesIsOnline=id=>online.has(id);
  window.HeligrafesRefreshChatPresence?.();
+ const root=$('heli-live-presence');if(!root)return;
  root.innerHTML=presenceRoster.map(p=>{
   const on=online.has(p.user_id),loc=online.get(p.user_id)?.location_name||p.location,name=p.full_name||p.email||'Funcionário',initials=name.trim().split(/\\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'F';
   const avatar=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="" class="heli-live-avatar">':'<span class="heli-live-avatar-fallback">'+esc(initials)+'</span>';
