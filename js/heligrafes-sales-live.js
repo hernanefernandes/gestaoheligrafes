@@ -154,6 +154,7 @@ function currentPresenceUsers(){
 function renderPresence(){
  const online=currentPresenceUsers();
  window.HeligrafesIsOnline=id=>online.has(id);
+ window.HeligrafesPresenceInfo=id=>online.get(id)||null;
  window.HeligrafesRefreshChatPresence?.();
  const root=$('heli-live-presence');if(!root)return;
  root.innerHTML=presenceRoster.map(p=>{
