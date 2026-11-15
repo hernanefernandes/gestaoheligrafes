@@ -43,7 +43,7 @@ function showLogin(t=''){
 }
 async function loadIdentity(user){
  try{
-  const p=await client.from('user_profiles').select('user_id,organization_id,full_name,email,is_active').eq('user_id',user.id).maybeSingle();
+  const p=await client.from('user_profiles').select('user_id,organization_id,full_name,email,avatar_path,is_active').eq('user_id',user.id).maybeSingle();
   if(p.error)throw p.error;if(!p.data){const rq=await client.from('employee_access_requests').select('status').eq('user_id',user.id).maybeSingle();if(rq.data?.status==='pending')throw new Error('Pedido enviado. Aguarde a aprovação do administrador.');if(rq.data?.status==='rejected')throw new Error('Pedido rejeitado. Contacte o administrador.');throw new Error('A conta ainda não foi autorizada pelo administrador.');}if(!p.data.is_active)throw new Error('A conta não está activa no Grupo Heligrafes.');
   const a=await client.from('user_role_assignments').select('role_id,location_id,organization_id').eq('user_id',user.id).eq('organization_id',p.data.organization_id);
   if(a.error)throw a.error;if(!a.data?.length)throw new Error('A conta ainda não tem função atribuída.');
@@ -108,11 +108,17 @@ async function restoreCloudState(){
 }
 function setCloudStatus(t){const n=el('heli-cloud-status');if(n)n.textContent=t;}
 function scheduleCloudSave(){if(!identity||!window.HELI_CAN_CLOUD_SYNC())return;clearTimeout(timer);timer=setTimeout(()=>pushCloudState(),1500);}
-function addSessionBar(){
+async function addSessionBar(){
  if(el('heli-session-bar'))return;
  const bar=document.createElement('div');bar.id='heli-session-bar';
- bar.innerHTML='<span class="heli-session-user">'+esc(identity.profile.full_name||identity.user.email)+'</span><span class="heli-session-time">Entrada: '+new Date().toLocaleString("pt-PT",{timeZone:"Africa/Luanda"})+'</span><span id="heli-cloud-status">Cloud ligada</span><button id="heli-signout" type="button">Terminar sessão</button>';
+ const fullName=identity.profile.full_name||identity.user.email||'Funcionário';
+ const initials=fullName.trim().split(/\\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'F';
+ bar.innerHTML='<div class="heli-session-profile"><span class="heli-session-avatar-wrap"><span class="heli-session-avatar-fallback">'+esc(initials)+'</span><img id="heli-session-avatar" class="heli-session-avatar" alt="Foto de perfil de '+esc(fullName)+'" hidden></span><span class="heli-session-user-wrap"><span class="heli-session-user">'+esc(fullName)+'</span><span class="heli-session-online"><i></i> ONLINE</span></span></div><span class="heli-session-time">Entrada: '+new Date().toLocaleString("pt-PT",{timeZone:"Africa/Luanda"})+'</span><span id="heli-cloud-status">Cloud ligada</span><button id="heli-signout" type="button">Terminar sessão</button>';
  document.body.appendChild(bar);
+ const avatar=el('heli-session-avatar'),fallback=bar.querySelector('.heli-session-avatar-fallback');
+ if(identity.profile.avatar_path&&avatar){
+  try{const signed=await client.storage.from('heligrafes-private').createSignedUrl(identity.profile.avatar_path,3600);if(!signed.error&&signed.data?.signedUrl){avatar.src=signed.data.signedUrl;avatar.hidden=false;if(fallback)fallback.hidden=true;}}catch(err){console.warn('[Heligrafes] Foto de perfil indisponível:',err.message);}
+ }
  el('heli-signout').addEventListener('click',async()=>{if(!confirm('Pretende terminar a sessão?'))return;await client.auth.signOut();window.location.reload();});
 }
 let productChannel=null;
