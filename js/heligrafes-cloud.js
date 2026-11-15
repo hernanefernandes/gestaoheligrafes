@@ -210,9 +210,15 @@ async function enforceEmployeeAttendanceBeforeLaunch(){
   const button=el('heli-attendance-mark');
   button?.addEventListener('click',async()=>{
    button.disabled=true;button.textContent='A registar presença...';
-   const result=await client.rpc('heli_mark_attendance',{p_action:'IN'});
-   if(result.error){const feedback=el('heli-attendance-feedback');if(feedback)feedback.textContent=result.error.message||'Não foi possível registar a entrada.';button.disabled=false;button.textContent='☀️ TENTAR NOVAMENTE';return;}
-   window.HELI_ATTENDANCE_ENTERED=true;window.HELI_ATTENDANCE_EMPLOYEE=result.data||status;resolve(true);
+   try{
+    const result=await client.rpc('heli_mark_attendance',{p_action:'IN'});
+    if(result.error)throw result.error;
+    window.HELI_ATTENDANCE_ENTERED=true;window.HELI_ATTENDANCE_EMPLOYEE=result.data||status;resolve(true);
+   }catch(error){
+    const feedback=el('heli-attendance-feedback');
+    if(feedback)feedback.textContent=error?.message||'Não foi possível registar a entrada. Verifique a ligação e tente novamente.';
+    button.disabled=false;button.textContent='☀️ TENTAR NOVAMENTE';
+   }
   });
  });
 }
