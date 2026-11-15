@@ -3768,15 +3768,13 @@ function printDailyReport(copies = 1) {
         }
         async function selectHeliLocationView(kind,id) {
             heliLocationViews.selected=id;renderHeliLocationTabs();
-            if(id!=='*'&&kind==='stock'){
+            if(id!=='*'){
                 const loc=heliViewLocations().find(x=>x.id===id),select=document.getElementById('business-location');
                 if(loc&&select){
                     const option=[...select.options].find(o=>[loc.name,loc.code].some(v=>String(v||'').toLowerCase()===String(o.value).toLowerCase()));
                     if(option){select.value=option.value;saveBusinessLocation();}
                 }
-                await syncHeliLocationViews();
-                await syncCurrentLocationStocks();
-                renderStockList();
+                if(kind==='stock'){await syncHeliLocationViews();await syncCurrentLocationStocks();renderStockList();}
             } else if(kind==='stock') {
                 await syncHeliLocationViews();
             }
