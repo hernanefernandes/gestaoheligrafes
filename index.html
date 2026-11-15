@@ -280,6 +280,24 @@
         .workspace-scroll input:focus,.workspace-scroll select:focus,.workspace-scroll textarea:focus { border-color:var(--heli-sky); box-shadow:0 0 0 4px rgba(31,174,229,.12); outline:none; }
         .app-topbar { backdrop-filter:blur(18px); }
         @media (prefers-reduced-motion:reduce) { .app-sidebar *, .workspace-scroll button, .app-topbar button, .workspace-scroll .glass-panel { animation:none!important; transition:none!important; scroll-behavior:auto!important; } }
+        /* Responsividade transversal dos módulos administrativos */
+        .workspace-scroll .tab-content{min-width:0;width:100%;max-width:100%}
+        .workspace-scroll .tab-content .overflow-x-auto{max-width:100%;-webkit-overflow-scrolling:touch}
+        .workspace-scroll .tab-content table{max-width:100%}
+        @media(min-width:761px) and (max-width:1100px){
+          .workspace-scroll{padding:20px}
+          .workspace-scroll .tab-content .glass-panel{min-width:0}
+          .workspace-scroll .tab-content .grid.grid-cols-12{column-gap:14px}
+        }
+        @media(max-width:760px){
+          .workspace-scroll .tab-content{overflow-x:hidden}
+          .workspace-scroll .tab-content .glass-panel{min-width:0}
+          .workspace-scroll .tab-content .flex.flex-wrap{gap:10px}
+          .workspace-scroll .tab-content h2{font-size:1.35rem;line-height:1.3}
+          .workspace-scroll .tab-content h3{line-height:1.35}
+          .workspace-scroll .tab-content button{min-height:40px}
+          .workspace-scroll .tab-content .overflow-x-auto{overflow-x:auto}
+        }
         /* Painel administrativo adaptável: telefone, tablet e computador */
         #stocks .glass-panel,#gestao-produtos .glass-panel{min-width:0}
         #stocks .overflow-x-auto,#gestao-produtos .overflow-x-auto{max-width:100%;-webkit-overflow-scrolling:touch}
@@ -4525,14 +4543,14 @@ async function printDailyReport(copies = 1) {
         }
         function removeProductDraft(index) {
             if (!Number.isInteger(index) || !heliProductDrafts[index]) return;
-            if (heliProductDrafts[index]._cloudId && (heliProductDrafts[index]._doneLocations || []).length) return alert('Este produto já foi publicado parcialmente. Termine a distribuição antes de o remover para evitar duplicar lançamentos.');
+            if (heliProductDrafts[index]._cloudId) return alert('Este produto já foi criado na cloud. Termine a distribuição pendente antes de o remover para evitar duplicações.');
             heliProductDrafts.splice(index, 1);
             renderProductDrafts();
         }
         function clearProductDrafts() {
             if (!heliProductDrafts.length) return;
             if (!confirm('Limpar todos os produtos ainda não publicados?')) return;
-            if (heliProductDrafts.some(item => item._cloudId)) return alert('Há produtos já publicados parcialmente. Conclua a distribuição pendente antes de limpar a lista.');
+            if (heliProductDrafts.some(item => item._cloudId)) return alert('Há produtos já criados na cloud. Conclua a distribuição pendente antes de limpar a lista.');
             heliProductDrafts.splice(0, heliProductDrafts.length);
             renderProductDrafts();
         }
@@ -4552,8 +4570,11 @@ async function printDailyReport(copies = 1) {
                 for (const item of heliProductDrafts) {
                     try {
                         if (!item._cloudId) {
+                            item._targetLocationIds = targets.map(location => location.id);
                             item._cloudId = await heliSaveProductToCloud(item);
                             item._doneLocations = item._doneLocations || [];
+                        } else if (JSON.stringify(item._targetLocationIds || []) !== JSON.stringify(targets.map(location => location.id))) {
+                            throw new Error('O destino escolhido foi alterado durante uma publicação parcial. Seleccione o mesmo destino usado inicialmente para concluir sem duplicar stock.');
                         }
                         for (const location of targets) {
                             if (item._doneLocations.includes(location.id)) continue;
