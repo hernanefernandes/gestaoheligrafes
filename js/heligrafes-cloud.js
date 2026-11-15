@@ -370,7 +370,7 @@ async function launch(user){
 }
 async function signIn(event){
  event.preventDefault();const btn=el('heli-auth-submit');btn.disabled=true;btn.textContent='A autenticar...';message('A validar as credenciais...');
- try{const q=await client.auth.signInWithPassword({email:el('heli-auth-email').value.trim(),password:el('heli-auth-password').value});if(q.error)throw q.error;await launch(q.data.user);}
+ try{const q=await client.auth.signInWithPassword({email:el('heli-auth-email').value.trim(),password:el('heli-auth-password').value});if(q.error)throw q.error;sessionStorage.setItem('heli_login_refresh_user_v1',q.data.user.id);const refreshUrl=new URL(window.location.href);refreshUrl.searchParams.set('__heli_login_refresh',String(Date.now()));window.location.replace(refreshUrl.toString());return;}
  catch(err){message(err.message||'Falha no início de sessão.',true);}
  finally{if(btn.isConnected){btn.disabled=false;btn.textContent='Entrar';}}
 }
