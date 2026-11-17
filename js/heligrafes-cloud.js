@@ -135,7 +135,7 @@ async function syncLegacyEmployeesToCloud(){
    if(byName.length===1)employee=byName[0];
   }
   if(!employee){
-   const payload={organization_id:window.HELI_ORG.id,legacy_employee_id:legacyId,full_name:name,role_title:String(emp.role||'').trim()||null,phone:String(emp.phone||'').trim()||null,is_active:active};
+   const payload={organization_id:window.HELI_ORG.id,legacy_employee_id:legacyId,full_name:name,is_active:active};
    const inserted=await client.from('employees').upsert(payload,{onConflict:'organization_id,legacy_employee_id'}).select('id,legacy_employee_id,full_name,role_title,phone,linked_user_id,is_active').single();
    if(inserted.error)throw inserted.error;
    employee=inserted.data;existingRows.push(employee);
@@ -143,20 +143,19 @@ async function syncLegacyEmployeesToCloud(){
    const patch={};
    if(!employee.legacy_employee_id)patch.legacy_employee_id=legacyId;
    if(employee.full_name!==name)patch.full_name=name;
-   if(String(emp.role||'').trim()&&employee.role_title!==String(emp.role).trim())patch.role_title=String(emp.role).trim();
-   if(String(emp.phone||'').trim()&&employee.phone!==String(emp.phone).trim())patch.phone=String(emp.phone).trim();
-   if(employee.is_active!==active)patch.is_active=active;
+      if(employee.is_active!==active)patch.is_active=active;
    if(Object.keys(patch).length){
     const updated=await client.from('employees').update(patch).eq('id',employee.id).eq('organization_id',window.HELI_ORG.id).select('id,legacy_employee_id,full_name,role_title,phone,linked_user_id,is_active').single();
     if(updated.error)throw updated.error;
     Object.assign(employee,updated.data);
    }
   }
-  synced.push(employee);
+  synced.push({employee,sourcePhone:emp.phone||''});
  }
- for(const employee of synced){
+ for(const syncedEmployee of synced){
+  const employee=syncedEmployee.employee;
   if(!employee.is_active)continue;
-  const nameKey=normalizeStaffName(employee.full_name),phoneKey=normalizeStaffPhone(employee.phone);
+  const nameKey=normalizeStaffName(employee.full_name),phoneKey=normalizeStaffPhone(syncedEmployee.sourcePhone);
   const byName=profiles.filter(profile=>normalizeStaffName(profile.full_name)===nameKey);
   const byPhone=phoneKey?profiles.filter(profile=>normalizeStaffPhone(profile.phone)===phoneKey):[];
   let profile=null;
