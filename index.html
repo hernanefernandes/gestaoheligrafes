@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="heli-build" content="20261117-02">
+    <meta name="heli-build" content="20261117-03">
     <script id="heli-service-worker-register">
     (function(){
       'use strict';
@@ -1608,12 +1608,30 @@ window.onload = function() {
             const inferredRepo = inferGitHubRepoFromUrl() || 'hernanefernandes/gestaoheligrafes';
             const chatConfig = githubChatConfig || {};
             const cfg = operationalSyncConfig || {};
-            if (repo) repo.value = cfg.repo || chatConfig.repo || inferredRepo;
-            if (branch) branch.value = cfg.branch || chatConfig.branch || 'main';
-            if (path) path.value = cfg.path || 'data/heligrafes-operacional.json';
-            if (token) token.value = cfg.token || chatConfig.token || '';
+            const configuredRepo = String(cfg.repo || '').trim().toLowerCase();
+            const configuredPath = String(cfg.path || '').trim().replace(/^\/+/, '');
+            const currentRepo = String(inferredRepo || '').trim().toLowerCase();
+
+            // Este caminho antigo já não existe neste repositório. Remover apenas
+            // a configuração de sincronização obsoleta, sem tocar nos dados locais.
+            if (configuredRepo === currentRepo &&
+                configuredPath === 'data/heligrafes-operacional.json') {
+                operationalSyncConfig = null;
+                operationalSyncSha = '';
+                localStorage.removeItem('multi_ops_github_config_v52');
+                localStorage.removeItem('multi_ops_github_sha_v52');
+                setOperationalStatus('Sincronização antiga desactivada: o ficheiro configurado já foi removido.');
+            }
+
+            if (repo) repo.value = operationalSyncConfig?.repo || chatConfig.repo || inferredRepo;
+            if (branch) branch.value = operationalSyncConfig?.branch || chatConfig.branch || 'main';
+            if (path) path.value = operationalSyncConfig?.path || 'data/heligrafes-operacional.json';
+            if (token) token.value = operationalSyncConfig?.token || chatConfig.token || '';
             updateSalesSessionLabel();
-            setOperationalStatus(operationalSyncConfig ? `Ligado a ${operationalSyncConfig.repo}.` : 'Sincronizacao desligada.');
+            if (operationalSyncConfig) setOperationalStatus(`Ligado a ${operationalSyncConfig.repo}.`);
+            else if (!(configuredRepo === currentRepo && configuredPath === 'data/heligrafes-operacional.json')) {
+                setOperationalStatus('Sincronizacao desligada.');
+            }
         }
 
         function saveOperationalSyncConfig() {
@@ -1669,8 +1687,13 @@ window.onload = function() {
                 const res = await fetch(url, { headers: { Authorization: `Bearer ${operationalSyncConfig.token}`, Accept: 'application/vnd.github+json' } });
                 if (res.status === 404) {
                     operationalSyncSha = '';
+                    operationalSyncConfig = null;
                     localStorage.removeItem('multi_ops_github_sha_v52');
-                    if (manual) await syncOperationalToGitHub(true);
+                    localStorage.removeItem('multi_ops_github_config_v52');
+                    if (operationalSyncTimer) clearInterval(operationalSyncTimer);
+                    operationalSyncTimer = null;
+                    setOperationalStatus('Sincronização desactivada: o ficheiro configurado não existe. Não será recriado automaticamente.');
+                    if (manual) alert('O ficheiro configurado já não existe. A sincronização foi desactivada para evitar tentativas repetidas ou recriação automática.');
                     return;
                 }
                 if (!res.ok) throw new Error(`GitHub respondeu ${res.status}`);
@@ -2450,8 +2473,13 @@ window.onload = function() {
                 });
                 if (res.status === 404) {
                     githubChatSha = '';
+                    githubChatConfig = null;
                     localStorage.removeItem('multi_chat_github_sha_v52');
-                    if (manual) await syncChatToGitHub(true);
+                    localStorage.removeItem('multi_chat_github_config_v52');
+                    if (githubChatSyncTimer) clearInterval(githubChatSyncTimer);
+                    githubChatSyncTimer = null;
+                    setGitHubChatStatus('Ligação desactivada: o ficheiro configurado já não existe. Não será recriado automaticamente.');
+                    if (manual) alert('O ficheiro do chat já não existe. A ligação foi desactivada para evitar tentativas repetidas ou recriação automática.');
                     return;
                 }
                 if (!res.ok) throw new Error(`GitHub respondeu ${res.status}`);
@@ -5282,9 +5310,9 @@ function selectAcademicPage(value) {
 
 <!-- Autenticação obrigatória: scripts carregados após o código principal -->
 <script src="./js/supabase-config.js"></script>
-<script src="./js/heligrafes-cloud.js?v=20261117-01"></script>
-<script src="./js/heligrafes-sales-live.js?v=20261117-02"></script>
-<script src="./js/heligrafes-admin.js?v=20261115-16"></script>
+<script src="./js/heligrafes-cloud.js?v=20261117-03"></script>
+<script src="./js/heligrafes-sales-live.js?v=20261117-03"></script>
+<script src="./js/heligrafes-admin.js?v=20261117-03"></script>
 <script id="heli-auto-update-checker">
 (function(){
   'use strict';
