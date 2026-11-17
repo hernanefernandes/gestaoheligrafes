@@ -2058,7 +2058,6 @@ window.onload = function() {
             if(recipient){recipient.innerHTML='<option value="TODOS">Todos os colegas (grupo)</option>'+heliChatRecipients.filter(p=>p.user_id!==user.id).sort((a,b)=>String(a.full_name||a.email||'').localeCompare(String(b.full_name||b.email||''),'pt')).map(p=>{const registeredName=String(p.full_name||'').trim();const displayName=registeredName||String(p.email||'Funcionário').trim();return '<option value="'+p.user_id+'">'+escapeChatHtml(displayName)+'</option>';}).join('');recipient.value=heliChatRecipients.some(p=>p.user_id===old)?old:'TODOS';}
             const latest=await loadSupabaseChatMessages();lastChatNotificationId=latest||'';
             initChatFileTransfer();
-            await loadChatReadReceipts();
             if(heliChatAlertTimer)clearInterval(heliChatAlertTimer);
             heliChatAlertTimer=setInterval(checkChatUnansweredAlerts,10000);
             if(heliChatDbChannel)db.removeChannel(heliChatDbChannel);
