@@ -204,7 +204,7 @@ async function start(){
  if(window.HELI_HAS_ROLE?.('owner','admin'))setInterval(()=>loadPresenceRoster().catch(e=>console.warn('[Heligrafes] Actualização de presenças:',e.message)),30000);
  window.addEventListener('online',flushQueue);
  await flushQueue();
- if('serviceWorker'in navigator){navigator.serviceWorker.register('./service-worker.js').catch(e=>console.warn('[Heligrafes] SW não registado',e));}
+
 }
 window.HeligrafesSalesLive={enqueue,flushQueue,getPending:getQueue,open};
 const wait=setInterval(()=>{if(window.HELI_USER&&window.HELI_ORG){clearInterval(wait);start();}},250);
