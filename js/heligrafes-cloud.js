@@ -109,7 +109,7 @@ async function restoreCloudState(){
 
 function normalizeStaffName(value){return String(value||'').normalize('NFC').trim().replace(/\s+/g,' ').toLocaleLowerCase('pt-PT');}
 function formatAttendanceClock(value){if(!value)return '-';const date=new Date(value);if(Number.isNaN(date.getTime()))return '-';return new Intl.DateTimeFormat('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(date);}
-function normalizeStaffPhone(value){return String(value||'').replace(/\\D/g,'');}
+function normalizeStaffPhone(value){return String(value||'').replace(/\D/g,'');}
 async function syncLegacyEmployeesToCloud(){
  if(!window.HELI_USER||!window.HELI_HAS_ROLE?.('owner','admin')||!window.HELI_ORG?.id||window.HELI_OFFLINE_MODE)return;
  let legacy=[];try{legacy=JSON.parse(localStorage.getItem('multi_employees_v52')||'[]');}catch(_){}
