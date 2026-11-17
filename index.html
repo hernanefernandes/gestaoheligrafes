@@ -1918,7 +1918,7 @@ window.onload = function() {
 
         /* --- CHAT INTERNO --- */
         let heliChatDbChannel=null,heliChatRooms={},heliChatRecipients=[],heliChatLocations=[],heliChatReady=false;
-        let heliChatReadIds=new Set(),heliChatAlertedIds=new Set(),heliChatAlertTimer=null,heliChatFileChannel=null,heliChatReplyContext=null;
+        let heliChatReadIds=new Set(),heliChatReadByMessage=new Map(),heliChatAlertedIds=new Set(),heliChatAlertTimer=null,heliChatFileChannel=null,heliChatReplyContext=null;
         const heliChatFilePeers=new Map(),heliChatFileWaiters=new Map(),heliChatIncomingFiles=new Map();
         function waitIceGathering(pc){return new Promise(resolve=>{if(pc.iceGatheringState==='complete')return resolve();const done=()=>{if(pc.iceGatheringState==='complete'){pc.removeEventListener('icegatheringstatechange',done);resolve();}};pc.addEventListener('icegatheringstatechange',done);setTimeout(resolve,8000);});}
         async function sendChatFileSignal(payload){if(!heliChatFileChannel)throw new Error('Canal de transferência directa indisponível.');const result=await heliChatFileChannel.send({type:'broadcast',event:'file_signal',payload});if(result!=='ok')throw new Error('Não foi possível sinalizar a transferência directa.');}
@@ -1994,16 +1994,26 @@ window.onload = function() {
           setTimeout(()=>{const closeOnOutside=e=>{if(!panel.contains(e.target)&&e.target.id!=='topbar-chat-notifications'){panel.remove();document.removeEventListener('click',closeOnOutside);}};document.addEventListener('click',closeOnOutside);},0);
         }
         async function markChatMessageRead(id){
-          const key=String(id);if(!key||heliChatReadIds.has(key))return;
-          heliChatReadIds.add(key);updateChatUnreadBadge();
-          try{const q=await window.heliSupabase.from('chat_message_reads').upsert({message_id:key,user_id:chatCurrentUserId()},{onConflict:'message_id,user_id',ignoreDuplicates:true});if(q.error)throw q.error;}
-          catch(err){console.warn('[Chat] Não foi possível sincronizar leitura:',err.message||err);}
-          const card=document.querySelector('[data-chat-message-id="'+CSS.escape(key)+'"]');if(card)card.classList.remove('ring-2','ring-amber-300');
+          const key=String(id),message=chatMessages.find(m=>String(m.id)===key),userId=chatCurrentUserId();
+          if(!key||!userId||!message||!chatMessageIsForMe(message)||heliChatReadIds.has(key))return;
+          try{
+            const q=await window.heliSupabase.from('chat_message_reads').upsert({message_id:key,user_id:userId},{onConflict:'message_id,user_id',ignoreDuplicates:true});
+            if(q.error)throw q.error;
+            heliChatReadIds.add(key);
+            const readers=heliChatReadByMessage.get(key)||new Set();readers.add(userId);heliChatReadByMessage.set(key,readers);
+            updateChatUnreadBadge();
+            const card=document.querySelector('[data-chat-message-id="'+CSS.escape(key)+'"]');if(card)card.classList.remove('ring-2','ring-amber-300');
+          }catch(err){console.warn('[Chat] Não foi possível sincronizar leitura:',err.message||err);}
         }
         async function loadChatReadReceipts(){
-          const ids=chatMessages.filter(chatMessageIsForMe).map(m=>m.id);if(!ids.length)return;
-          const q=await window.heliSupabase.from('chat_message_reads').select('message_id').eq('user_id',chatCurrentUserId()).in('message_id',ids);
-          if(q.error)throw q.error;(q.data||[]).forEach(r=>heliChatReadIds.add(String(r.message_id)));
+          const ids=chatMessages.map(m=>m.id);heliChatReadIds.clear();heliChatReadByMessage=new Map();
+          if(!ids.length)return;
+          const q=await window.heliSupabase.from('chat_message_reads').select('message_id,user_id').in('message_id',ids);
+          if(q.error)throw q.error;
+          (q.data||[]).forEach(r=>{
+            const key=String(r.message_id),readers=heliChatReadByMessage.get(key)||new Set();readers.add(String(r.user_id));heliChatReadByMessage.set(key,readers);
+            if(String(r.user_id)===chatCurrentUserId())heliChatReadIds.add(key);
+          });
         }
         function openChatNotifications(){
           const unread=chatMessages.filter(m=>chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)));
@@ -2061,11 +2071,12 @@ window.onload = function() {
         }
         async function loadSupabaseChatMessages(){
           const db=window.heliSupabase,user=window.HELI_USER;if(!db||!user||!window.HELI_ORG)return '';
+          const delivered=await db.rpc('heli_mark_my_chat_messages_delivered');if(delivered.error)throw delivered.error;
           const q=await db.from('chat_messages').select('id,room_id,sender_id,recipient_id,body,attachment_path,sender_name,location_id,created_at,delivery_at').eq('organization_id',window.HELI_ORG.id).order('created_at',{ascending:true}).limit(300);
           if(q.error)throw q.error;
           const rooms=Object.fromEntries(Object.values(heliChatRooms).map(r=>[r.id,r.code])),names=Object.fromEntries(heliChatRecipients.map(p=>[p.user_id,p.full_name||p.email||'Funcionário']));
           chatMessages=(q.data||[]).map(row=>{let file={};try{if(row.attachment_path)file=JSON.parse(row.attachment_path);}catch(_){}const d=new Date(row.created_at);return{id:row.id,dbId:row.id,room:rooms[row.room_id]||'GERAL',senderId:row.sender_id,recipientId:row.recipient_id||null,user:names[row.sender_id]||row.sender_name||'Funcionário',to:row.recipient_id?(names[row.recipient_id]||'Mensagem privada'):'TODOS',text:row.body||'',date:d.toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'}),time:d.toLocaleTimeString('pt-PT',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'}),createdAt:row.created_at,deliveryAt:row.delivery_at,location_id:row.location_id,...file,...(heliChatIncomingFiles.get(String(row.id))||{})};});
-          deletedChatIds=[];return chatMessages[chatMessages.length-1]?.id||'';
+          deletedChatIds=[];await loadChatReadReceipts();return chatMessages[chatMessages.length-1]?.id||'';
         }
 
         function saveChatProfile(){const n=document.getElementById('chat-user');if(n&&window.HELI_PROFILE)n.value=window.HELI_PROFILE.full_name||window.HELI_USER?.email||'Funcionário';}
@@ -2154,7 +2165,7 @@ window.onload = function() {
           const list=document.getElementById('chat-messages'),counter=document.getElementById('chat-count'),room=document.getElementById('chat-room')?.value||'GERAL',recipient=document.getElementById('chat-recipient')?.value||'TODOS',me=window.HELI_USER?.id||'';
           if(!list)return;
           const rows=chatMessages.filter(m=>m.room===room&&(m.senderId===me||!m.recipientId||m.recipientId===me)&&(recipient==='TODOS'?!m.recipientId:(m.senderId===me&&m.recipientId===recipient||m.senderId===recipient&&m.recipientId===me))).slice(-200);
-          list.innerHTML=rows.length?rows.map(m=>{const file=renderChatFilePreview(m),person=heliChatRecipients.find(p=>p.user_id===m.senderId),avatar=person?.avatar_url||'',color=getChatUserColor(m.user||'Sistema'),mine=m.senderId===me,loc=heliChatLocations.find(x=>x.id===m.location_id)?.name||'Local não atribuído',to=m.to&&m.to!=='TODOS'?' → '+escapeChatHtml(m.to):'',unread=chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)),online=!!window.HeligrafesIsOnline?.(m.senderId),avatarFace=avatar?'<img src="'+escapeChatHtml(avatar)+'" alt="" class="w-9 h-9 rounded-full object-cover border border-slate-200">':'<span class="w-9 h-9 rounded-full flex items-center justify-center text-white font-black" style="background:'+color+'">'+escapeChatHtml((m.user||'F').slice(0,1).toUpperCase())+'</span>',avatarHtml='<span class="relative inline-flex shrink-0">'+avatarFace+'<i title="'+(online?'Online':'Offline')+'" class="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-white '+(online?'bg-green-500':'bg-red-500')+'"></i></span>';return '<div data-chat-message-id="'+escapeChatHtml(String(m.id))+'" onclick="markChatMessageRead(\''+escapeChatHtml(String(m.id))+'\')" class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm cursor-pointer '+(mine?'ml-10':'mr-10')+(unread?' ring-2 ring-amber-300':'')+'" style="border-left:6px solid '+color+'"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2">'+avatarHtml+'<span class="text-[10px] font-bold uppercase" style="color:'+color+'">'+escapeChatHtml(m.user||'Funcionário')+to+(unread?' · NOVA':'')+'</span></div><span class="text-[10px] text-slate-400">'+m.date+' '+m.time+'</span></div><div class="text-[10px] text-slate-500 mt-1">📍 '+escapeChatHtml(loc)+'</div><p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">'+formatChatBody(m.text||'')+'</p>'+file+'<div class="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-2"><button type="button" onclick="event.stopPropagation();replyToChatMessage(this.parentElement.parentElement.dataset.chatMessageId)" class="rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-[10px] font-black text-indigo-700">↩ Responder</button><button type="button" onclick="event.stopPropagation();openForwardChatMessage(this.parentElement.parentElement.dataset.chatMessageId)" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-700">↗ Reencaminhar</button></div></div>';}).join(''):'<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
+          list.innerHTML=rows.length?rows.map(m=>{const file=renderChatFilePreview(m),person=heliChatRecipients.find(p=>p.user_id===m.senderId),avatar=person?.avatar_url||'',color=getChatUserColor(m.user||'Sistema'),mine=m.senderId===me,loc=heliChatLocations.find(x=>x.id===m.location_id)?.name||'Local não atribuído',to=m.to&&m.to!=='TODOS'?' → '+escapeChatHtml(m.to):'',unread=chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)),readers=heliChatReadByMessage.get(String(m.id))||new Set(),receiptLabel=mine?(m.recipientId?(readers.size?'Lida':m.deliveryAt?'Entregue':'Enviada'):(readers.size?'Lida por '+readers.size+' colega(s)':'Enviada ao grupo')):'',receiptHtml=receiptLabel?'<div class="mt-2 text-right text-[10px] font-bold text-slate-400">'+escapeChatHtml(receiptLabel)+'</div>':'',online=!!window.HeligrafesIsOnline?.(m.senderId),avatarFace=avatar?'<img src="'+escapeChatHtml(avatar)+'" alt="" class="w-9 h-9 rounded-full object-cover border border-slate-200">':'<span class="w-9 h-9 rounded-full flex items-center justify-center text-white font-black" style="background:'+color+'">'+escapeChatHtml((m.user||'F').slice(0,1).toUpperCase())+'</span>',avatarHtml='<span class="relative inline-flex shrink-0">'+avatarFace+'<i title="'+(online?'Online':'Offline')+'" class="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-white '+(online?'bg-green-500':'bg-red-500')+'"></i></span>';return '<div data-chat-message-id="'+escapeChatHtml(String(m.id))+'" onclick="markChatMessageRead(\''+escapeChatHtml(String(m.id))+'\')" class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm cursor-pointer '+(mine?'ml-10':'mr-10')+(unread?' ring-2 ring-amber-300':'')+'" style="border-left:6px solid '+color+'"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2">'+avatarHtml+'<span class="text-[10px] font-bold uppercase" style="color:'+color+'">'+escapeChatHtml(m.user||'Funcionário')+to+(unread?' · NOVA':'')+'</span></div><span class="text-[10px] text-slate-400">'+m.date+' '+m.time+'</span></div><div class="text-[10px] text-slate-500 mt-1">📍 '+escapeChatHtml(loc)+'</div><p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">'+formatChatBody(m.text||'')+'</p>'+file+receiptHtml+'<div class="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-2"><button type="button" onclick="event.stopPropagation();replyToChatMessage(this.parentElement.parentElement.dataset.chatMessageId)" class="rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-[10px] font-black text-indigo-700">↩ Responder</button><button type="button" onclick="event.stopPropagation();openForwardChatMessage(this.parentElement.parentElement.dataset.chatMessageId)" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-700">↗ Reencaminhar</button></div></div>';}).join(''):'<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
           if(counter)counter.innerText=rows.length+' mensagem(ns)';list.scrollTop=list.scrollHeight;renderChatTypingStatus();updateChatUnreadBadge();
         }
 
