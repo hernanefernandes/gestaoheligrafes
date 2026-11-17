@@ -116,7 +116,7 @@ async function loadOrders(){
  try{
   status('A carregar encomendas...');
   let q=db().from('orders').select('id,location_id,order_number,customer_id,order_type,status,description,subtotal,discount,total,amount_paid,due_at,created_by,assigned_to,created_at,customers(full_name,phone)').eq('organization_id',org()).order('created_at',{ascending:false}).limit(1000);
-  if(selectedLocation)q=q.eq('location_id',selectedLocation);
+  // A administração consulta sempre as encomendas de todos os locais; o local é identificado em cada linha.
   const result=await q;if(result.error)throw result.error;
   const orders=result.data||[],ids=orders.map(x=>x.id),locs=locations();
   let items=[];
