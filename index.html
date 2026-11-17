@@ -3,23 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style id="heli-preflight-style">html.heli-preflight body{visibility:hidden!important}</style>
-    <script id="heli-preflight-refresh">
+    <meta name="heli-build" content="20261117-02">
+    <script id="heli-service-worker-register">
     (function(){
       'use strict';
-      const params=new URLSearchParams(window.location.search);
-      if(params.has('__heli_entry_refresh')){
-        params.delete('__heli_entry_refresh');
-        const cleanUrl=new URL(window.location.href);
-        cleanUrl.search=params.toString();
-        window.history.replaceState({},document.title,cleanUrl.toString());
-        return;
-      }
-      if(params.has('__heli_login_refresh')||params.has('__heli_refresh'))return;
-      document.documentElement.classList.add('heli-preflight');
-      const freshUrl=new URL(window.location.href);
-      freshUrl.searchParams.set('__heli_entry_refresh',String(Date.now()));
-      window.location.replace(freshUrl.toString());
+      if(!('serviceWorker' in navigator))return;
+      const register=()=>navigator.serviceWorker.register('./service-worker.js',{updateViaCache:'none'})
+        .then(registration=>registration.update().catch(()=>{}))
+        .catch(error=>console.warn('[Heligrafes] Actualização automática indisponível:',error));
+      if(document.readyState==='complete')register();
+      else window.addEventListener('load',register,{once:true});
     })();
     </script>
   
@@ -5290,13 +5283,13 @@ function selectAcademicPage(value) {
 <!-- Autenticação obrigatória: scripts carregados após o código principal -->
 <script src="./js/supabase-config.js"></script>
 <script src="./js/heligrafes-cloud.js?v=20261117-01"></script>
-<script src="./js/heligrafes-sales-live.js?v=20261115-14"></script>
+<script src="./js/heligrafes-sales-live.js?v=20261117-02"></script>
 <script src="./js/heligrafes-admin.js?v=20261115-16"></script>
 <script id="heli-auto-update-checker">
 (function(){
   'use strict';
   const CHECK_INTERVAL = 60000;
-  let baseline = '';
+  let baseline = document.querySelector('meta[name="heli-build"]')?.content || '';
   let checking = false;
   let updateAvailable = false;
   let pendingEdits = false;
@@ -5347,7 +5340,10 @@ function selectAcademicPage(value) {
       headers:{'Cache-Control':'no-cache','Pragma':'no-cache'}
     });
     if(!response.ok) throw new Error('Não foi possível verificar a versão.');
-    return await response.text();
+    const source=await response.text();
+    const match=source.match(/<meta\s+name=["']heli-build["']\s+content=["']([^"']+)["']/i);
+    return match?match[1]:'';
+
   }
 
   async function checkForUpdate(){
@@ -5383,8 +5379,9 @@ function selectAcademicPage(value) {
 
   (async function start(){
     try{
-      baseline=await readRemoteVersion();
+      if(!baseline)throw new Error('Identificador local da versão indisponível.');
       window.setInterval(checkForUpdate,CHECK_INTERVAL);
+      void checkForUpdate();
       window.addEventListener('focus',checkForUpdate);
     }catch(error){
       console.debug('[Heligrafes] Verificação automática de versão indisponível:',error.message||error);
