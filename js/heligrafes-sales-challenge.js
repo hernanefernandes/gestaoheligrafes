@@ -1,0 +1,41 @@
+(() => {
+'use strict';
+const $=id=>document.getElementById(id), db=()=>window.heliSupabase;
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=v=>(Number(v)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz';
+let mode='month',channel=null,refreshTimer=null,loading=false;
+function style(){if($('heli-challenge-style'))return;const s=document.createElement('style');s.id='heli-challenge-style';s.textContent=`
+#heli-challenge-launch{position:fixed;left:18px;bottom:18px;z-index:9997;background:#f9bd17;color:#17324d;border:0;border-radius:13px;padding:12px 16px;font-weight:900;box-shadow:0 8px 24px #063b8f33;cursor:pointer}
+#heli-challenge{position:fixed;inset:0;z-index:10003;background:#f3f7fc;color:#17324d;display:none;overflow:auto;font-family:Inter,system-ui,sans-serif}
+#heli-challenge.open{display:block}#heli-challenge .hc-wrap{max-width:1180px;margin:auto;padding:clamp(12px,2vw,26px)}
+#heli-challenge .hc-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:20px;border-radius:18px;color:white;background:linear-gradient(120deg,#042a68,#0755ad,#0b85c5)}
+#heli-challenge .hc-head h2{font-size:22px;font-weight:900}#heli-challenge .hc-head p{font-size:11px;color:#d7eaff;margin-top:4px}
+#heli-challenge button{cursor:pointer}#heli-challenge .hc-close{background:white;color:#12315c;border:0;border-radius:9px;padding:9px 13px;font-weight:900}
+#heli-challenge .hc-tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}#heli-challenge .hc-tabs button{padding:10px 15px;border-radius:10px;background:#e5eef9;color:#315579;font-weight:900}
+#heli-challenge .hc-tabs button.active{background:#0755ad;color:white}
+#heli-challenge .hc-card{background:white;border:1px solid #dce7f3;border-radius:15px;padding:15px;box-shadow:0 6px 18px #1c47710c}
+#heli-challenge .hc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#heli-challenge .hc-section{margin-top:18px}#heli-challenge h3{font-size:14px;font-weight:900;color:#123d70;margin:0 0 10px}
+#heli-challenge .hc-row{display:grid;grid-template-columns:38px minmax(0,1fr) auto;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid #edf2f8}
+#heli-challenge .hc-row:last-child{border-bottom:0}#heli-challenge .hc-rank{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#edf5fd;color:#0755ad;font-weight:900}
+#heli-challenge .hc-name{font-weight:900;font-size:12px}#heli-challenge .hc-meta{font-size:10px;color:#71849a;margin-top:3px}
+#heli-challenge .hc-value{font-size:12px;font-weight:900;color:#063b8f;text-align:right}
+#heli-challenge .hc-local{padding:13px;border:1px solid #e2eaf4;border-radius:12px;background:#fff}
+#heli-challenge .hc-local-head{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:900}
+#heli-challenge .hc-local small{display:block;color:#71849a;font-size:10px;margin-top:6px}
+#heli-challenge .hc-muted{font-size:11px;color:#71849a}
+#heli-challenge .hc-winner{border:1px solid #f2d27c;background:linear-gradient(135deg,#fffdf4,#fff);padding:16px;border-radius:15px}
+#heli-challenge .hc-winner strong{display:block;color:#0755ad;font-size:20px;margin-top:5px}
+#heli-challenge .hc-live{display:inline-flex;align-items:center;gap:6px;font-size:10px;font-weight:900;color:#15803d}
+#heli-challenge .hc-live:before{content:"";width:8px;height:8px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 4px #dcfce7}
+@media(max-width:650px){#heli-challenge .hc-grid{grid-template-columns:1fr}#heli-challenge .hc-head h2{font-size:18px}#heli-challenge-launch{left:10px;bottom:72px}}
+`;document.head.append(s);}
+function tableRows(rows){if(!rows?.length)return '<p class="hc-muted">Ainda não existem vendas pagas neste período.</p>';return rows.map((r,i)=>{const target=Number(r.target)||0,paid=Number(r.paid)||0;const label=target>0?(paid>=target?'Meta atingida':'Abaixo da meta'):'Meta não definida';return '<div class="hc-row"><span class="hc-rank">'+(i+1)+'</span><div><div class="hc-name">'+esc(r.name)+'</div><div class="hc-meta">'+Number(r.sales_count||0)+' venda(s) · '+label+'</div></div><div class="hc-value">'+money(paid)+(target>0?'<div class="hc-meta">Meta: '+money(target)+'</div>':'')+'</div></div>';}).join('');}
+function render(data){const root=$('heli-challenge-content');if(!root)return;const list=mode==='week'?data.weekly:data.monthly,top=(data.monthly||[])[0],locations=data.locations||[];root.innerHTML='<div class="hc-live">Actualização em tempo real activa</div><section class="hc-section hc-winner"><div class="hc-meta">🏆 DESTAQUE DO MÊS · candidato actual ao bónus</div><strong>'+(top?esc(top.name):'Ainda sem vencedor')+'</strong><div class="hc-meta">'+(top?money(top.paid)+' em vendas pagas · '+Number(top.sales_count||0)+' venda(s)':'O vencedor será identificado com base nas vendas pagas do mês.')+'</div><p class="hc-meta">A decisão final considera também o resultado colectivo do local. O valor do bónus não está configurado no sistema.</p></section><section class="hc-section hc-card"><h3>Ranking '+(mode==='week'?'da semana':'do mês')+'</h3>'+tableRows(list)+'</section><section class="hc-section"><h3>Desafio por local de venda</h3><div class="hc-grid">'+locations.map(l=>'<div class="hc-local"><div class="hc-local-head"><span>'+esc(l.name)+'</span><b>'+money(mode==='week'?l.week_paid:l.month_paid)+'</b></div><small>'+Number(mode==='week'?l.week_count:l.month_count||0)+' venda(s) registada(s) no período</small><small>Despesas e saldo do local: '+(data.is_admin?(l.expense_data_available?money(l.month_expenses)+' despesas · saldo '+money(l.month_net):'Sem despesas registadas suficientes para calcular o saldo'):'visíveis apenas para administração')+'</small></div>').join('')+'</div></section><p class="hc-muted" style="margin-top:14px">Os valores representam pagamentos sincronizados. Vendas ainda na fila offline só entram no ranking depois da sincronização.</p>';}
+async function load(){if(loading||!db()||!window.HELI_ORG?.id)return;loading=true;try{const r=await db().rpc('heli_get_sales_challenge',{p_organization_id:window.HELI_ORG.id});if(r.error)throw r.error;render(r.data||{});}catch(e){const root=$('heli-challenge-content');if(root)root.innerHTML='<p class="hc-muted">Não foi possível carregar o ranking: '+esc(e.message)+'</p>';console.error('[Heligrafes] Ranking:',e);}finally{loading=false;}}
+function build(){if($('heli-challenge'))return;const b=document.createElement('button');b.id='heli-challenge-launch';b.type='button';b.textContent='🏆 Ranking & Desafio';b.onclick=open;const p=document.createElement('section');p.id='heli-challenge';p.innerHTML='<div class="hc-wrap"><header class="hc-head"><div><h2>Ranking de Vendas · Heligrafes</h2><p>Desafio semanal e mensal por funcionário e local</p></div><button class="hc-close" id="hc-close">Fechar ✕</button></header><nav class="hc-tabs"><button data-mode="week">Esta semana</button><button class="active" data-mode="month">Este mês</button><button id="hc-refresh">Actualizar ↻</button></nav><div id="heli-challenge-content"><p class="hc-muted">A carregar ranking...</p></div></div>';document.body.append(b,p);$('hc-close').onclick=()=>$('heli-challenge').classList.remove('open');p.querySelectorAll('[data-mode]').forEach(x=>x.onclick=()=>{mode=x.dataset.mode;p.querySelectorAll('[data-mode]').forEach(y=>y.classList.toggle('active',y===x));load();});$('hc-refresh').onclick=load;}
+function open(){style();build();$('heli-challenge').classList.add('open');load();}
+function start(){if(!window.HELI_USER||!window.HELI_ORG||!db())return;style();build();if(!channel){channel=db().channel('heli-sales-challenge-'+window.HELI_ORG.id).on('postgres_changes',{event:'*',schema:'public',table:'heli_sales_challenge_signals',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>load()).subscribe();}load();if(refreshTimer)clearInterval(refreshTimer);refreshTimer=setInterval(load,60000);}
+const wait=setInterval(()=>{if(window.HELI_USER&&window.HELI_ORG&&db()){clearInterval(wait);start();}},250);
+window.HeligrafesSalesChallenge={open,refresh:load};
+})();
