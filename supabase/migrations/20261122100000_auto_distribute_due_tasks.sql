@@ -28,18 +28,14 @@ begin
   for v_sale in
     select s.*
     from public.pos_sales_events s
-    where upper(coalesce(s.category,'')) in ('ACADEMICO','ACADEMICO','TSHIRTS','T-SHIRTS')
+    where upper(coalesce(s.category,'')) in ('ACADEMICO','ACADÉMICO','TSHIRTS','T-SHIRTS')
       and s.occurred_at <= now() - interval '24 hours'
-      and case when coalesce(s.sale_payload->>'deliveryDate','') ~ '^\\d{4}-\\d{2}-\\d{2}
-      and not exists (
-        select 1 from public.heli_daily_tasks t
-        where t.organization_id=s.organization_id and t.order_reference=s.local_sale_id
-      )
-    order by (s.sale_payload->>'deliveryDate')::date asc, s.occurred_at asc
+      and (case when coalesce(s.sale_payload->>'deliveryDate','') ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then (s.sale_payload->>'deliveryDate')::date end) <= (now() at time zone 'Africa/Luanda')::date + 1
+    order by (case when coalesce(s.sale_payload->>'deliveryDate','') ~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$' then (s.sale_payload->>'deliveryDate')::date end) asc, s.occurred_at asc
   loop
     v_due_date := (v_sale.sale_payload->>'deliveryDate')::date;
     v_department := case
-      when upper(v_sale.category) in ('ACADEMICO','ACADEMICO') then 'Académico'
+      when upper(v_sale.category) in ('ACADEMICO','ACADÉMICO') then 'Académico'
       else 'T-Shirts'
     end;
     v_title := left(coalesce(nullif(v_sale.sale_payload->>'desc',''),nullif(v_sale.sale_payload->>'description',''),v_department||': encomenda'),140);
