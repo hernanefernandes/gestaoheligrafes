@@ -6,14 +6,35 @@ const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;',
 const money = value => (Number(value)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz';
 const isAdmin = () => !!window.HELI_HAS_ROLE?.('owner','admin');
 const todayKey = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Luanda'}).format(new Date());
-let taskChannel = null, staffRows = [], taskRows = [], selectedDate = todayKey();
+let taskChannel = null, staffRows = [], taskRows = [], todayOrders = [], selectedDate = todayKey();
 
-function getTodayOrders(){
-  try {
-    if (typeof sales === 'undefined' || !Array.isArray(sales)) return [];
-    const today = new Date().toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'});
-    return sales.filter(s => s && s.category !== 'EXPENSE' && (String(s.date||'') === today || (s.createdAt && new Date(s.createdAt).toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'}) === today))).slice().reverse();
-  } catch (_) { return []; }
+function getTodayOrders(){ return todayOrders; }
+async function loadTodayOrders(){
+  todayOrders=[];
+  if(!isAdmin()||!db()||!window.HELI_ORG?.id)return;
+  const start=new Date(selectedDate+'T00:00:00+01:00');
+  const end=new Date(start.getTime()+24*60*60*1000);
+  const [salesQ,locationsQ]=await Promise.all([
+    db().from('pos_sales_events').select('id,local_sale_id,sale_payload,total,paid,category,occurred_at,location_id,seller_name').eq('organization_id',window.HELI_ORG.id).gte('occurred_at',start.toISOString()).lt('occurred_at',end.toISOString()).order('occurred_at',{ascending:false}).limit(500),
+    db().from('locations').select('id,name').eq('organization_id',window.HELI_ORG.id)
+  ]);
+  if(!salesQ.error){
+    const locationMap=new Map((locationsQ.data||[]).map(x=>[x.id,x.name]));
+    todayOrders=(salesQ.data||[]).filter(x=>x.category!=='EXPENSE').map(x=>{
+      const p=x.sale_payload||{};
+      const desc=String(p.desc||p.description||p.product||x.category||'Encomenda');
+      const client=String(p.client||p.customer||'Cliente');
+      return {id:x.id,reference:x.local_sale_id,location_id:x.location_id,desc,client,category:x.category,total:Number(x.total||0),paid:Number(x.paid||0),location_name:locationMap.get(x.location_id)||'Local'};
+    });
+  }
+  if(!todayOrders.length){
+    try{
+      if(typeof sales!=='undefined'&&Array.isArray(sales)){
+        const today=new Date().toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'});
+        todayOrders=sales.filter(s=>s&&s.category!=='EXPENSE'&&(String(s.date||'')===today||(s.createdAt&&new Date(s.createdAt).toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'})===today))).slice().reverse();
+      }
+    }catch(_){}
+  }
 }
 function ensureUi(){
   if (!$('heli-task-tab')) {
@@ -38,11 +59,8 @@ function ensureUi(){
 }
 function openDailyTasks(){
   if(!ensureUi()) return;
-  if(typeof showTab==='function') {
-    document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden'));
-    document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.remove('active'));
-  }
-  $('heli-task-tab').classList.remove('hidden');
+  if(typeof showTab==='function') showTab('heli-task-tab');
+  else { document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden')); $('heli-task-tab').classList.remove('hidden'); }
   $('btn-daily-tasks')?.classList.add('active');
   loadTasks();
 }
@@ -73,7 +91,7 @@ async function loadStaff(){
 function renderAdminForm(){
   const root=$('heli-task-admin-view'); if(!root) return;
   const orders=getTodayOrders();
-  const orderOptions=orders.map((s,i)=>'<option value="'+esc(String(s.id??i))+'" data-description="'+esc((s.desc||s.client||'Encomenda')+' · '+(s.category||'')+' · '+money(s.total||s.paid))+'">'+esc((s.client||'Cliente')+' — '+(s.desc||s.category||'Encomenda')+' — '+money(s.total||s.paid))+'</option>').join('');
+  const orderOptions=orders.map((s,i)=>'<option value="'+esc(String(s.reference||s.id??i))+'" data-description="'+esc((s.location_name?s.location_name+' · ':'')+(s.client||'Cliente')+' · '+(s.desc||s.category||'Encomenda')+' · '+money(s.total||s.paid))+'">'+esc((s.location_name?s.location_name+' — ':'')+(s.client||'Cliente')+' — '+(s.desc||s.category||'Encomenda')+' — '+money(s.total||s.paid))+'</option>').join('');
   const staffOptions=staffRows.map(p=>'<option value="'+esc(p.user_id)+'">'+esc(p.full_name||p.email)+' · '+esc(p.location_name)+'</option>').join('');
   root.innerHTML='<div class="grid grid-cols-1 xl:grid-cols-5 gap-5"><div class="xl:col-span-2 glass-panel bg-white p-5"><h3 class="mb-4 text-lg font-black text-slate-800">Distribuir novo trabalho</h3><form id="heli-task-create-form" class="space-y-3"><label class="block text-xs font-bold text-slate-600">Encomenda de hoje (opcional)<select id="heli-task-order" class="big-input mt-1"><option value="">Trabalho geral / sem encomenda</option>'+orderOptions+'</select></label><label class="block text-xs font-bold text-slate-600">Título do trabalho<input id="heli-task-title" required maxlength="140" class="big-input mt-1" placeholder="Ex.: Imprimir e encadernar trabalho"></label><label class="block text-xs font-bold text-slate-600">Detalhes<textarea id="heli-task-description" rows="2" class="big-input mt-1" placeholder="Prazo, quantidade, acabamento..."></textarea></label><div class="grid grid-cols-2 gap-3"><label class="block text-xs font-bold text-slate-600">Departamento<select id="heli-task-department" class="big-input mt-1"><option>Académico</option><option>T-Shirts</option><option>Impressão</option><option>Papelaria</option><option>Decoração</option><option>Atendimento</option><option>Geral</option></select></label><label class="block text-xs font-bold text-slate-600">Equipa<input id="heli-task-team" class="big-input mt-1" maxlength="80" placeholder="Ex.: Equipa de impressão"></label></div><label class="block text-xs font-bold text-slate-600">Funcionário responsável<select id="heli-task-assignee" required class="big-input mt-1"><option value="">Seleccione o funcionário</option>'+staffOptions+'</select></label><button id="heli-task-submit" class="w-full rounded-xl bg-blue-700 px-4 py-3 font-black text-white">+ DISTRIBUIR TRABALHO</button></form><p id="heli-task-form-status" class="mt-3 text-xs text-slate-500"></p></div><div class="xl:col-span-3 glass-panel bg-white p-5"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 class="text-lg font-black text-slate-800">Trabalhos distribuídos por equipas</h3><input id="heli-task-date" type="date" value="'+esc(selectedDate)+'" class="big-input max-w-52"></div><div id="heli-task-admin-list"></div></div></div>';
   $('heli-task-order').addEventListener('change',()=>{
@@ -139,7 +157,7 @@ async function loadTasks(){
   if(!db()||!window.HELI_USER?.id||!window.HELI_ORG?.id)return;
   const root=$('heli-task-employee-view');if(root)root.innerHTML='<p class="p-5 text-sm text-slate-500">A carregar os seus trabalhos...</p>';
   try{
-    if(isAdmin()){await loadStaff();renderAdminForm();}else $('heli-task-admin-view')?.classList.add('hidden');
+    if(isAdmin()){await loadStaff();await loadTodayOrders();renderAdminForm();}else $('heli-task-admin-view')?.classList.add('hidden');
     let query=db().from('heli_daily_tasks').select('*').eq('organization_id',window.HELI_ORG.id).eq('task_date',selectedDate).order('created_at',{ascending:false});
     const result=await query;
     if(result.error) throw result.error;
