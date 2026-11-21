@@ -1,6 +1,7 @@
 (() => {
 'use strict';
 const $=id=>document.getElementById(id);
+const isAdmin=()=>!!window.HELI_USER&&!!window.HELI_HAS_ROLE?.('owner','admin');
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=value=>(Number(value)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz';
 const dateText=value=>{
@@ -119,6 +120,7 @@ function subscribe(){
  }).subscribe();
 }
 window.openHeliOrdersList=()=>{
+ if(!isAdmin()){alert('A Lista de Encomendas está disponível exclusivamente para o administrador.');return;}
  const panel=ensurePanel();if(!panel)return;
  if(typeof showTab==='function')showTab('heli-orders-list');
  else{document.querySelectorAll('.tab-content').forEach(t=>t.classList.add('hidden'));panel.classList.remove('hidden');}
@@ -129,9 +131,10 @@ window.openHeliOrdersList=()=>{
 };
 function init(){
  if(ready)return;ready=true;
+ if(!isAdmin())return;
  ensurePanel();
- if(window.HELI_USER&&window.heliSupabase){subscribe();if($('heli-orders-list')&&!$('heli-orders-list').classList.contains('hidden'))void load();}
+ if(window.heliSupabase){subscribe();if($('heli-orders-list')&&!$('heli-orders-list').classList.contains('hidden'))void load();}
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-window.addEventListener('heli-auth-ready',()=>{ensurePanel();subscribe();if($('heli-orders-list')&&!$('heli-orders-list').classList.contains('hidden'))void load();});
+window.addEventListener('heli-auth-ready',()=>{if(!isAdmin())return;ensurePanel();subscribe();if($('heli-orders-list')&&!$('heli-orders-list').classList.contains('hidden'))void load();});
 })();
