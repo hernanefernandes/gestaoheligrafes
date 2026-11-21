@@ -429,7 +429,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
             <div onclick="showTab('tabacaria')" class="sidebar-link active" id="btn-tabacaria"><span class="text-xl mr-3 opacity-90">⚡</span> <span>VENDA DIÁRIA</span></div>
             <div onclick="showTab('academico')" class="sidebar-link" id="btn-academico"><span class="text-xl mr-3 opacity-90">🎓</span> <span>Trabalho Académico</span></div>
             <div onclick="showTab('tshirts')" class="sidebar-link" id="btn-tshirts"><span class="text-xl mr-3 opacity-90">👕</span> <span>T-Shirts & Brindes</span></div>
-            <div onclick="showTab('outros')" class="sidebar-link" id="btn-outros"><span class="text-xl mr-3 opacity-90">📦</span> <span>Papelaria & Decoração</span></div>
+            
             
             <p id="heli-admin-nav-heading" class="text-xs font-bold text-slate-400 uppercase tracking-wider px-4 mt-8 mb-3">Administração</p>
             <div onclick="verificarAdmin('gestao-produtos')" class="sidebar-link" id="btn-gestao-produtos"><span class="text-xl mr-3 opacity-90">🛍️</span> <span>Gestão & Venda de Produtos</span></div>
@@ -438,6 +438,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
             <div onclick="verificarAdmin('stocks')" class="sidebar-link" id="btn-stocks"><span class="text-xl mr-3 opacity-90">🏭</span> <span>Gestão de Stocks</span></div>
             <div onclick="showTab('chat')" class="sidebar-link" id="btn-chat"><span class="text-xl mr-3 opacity-90">💬</span> <span>Chat Interno</span></div>
             <div onclick="openDailyTasks()" class="sidebar-link" id="btn-daily-tasks"><span class="text-xl mr-3 opacity-90">📋</span> <span>Trabalhos do Dia</span></div>
+            <div onclick="openHeliOrdersList()" class="sidebar-link" id="btn-heli-orders-list"><span class="text-xl mr-3 opacity-90">🧾</span> <span>Lista de Encomendas</span></div>
             <div onclick="verificarAdmin('relatorios')" class="sidebar-link" id="btn-relatorios"><span class="text-xl mr-3 opacity-90">📈</span> <span>Relatórios & Análise</span></div>
             <div onclick="verificarAdmin('historico')" class="sidebar-link" id="btn-historico"><span class="text-xl mr-3 opacity-90">📊</span> <span>Histórico & Backup</span></div>
             <div class="sidebar-link" id="btn-admin-panel" style="display:none" role="button" tabindex="0"><span class="text-xl mr-3 opacity-90">🛡️</span> <span>Painel de Administração</span></div>
@@ -500,7 +501,8 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                 <button type="button" class="heli-department-tab active" data-tab="tabacaria" onclick="showTab('tabacaria')" aria-current="page"><span>⚡</span><span>Venda Diária</span></button>
                 <button type="button" class="heli-department-tab" data-tab="academico" onclick="showTab('academico')"><span>🎓</span><span>Trabalho Académico</span></button>
                 <button type="button" class="heli-department-tab" data-tab="tshirts" onclick="showTab('tshirts')"><span>👕</span><span>T-Shirts &amp; Brindes</span></button>
-                <button type="button" class="heli-department-tab" data-tab="outros" onclick="showTab('outros')"><span>📦</span><span>Papelaria &amp; Decoração</span></button>
+                <button type="button" class="heli-department-tab" data-tab="heli-orders-list" onclick="openHeliOrdersList()"><span>🧾</span><span>Lista de Encomendas</span></button>
+                
                 <button type="button" class="heli-department-tab" data-tab="chat" onclick="showTab('chat')"><span>💬</span><span>Chat Interno</span></button>
             </nav>
         </header>
@@ -5486,5 +5488,6 @@ function selectAcademicPage(value) {
   })();
 })();
 </script>
+<script src="./js/heligrafes-orders-list.js?v=20261121-01"></script>
 </body>
 </html>
