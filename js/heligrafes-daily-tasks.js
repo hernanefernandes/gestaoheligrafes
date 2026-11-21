@@ -159,10 +159,10 @@ async function loadTasks(){
   const root=$('heli-task-employee-view');if(root)root.innerHTML='<p class="p-5 text-sm text-slate-500">A carregar os seus trabalhos...</p>';
   try{
     if(isAdmin()){await loadStaff();await loadTodayOrders();renderAdminForm();}else $('heli-task-admin-view')?.classList.add('hidden');
-    let query=db().from('heli_daily_tasks').select('*').eq('organization_id',window.HELI_ORG.id).eq('task_date',selectedDate).in('department',['Académico','T-Shirts']).order('task_date',{ascending:true}).order('created_at',{ascending:true});
+    let query=db().from('heli_daily_tasks').select('*').eq('organization_id',window.HELI_ORG.id).eq('task_date',selectedDate).order('task_date',{ascending:true}).order('created_at',{ascending:true});
     const result=await query;
     if(result.error) throw result.error;
-    taskRows=result.data||[];
+    taskRows=(result.data||[]).filter(t=>isAllowedDepartment(t.department));
     renderEmployee();
     if(isAdmin()){ $('heli-task-admin-view').classList.remove('hidden');renderAdminList(); }
   }catch(error){if(root)root.innerHTML='<p class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">Falha ao carregar trabalhos. Confirme se a migração heli_daily_tasks foi executada no Supabase. '+esc(error.message||error)+'</p>';}
