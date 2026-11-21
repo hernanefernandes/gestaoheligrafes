@@ -4407,6 +4407,13 @@ async function printDailyReport(copies = 1) {
                 .on('postgres_changes',{event:'*',schema:'public',table:'products',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{
                     if(!document.getElementById('gestao-produtos')?.classList.contains('hidden'))void renderProductSalesManagementCloud();
                     if(!document.getElementById('stocks')?.classList.contains('hidden'))void syncHeliLocationViews();
+                    if(!document.getElementById('relatorios')?.classList.contains('hidden'))void renderLocationCloudReport();
+                })
+                .on('postgres_changes',{event:'*',schema:'public',table:'expenses',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{
+                    if(!document.getElementById('relatorios')?.classList.contains('hidden'))void renderLocationCloudReport();
+                })
+                .on('postgres_changes',{event:'*',schema:'public',table:'orders',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{
+                    if(!document.getElementById('relatorios')?.classList.contains('hidden'))void renderLocationCloudReport();
                 }).subscribe();
             void syncHeliLocationViews();
         }
