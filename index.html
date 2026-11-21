@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="heli-build" content="20261121-02">
+    <meta name="heli-build" content="20261121-03">
     <script id="heli-service-worker-register">
     (function(){
       'use strict';
@@ -1278,7 +1278,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
         let shiftAuditLogs = JSON.parse(localStorage.getItem('multi_shift_audit_logs_v52')) || [];
         let extraCashAdds = JSON.parse(localStorage.getItem('multi_extra_cash_v52')) || [];
         let debtPayments = JSON.parse(localStorage.getItem('multi_debt_payments_v52')) || [];
-        let chatMessages = JSON.parse(localStorage.getItem('multi_chat_messages_v52')) || [];
+        let chatMessages = []; // Histórico do chat é carregado do Supabase/GitHub; não duplicar mensagens volumosas no localStorage.
         let chatPresence = JSON.parse(localStorage.getItem('multi_chat_presence_v52')) || {};
         let deletedChatIds = JSON.parse(localStorage.getItem('multi_chat_deleted_v52')) || [];
         let chatChannel = null;
@@ -2503,7 +2503,7 @@ window.onload = function() {
                 mergeChatDeletedIds(remotePayload.deletedIds || []);
                 mergeChatPresence(remotePayload.presence || {});
                 mergeChatMessages(remotePayload.messages || []);
-                localStorage.setItem('multi_chat_messages_v52', JSON.stringify(chatMessages));
+                // Não persistir o histórico de mensagens no localStorage: o Supabase é a fonte principal e evita exceder a quota do navegador.
                 localStorage.setItem('multi_chat_presence_v52', JSON.stringify(chatPresence));
                 localStorage.setItem('multi_chat_deleted_v52', JSON.stringify(deletedChatIds));
                 renderChatPeople();
