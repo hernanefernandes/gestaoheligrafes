@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="heli-build" content="20261117-05">
+    <meta name="heli-build" content="20261121-01">
     <script id="heli-service-worker-register">
     (function(){
       'use strict';
@@ -437,6 +437,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
             <div onclick="showTab('rh')" class="sidebar-link" id="btn-rh"><span class="text-xl mr-3 opacity-90">👥</span> <span>RH & Salários</span></div>
             <div onclick="verificarAdmin('stocks')" class="sidebar-link" id="btn-stocks"><span class="text-xl mr-3 opacity-90">🏭</span> <span>Gestão de Stocks</span></div>
             <div onclick="showTab('chat')" class="sidebar-link" id="btn-chat"><span class="text-xl mr-3 opacity-90">💬</span> <span>Chat Interno</span></div>
+            <div onclick="openDailyTasks()" class="sidebar-link" id="btn-daily-tasks"><span class="text-xl mr-3 opacity-90">📋</span> <span>Trabalhos do Dia</span></div>
             <div onclick="verificarAdmin('relatorios')" class="sidebar-link" id="btn-relatorios"><span class="text-xl mr-3 opacity-90">📈</span> <span>Relatórios & Análise</span></div>
             <div onclick="verificarAdmin('historico')" class="sidebar-link" id="btn-historico"><span class="text-xl mr-3 opacity-90">📊</span> <span>Histórico & Backup</span></div>
             <div class="sidebar-link" id="btn-admin-panel" style="display:none" role="button" tabindex="0"><span class="text-xl mr-3 opacity-90">🛡️</span> <span>Painel de Administração</span></div>
@@ -3076,7 +3077,7 @@ window.onload = function() {
 
             // Opção 2: Enviar WhatsApp
             if (confirm("Deseja enviar o resumo financeiro para o WhatsApp da gerência?")) {
-                const saldoCaixa = stats.totalVendas;
+                const saldoCaixa = stats.totalVendas - stats.despesas;
                 let msg = `*🔐 FECHO - ${today}*\nEntradas: ${stats.totalVendas.toLocaleString()} Kz\nDespesas registadas: ${stats.despesas.toLocaleString()} Kz\n*Saldo de caixa: ${saldoCaixa.toLocaleString()} Kz*`;
                 const url = `https://wa.me/244924565514?text=${encodeURIComponent(msg)}`;
                 window.open(url, '_blank');
@@ -3816,7 +3817,7 @@ function renderDailySummaries() {
     }
 
     const dailyTotal = document.getElementById('vr-daily-total');
-    if (dailyTotal) dailyTotal.innerText = `${totalVendasHoje.toLocaleString()} Kz`;
+    if (dailyTotal) dailyTotal.innerText = `${(totalVendasHoje - totalDespesasHoje).toLocaleString()} Kz`;
 }
 async function editExpense(id) {
     const exp = sales.find(s => s.id === id);
@@ -3907,7 +3908,7 @@ function sendDailyReport(platform) {
     report += `💰 *RESUMO CAIXA DIÁRIO*\n`;
     report += `Entradas: ${totalGeral.toLocaleString()} Kz\n`;
     report += `Despesas registadas: ${totalDespesas.toLocaleString()} Kz\n`;
-    report += `*SALDO DE CAIXA: ${totalGeral.toLocaleString()} Kz*\n`;
+    report += `*SALDO DE CAIXA: ${(totalGeral - totalDespesas).toLocaleString()} Kz*\n`;
 
     // Envio
     if (platform === 'whatsapp') { 
@@ -5323,7 +5324,8 @@ function selectAcademicPage(value) {
 <script src="./js/heligrafes-cloud.js?v=20261117-05"></script>
 <script src="./js/heligrafes-sales-live.js?v=20261117-05"></script>
 <script src="./js/heligrafes-admin.js?v=20261117-05"></script>
-<script src="./js/heligrafes-sales-challenge.js?v=20261117-05"></script>
+<script src="./js/heligrafes-sales-challenge.js?v=20261121-01"></script>
+<script src="./js/heligrafes-daily-tasks.js?v=20261121-01"></script>
 <script id="heli-auto-update-checker">
 (function(){
   'use strict';
