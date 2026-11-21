@@ -29,6 +29,7 @@ create index if not exists heli_daily_tasks_team_date_idx
   on public.heli_daily_tasks (organization_id, team_name, task_date desc);
 
 alter table public.heli_daily_tasks enable row level security;
+grant select, insert, update, delete on public.heli_daily_tasks to authenticated;
 
 drop policy if exists heli_daily_tasks_read on public.heli_daily_tasks;
 create policy heli_daily_tasks_read on public.heli_daily_tasks
