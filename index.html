@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="heli-build" content="20261121-01">
+    <meta name="heli-build" content="20261121-02">
     <script id="heli-service-worker-register">
     (function(){
       'use strict';
@@ -2003,7 +2003,8 @@ window.onload = function() {
             heliChatReadIds.add(key);
             const readers=heliChatReadByMessage.get(key)||new Set();readers.add(userId);heliChatReadByMessage.set(key,readers);
             updateChatUnreadBadge();
-            const card=document.querySelector('[data-chat-message-id="'+CSS.escape(key)+'"]');if(card)card.classList.remove('ring-2','ring-amber-300');
+            // Mensagens recebidas deixam a caixa de entrada assim que a leitura é confirmada.
+            if(chatIsVisible())renderChatMessages();
           }catch(err){console.warn('[Chat] Não foi possível sincronizar leitura:',err.message||err);}
         }
         async function loadChatReadReceipts(){
@@ -2164,7 +2165,7 @@ window.onload = function() {
           const ownName=document.getElementById('chat-own-name');if(ownName)ownName.textContent=window.HELI_PROFILE?.full_name||window.HELI_USER?.email||'Meu perfil';
           const list=document.getElementById('chat-messages'),counter=document.getElementById('chat-count'),room=document.getElementById('chat-room')?.value||'GERAL',recipient=document.getElementById('chat-recipient')?.value||'TODOS',me=window.HELI_USER?.id||'';
           if(!list)return;
-          const rows=chatMessages.filter(m=>m.room===room&&(m.senderId===me||!m.recipientId||m.recipientId===me)&&(recipient==='TODOS'?!m.recipientId:(m.senderId===me&&m.recipientId===recipient||m.senderId===recipient&&m.recipientId===me))).slice(-200);
+          const rows=chatMessages.filter(m=>m.room===room&&(m.senderId===me||!m.recipientId||m.recipientId===me)&&(recipient==='TODOS'?!m.recipientId:(m.senderId===me&&m.recipientId===recipient||m.senderId===recipient&&m.senderId!==me&&m.recipientId===me))&&!(chatMessageIsForMe(m)&&heliChatReadIds.has(String(m.id)))).slice(-200);
           list.innerHTML=rows.length?rows.map(m=>{const file=renderChatFilePreview(m),person=heliChatRecipients.find(p=>p.user_id===m.senderId),avatar=person?.avatar_url||'',color=getChatUserColor(m.user||'Sistema'),mine=m.senderId===me,loc=heliChatLocations.find(x=>x.id===m.location_id)?.name||'Local não atribuído',to=m.to&&m.to!=='TODOS'?' → '+escapeChatHtml(m.to):'',unread=chatMessageIsForMe(m)&&!heliChatReadIds.has(String(m.id)),readers=heliChatReadByMessage.get(String(m.id))||new Set(),receiptLabel=mine?(m.recipientId?(readers.size?'Lida':m.deliveryAt?'Entregue':'Enviada'):(readers.size?'Lida por '+readers.size+' colega(s)':'Enviada ao grupo')):'',receiptHtml=receiptLabel?'<div class="mt-2 text-right text-[10px] font-bold text-slate-400">'+escapeChatHtml(receiptLabel)+'</div>':'',online=!!window.HeligrafesIsOnline?.(m.senderId),avatarFace=avatar?'<img src="'+escapeChatHtml(avatar)+'" alt="" class="w-9 h-9 rounded-full object-cover border border-slate-200">':'<span class="w-9 h-9 rounded-full flex items-center justify-center text-white font-black" style="background:'+color+'">'+escapeChatHtml((m.user||'F').slice(0,1).toUpperCase())+'</span>',avatarHtml='<span class="relative inline-flex shrink-0">'+avatarFace+'<i title="'+(online?'Online':'Offline')+'" class="absolute -right-0.5 -bottom-0.5 w-3 h-3 rounded-full border-2 border-white '+(online?'bg-green-500':'bg-red-500')+'"></i></span>';return '<div data-chat-message-id="'+escapeChatHtml(String(m.id))+'" onclick="markChatMessageRead(\''+escapeChatHtml(String(m.id))+'\')" class="rounded-xl border border-slate-200 bg-white p-3 shadow-sm cursor-pointer '+(mine?'ml-10':'mr-10')+(unread?' ring-2 ring-amber-300':'')+'" style="border-left:6px solid '+color+'"><div class="flex items-center justify-between gap-3"><div class="flex items-center gap-2">'+avatarHtml+'<span class="text-[10px] font-bold uppercase" style="color:'+color+'">'+escapeChatHtml(m.user||'Funcionário')+to+(unread?' · NOVA':'')+'</span></div><span class="text-[10px] text-slate-400">'+m.date+' '+m.time+'</span></div><div class="text-[10px] text-slate-500 mt-1">📍 '+escapeChatHtml(loc)+'</div><p class="text-sm text-slate-700 mt-2 whitespace-pre-wrap">'+formatChatBody(m.text||'')+'</p>'+file+receiptHtml+'<div class="mt-3 flex flex-wrap gap-2 border-t border-slate-100 pt-2"><button type="button" onclick="event.stopPropagation();replyToChatMessage(this.parentElement.parentElement.dataset.chatMessageId)" class="rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-1.5 text-[10px] font-black text-indigo-700">↩ Responder</button><button type="button" onclick="event.stopPropagation();openForwardChatMessage(this.parentElement.parentElement.dataset.chatMessageId)" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-[10px] font-black text-slate-700">↗ Reencaminhar</button></div></div>';}).join(''):'<div class="text-center text-slate-400 text-sm py-10">Sem mensagens nesta sala.</div>';
           if(counter)counter.innerText=rows.length+' mensagem(ns)';list.scrollTop=list.scrollHeight;renderChatTypingStatus();updateChatUnreadBadge();
         }
@@ -4079,12 +4080,12 @@ async function printDailyReport(copies = 1) {
 
             document.getElementById('rep-daily-gross').innerText = dailyGross.toLocaleString() + ' Kz';
             document.getElementById('rep-daily-exp').innerText = '-' + dailyExp.toLocaleString() + ' Kz';
-            document.getElementById('rep-daily-net').innerText = dailyGross.toLocaleString() + ' Kz';
+            document.getElementById('rep-daily-net').innerText = (dailyGross-dailyExp).toLocaleString() + ' Kz';
             document.getElementById('rep-monthly-gross').innerText = monthlyGross.toLocaleString() + ' Kz';
             document.getElementById('rep-monthly-exp').innerText = '-' + monthlyExp.toLocaleString() + ' Kz';
-            document.getElementById('rep-monthly-net').innerText = monthlyGross.toLocaleString() + ' Kz';
+            document.getElementById('rep-monthly-net').innerText = (monthlyGross-monthlyExp).toLocaleString() + ' Kz';
             document.getElementById('rep-total-exp').innerText = '-' + totalExp.toLocaleString() + ' Kz';
-            document.getElementById('rep-total-net').innerText = totalGross.toLocaleString() + ' Kz';
+            document.getElementById('rep-total-net').innerText = (totalGross-totalExp).toLocaleString() + ' Kz';
 
             let bestMethod = Object.keys(paymentStats).reduce((a, b) => paymentStats[a] > paymentStats[b] ? a : b, '-');
             document.getElementById('rep-best-method').innerText = bestMethod;
@@ -4320,22 +4321,70 @@ async function printDailyReport(copies = 1) {
                 root.innerHTML='<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-3">'+cards+'</div><p class="mt-2 text-[10px] text-slate-400">'+(heliLocationViews.selected==='*'?'Visão consolidada; os cartões preservam a separação por local.':'Inventário consultado directamente para o local seleccionado.')+'</p>';
             }catch(error){root.innerHTML='<p class="text-sm text-rose-600">Não foi possível carregar os saldos: '+heliViewEscape(error.message||error)+'</p>';}
         }
+        async function heliFetchReportTable(table,columns) {
+            const db=window.heliSupabase,org=window.HELI_ORG?.id;if(!db||!org)return [];
+            const all=[],size=1000;
+            for(let from=0;from<20000;from+=size){
+                const q=await db.from(table).select(columns).eq('organization_id',org).range(from,from+size-1);
+                if(q.error)throw q.error;
+                all.push(...(q.data||[]));if(!q.data||q.data.length<size)break;
+            }
+            return all;
+        }
         async function renderLocationCloudReport() {
             const root=document.getElementById('report-location-live-summary');if(!root||!window.heliSupabase)return;
-            root.innerHTML='<p class="text-sm text-slate-400">A consultar os registos centralizados…</p>';
+            root.innerHTML='<p class="text-sm text-slate-400">A consultar vendas, despesas, encomendas e stock de cada local…</p>';
             try{
-                const events=await heliFetchSalesEvents(),locations=heliViewLocations(),selected=heliLocationViews.selected;
+                const [events,expenses,orders,balances,products]=await Promise.all([
+                    heliFetchSalesEvents(),
+                    heliFetchReportTable('expenses','id,location_id,category,description,amount,incurred_at'),
+                    heliFetchReportTable('orders','id,location_id,order_number,order_type,status,description,total,amount_paid,created_at,due_at'),
+                    heliFetchAllStockBalances(),
+                    heliFetchReportTable('products','id,name,min_stock')
+                ]);
+                const locations=heliViewLocations(),selected=heliLocationViews.selected;
                 const chosen=selected==='*'?locations:locations.filter(x=>x.id===selected);
-                const now=new Date(),today=now.toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'}),month=now.toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'}).slice(0,7);
+                const now=new Date(),today=now.toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'}),month=today.slice(0,7);
+                const dateOf=value=>value?new Date(value).toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'}):'';
+                const sum=(list,key)=>list.reduce((a,x)=>a+Number(x[key]||0),0);
+                const productMin=new Map(products.map(p=>[String(p.id),Number(p.min_stock)||0]));
                 const cards=chosen.map(loc=>{
                     const rows=events.filter(x=>x.location_id===loc.id&&x.category!=='EXPENSE');
-                    const daily=rows.filter(x=>new Date(x.occurred_at).toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'})===today);
-                    const monthly=rows.filter(x=>new Date(x.occurred_at).toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'}).slice(0,7)===month);
-                    const sum=list=>list.reduce((a,x)=>a+Number(x.paid||0),0);
-                    return '<div class="rounded-xl border border-blue-100 bg-white p-4 shadow-sm"><p class="text-[10px] font-black uppercase text-slate-400">'+heliViewEscape(loc.name||loc.code)+'</p><div class="mt-2 text-xl font-black text-emerald-700">'+heliViewMoney(sum(daily))+'</div><p class="text-[10px] text-slate-500">Recebido hoje · '+daily.length+' venda(s)</p><div class="mt-3 border-t pt-2 text-sm font-bold text-blue-800">'+heliViewMoney(sum(monthly))+'</div><p class="text-[10px] text-slate-500">Recebido este mês · '+monthly.length+' venda(s)</p><p class="mt-2 text-[10px] text-slate-400">Acumulado: '+heliViewMoney(sum(rows))+' · '+rows.length+' venda(s)</p></div>';
+                    const daily=rows.filter(x=>dateOf(x.occurred_at)===today),monthly=rows.filter(x=>dateOf(x.occurred_at).slice(0,7)===month);
+                    const paid=sum(rows,'paid'),gross=sum(rows,'total'),due=Math.max(0,gross-paid);
+                    const localExpenses=expenses.filter(x=>x.location_id===loc.id),expenseToday=localExpenses.filter(x=>dateOf(x.incurred_at)===today),expenseMonth=localExpenses.filter(x=>dateOf(x.incurred_at).slice(0,7)===month);
+                    const expenseAll=sum(localExpenses,'amount'),net=paid-expenseAll;
+                    const localOrders=orders.filter(x=>x.location_id===loc.id),orderDue=localOrders.reduce((a,x)=>a+Math.max(0,Number(x.total||0)-Number(x.amount_paid||0)),0);
+                    const localBalances=balances.filter(x=>x.location_id===loc.id),stockUnits=sum(localBalances,'quantity');
+                    const lowStock=localBalances.filter(x=>productMin.has(String(x.product_id))&&Number(x.quantity||0)<=productMin.get(String(x.product_id))&&productMin.get(String(x.product_id))>0).length;
+                    const categories={};rows.forEach(x=>{const k=String(x.category||'OUTROS').toUpperCase();categories[k]=(categories[k]||0)+1;});
+                    const categoryLine=Object.entries(categories).sort((a,b)=>b[1]-a[1]).map(([k,v])=>heliViewEscape(k)+': '+v).join(' · ')||'Sem vendas registadas';
+                    const topSellerMap={};rows.forEach(x=>{const name=String(x.seller_name||'Sem vendedor');topSellerMap[name]=(topSellerMap[name]||0)+Number(x.paid||0);});
+                    const topSeller=Object.entries(topSellerMap).sort((a,b)=>b[1]-a[1])[0];
+                    return '<article class="rounded-2xl border border-blue-100 bg-white p-4 shadow-sm">'+
+                      '<div class="flex items-start justify-between gap-2"><div><p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Relatório individual</p><h3 class="text-lg font-black text-slate-800">'+heliViewEscape(loc.name||loc.code)+'</h3></div><span class="rounded-full bg-blue-50 px-2 py-1 text-[9px] font-black text-blue-700">'+rows.length+' vendas</span></div>'+
+                      '<div class="mt-3 grid grid-cols-2 gap-3">'+
+                      '<div class="rounded-xl bg-emerald-50 p-3"><p class="text-[9px] font-bold uppercase text-emerald-700">Recebido hoje</p><b class="text-sm text-emerald-800">'+heliViewMoney(sum(daily,'paid'))+'</b><p class="text-[9px] text-slate-500">'+daily.length+' venda(s)</p></div>'+
+                      '<div class="rounded-xl bg-blue-50 p-3"><p class="text-[9px] font-bold uppercase text-blue-700">Recebido no mês</p><b class="text-sm text-blue-800">'+heliViewMoney(sum(monthly,'paid'))+'</b><p class="text-[9px] text-slate-500">'+monthly.length+' venda(s)</p></div>'+
+                      '<div class="rounded-xl bg-slate-50 p-3"><p class="text-[9px] font-bold uppercase text-slate-500">Faturação total</p><b class="text-sm text-slate-800">'+heliViewMoney(gross)+'</b><p class="text-[9px] text-slate-500">Por receber: '+heliViewMoney(due)+'</p></div>'+
+                      '<div class="rounded-xl bg-rose-50 p-3"><p class="text-[9px] font-bold uppercase text-rose-700">Despesas totais</p><b class="text-sm text-rose-800">'+heliViewMoney(expenseAll)+'</b><p class="text-[9px] text-slate-500">Hoje: '+heliViewMoney(sum(expenseToday,'amount'))+' · Mês: '+heliViewMoney(sum(expenseMonth,'amount'))+'</p></div>'+
+                      '<div class="col-span-2 rounded-xl border border-amber-100 bg-amber-50 p-3"><p class="text-[9px] font-bold uppercase text-amber-800">Saldo operacional (recebido − despesas)</p><b class="text-lg '+(net>=0?'text-emerald-700':'text-rose-700')+'">'+heliViewMoney(net)+'</b><p class="text-[9px] text-slate-500">Não representa lucro contabilístico; não deduz custo das mercadorias.</p></div>'+
+                      '</div>'+
+                      '<div class="mt-3 space-y-2 border-t border-slate-100 pt-3 text-[11px] text-slate-600">'+
+                      '<p><b>Departamentos:</b> '+categoryLine+'</p>'+
+                      '<p><b>Encomendas:</b> '+localOrders.length+' · valores pendentes: '+heliViewMoney(orderDue)+'</p>'+
+                      '<p><b>Stock:</b> '+heliViewMoney(stockUnits).replace(' Kz',' unidades')+' em quantidade agregada · '+localBalances.length+' registo(s) · '+lowStock+' abaixo/no mínimo</p>'+
+                      '<p><b>Vendedor com maior recebimento:</b> '+(topSeller?heliViewEscape(topSeller[0])+' · '+heliViewMoney(topSeller[1]):'Sem vendas')+'</p>'+
+                      '</div></article>';
                 }).join('');
-                const allRows=selected==='*'?events.filter(x=>x.category!=='EXPENSE'):events.filter(x=>x.location_id===selected&&x.category!=='EXPENSE');
-                root.innerHTML='<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3">'+cards+'</div><div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900"><b>Fonte e limite dos dados:</b> vendas recebidas e contagem vêm de pos_sales_events no Supabase. Despesas, dívidas e alguns custos históricos não fazem parte deste registo central de vendas; não são apresentados como se estivessem sincronizados. Registos consultados: '+allRows.length+'.</div>';
+                const allRows=selected==='*'?events:events.filter(x=>x.location_id===selected);
+                root.innerHTML='<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5 gap-3">'+cards+'</div>'+
+                  '<div class="mt-4 overflow-x-auto rounded-xl border border-slate-200 bg-white"><table class="w-full min-w-[850px] text-left text-xs"><thead class="bg-slate-100 text-slate-600 uppercase"><tr><th class="p-3">Local</th><th class="p-3">Vendas</th><th class="p-3">Recebido</th><th class="p-3">Despesas</th><th class="p-3">Saldo operacional</th><th class="p-3">Por receber</th><th class="p-3">Encomendas pendentes</th></tr></thead><tbody>'+chosen.map(loc=>{
+                    const e=events.filter(x=>x.location_id===loc.id&&x.category!=='EXPENSE'),ex=expenses.filter(x=>x.location_id===loc.id),o=orders.filter(x=>x.location_id===loc.id);
+                    const received=sum(e,'paid'),spent=sum(ex,'amount'),receivable=Math.max(0,sum(e,'total')-received),orderPending=o.reduce((a,x)=>a+Math.max(0,Number(x.total||0)-Number(x.amount_paid||0)),0);
+                    return '<tr class="border-t"><td class="p-3 font-black">'+heliViewEscape(loc.name||loc.code)+'</td><td class="p-3">'+e.length+'</td><td class="p-3">'+heliViewMoney(received)+'</td><td class="p-3 text-rose-700">'+heliViewMoney(spent)+'</td><td class="p-3 font-black '+(received-spent>=0?'text-emerald-700':'text-rose-700')+'">'+heliViewMoney(received-spent)+'</td><td class="p-3">'+heliViewMoney(receivable)+'</td><td class="p-3">'+heliViewMoney(orderPending)+'</td></tr>';
+                }).join('')+'</tbody></table></div>'+
+                  '<div class="mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900"><b>Critério e fontes:</b> vendas/recebimentos: pos_sales_events; despesas: expenses; encomendas e valores pendentes: orders; stock: stock_balances + products.min_stock. Saldo operacional não é lucro líquido. Registos de vendas no âmbito seleccionado: '+allRows.length+'. Se um módulo não tiver registos centralizados, o indicador aparece a zero; os registos locais antigos não sincronizados não são misturados com dados cloud.</div>';
             }catch(error){root.innerHTML='<p class="text-sm text-rose-600">Falha ao carregar o relatório por local: '+heliViewEscape(error.message||error)+'</p>';}
         }
         async function syncHeliLocationViews() {
