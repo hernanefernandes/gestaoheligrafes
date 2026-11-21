@@ -1,6 +1,6 @@
 'use strict';
-const CACHE_PREFIX='heligrafes-v52-';
-const CACHE='heligrafes-v52-shell-v6';
+const CACHE_PREFIX='heligrafes-v53-';
+const CACHE='heligrafes-v53-shell-v1';
 
 self.addEventListener('install',event=>{
  event.waitUntil(self.skipWaiting());
