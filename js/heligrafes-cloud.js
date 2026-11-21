@@ -376,7 +376,8 @@ async function launch(user){
   window.dispatchEvent(new CustomEvent('heli-auth-ready'));
   if(!window.HELI_OFFLINE_MODE){await syncProductCatalog();subscribeProductCatalog();}
   if(!canAdmin){
-   ['heli-admin-nav-heading','btn-gestao-produtos','btn-stocks','btn-relatorios','btn-historico'].forEach(id=>{const n=el(id);if(n)n.style.display='none';});
+   ['heli-admin-nav-heading','btn-gestao-produtos','btn-stocks','btn-heli-orders-list','btn-relatorios','btn-historico'].forEach(id=>{const n=el(id);if(n)n.style.display='none';});
+   document.querySelectorAll('.heli-department-tab[data-tab="heli-orders-list"]').forEach(n=>n.style.display='none');
   }
   if(!window.__heliStorageWrapped){
    const originalSetItem=Storage.prototype.setItem;
