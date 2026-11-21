@@ -8,7 +8,8 @@ const isAdmin = () => !!window.HELI_HAS_ROLE?.('owner','admin');
 const todayKey = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Luanda'}).format(new Date());
 let taskChannel = null, staffRows = [], taskRows = [], todayOrders = [], selectedDate = todayKey();
 
-function isAllowedDepartment(value){ const s=String(value||'').normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toUpperCase(); return s.includes('ACADEM')||s.includes('TSHIRT')||s.includes('T-SHIRT'); }\nfunction getTodayOrders(){ return todayOrders.filter(x=>isAllowedDepartment(x.category)); }
+function isAllowedDepartment(value){ const s=String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase(); return s.includes('ACADEM')||s.includes('TSHIRT')||s.includes('T-SHIRT'); }
+function getTodayOrders(){ return todayOrders.filter(x=>isAllowedDepartment(x.category)); }
 async function loadTodayOrders(){
   todayOrders=[];
   if(!isAdmin()||!db()||!window.HELI_ORG?.id)return;
@@ -142,7 +143,7 @@ function renderEmployee(){
 function renderAdminList(){
   const root=$('heli-task-admin-list');if(!root)return;
   const groups=new Map();
-  taskRows.forEach(t=>{const key=t.team_name||'Geral';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(t);});
+  taskRows.filter(t=>isAllowedDepartment(t.department)).sort((a,b)=>String(a.task_date).localeCompare(String(b.task_date))||String(a.title).localeCompare(String(b.title),'pt')).forEach(t=>{const key=t.team_name||'Geral';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(t);});
   root.innerHTML=groups.size?[...groups.entries()].map(([team,rows])=>'<section class="mb-5"><div class="mb-2 flex items-center justify-between"><h4 class="font-black text-slate-800">'+esc(team)+'</h4><span class="text-xs text-slate-500">'+rows.filter(t=>t.status==='done').length+'/'+rows.length+' concluídos</span></div>'+rows.map(t=>taskCard(t,true)).join('')+'</section>').join(''):'<p class="rounded-xl border border-dashed p-6 text-center text-sm text-slate-500">Ainda não foram distribuídos trabalhos para esta data.</p>';
 }
 async function completeTask(id,button){
