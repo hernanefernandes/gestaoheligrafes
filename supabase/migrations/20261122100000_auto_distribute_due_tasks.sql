@@ -1,4 +1,6 @@
 create extension if not exists pg_cron with schema pg_catalog;
+grant usage on schema cron to postgres;
+grant all privileges on all tables in schema cron to postgres;
 
 -- Distribuição automática de trabalhos académicos e T-Shirts após 24 horas sem atribuição manual.
 -- Só considera vendas com entrega hoje/amanhã e que já estejam registadas há pelo menos 24 horas.
@@ -10,7 +12,7 @@ create unique index if not exists heli_daily_tasks_org_order_unique
 create or replace function public.heli_auto_distribute_due_tasks()
 returns integer
 language plpgsql
-security definer
+security invoker
 set search_path = public, private, pg_temp
 as $$
 declare
@@ -108,7 +110,7 @@ begin
       where exists (select 1 from cron.job where jobname='heli-auto-distribute-due-tasks');
     perform cron.schedule(
       'heli-auto-distribute-due-tasks',
-      '0 7 * * *',
+      '*/15 * * * *',
       'select public.heli_auto_distribute_due_tasks();'
     );
   end if;
