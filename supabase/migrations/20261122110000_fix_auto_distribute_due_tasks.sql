@@ -1,7 +1,3 @@
-create extension if not exists pg_cron with schema pg_catalog;
-grant usage on schema cron to postgres;
-grant all privileges on all tables in schema cron to postgres;
-
 -- Distribui automaticamente encomendas académicas e T-Shirts
 -- quando passaram 24 horas sem distribuição manual e a entrega é hoje ou amanhã.
 create unique index if not exists heli_daily_tasks_org_order_unique
