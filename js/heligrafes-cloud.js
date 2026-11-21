@@ -4,7 +4,7 @@ const cfg=window.HELI_SUPABASE_CONFIG;
 if(!cfg||!window.supabase?.createClient){console.error('[Heligrafes] Supabase SDK/config indisponível.');return;}
 const client=window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 window.heliSupabase=client;
-const STATE_KEYS=['multi_sales_v52','multi_products_v52','multi_employees_v52','multi_attendance_v52','multi_payroll_payments_v52','multi_shift_history_v52','multi_shift_audit_logs_v52','multi_extra_cash_v52','multi_debt_payments_v52','multi_chat_messages_v52','multi_chat_deleted_v52'];
+const STATE_KEYS=['multi_sales_v52','multi_products_v52','multi_employees_v52','multi_attendance_v52','multi_payroll_payments_v52','multi_shift_history_v52','multi_shift_audit_logs_v52','multi_extra_cash_v52','multi_debt_payments_v52','multi_chat_deleted_v52'];
 let identity=null,originalOnload=null,started=false,timer=null,saving=false,saveAgain=false;
 function prepareUserLocalState(user,isGlobalAdmin){
  const scopeKey='heli_local_scope_user_v1',previousUser=localStorage.getItem(scopeKey)||'';
