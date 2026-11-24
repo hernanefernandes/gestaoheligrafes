@@ -9,7 +9,7 @@ const dateText=value=>{
  const d=new Date(value.length===10?value+'T12:00:00':value);
  return Number.isNaN(d.getTime())?String(value):d.toLocaleDateString('pt-AO',{timeZone:'Africa/Luanda'});
 };
-let rows=[],channel=null,loading=false,ready=false;
+let rows=[],channel=null,taskChannel=null,loading=false,ready=false;
 const locationName=id=>(window.HELI_LOCATIONS||[]).find(x=>x.id===id)?.name||(window.HELI_ALLOWED_LOCATIONS||[]).find(x=>x.id===id)?.name||'Local não identificado';
 function ensurePanel(){
  let root=$('heli-orders-list');
@@ -75,8 +75,11 @@ async function fetchRows(){
   from+=step;
   if(from>=10000)break;
  }
+ const taskQ=await db.from('heli_daily_tasks').select('id,order_reference,title,assigned_user_id,assignee_name,status,completed_at,delivery_status,delivered_at').eq('organization_id',org);
+ if(taskQ.error)throw taskQ.error;
+ const taskMap=new Map();(taskQ.data||[]).forEach(task=>{if(task.order_reference)taskMap.set(String(task.order_reference),task);});
  const allowed=window.HELI_ALLOWED_LOCATIONS||[];
- return all.map(normalizeRow).filter(x=>allowed.length===0||allowed.some(l=>l.id===x.locationId));
+ return all.map(normalizeRow).map(row=>({...row,workTask:taskMap.get(String(row.id))||null})).filter(x=>allowed.length===0||allowed.some(l=>l.id===x.locationId));
 }
 function render(){
  const target=$('heli-orders-results');if(!target)return;
@@ -102,8 +105,18 @@ function render(){
   const st=statusOf(r),label=st==='PAGO'?'PAGO':st==='PARCIAL'?'PAGAMENTO PARCIAL':st==='PENDENTE'?'PAGAR':'POR CONFIRMAR';
   const badge=st==='PAGO'?'bg-emerald-100 text-emerald-800':st==='PARCIAL'?'bg-amber-100 text-amber-800':st==='PENDENTE'?'bg-rose-100 text-rose-800':'bg-slate-100 text-slate-700';
   const late=r.delivery&&r.delivery<new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Luanda'})&&st!=='PAGO';
-  return '<article class="rounded-2xl border '+(late?'border-rose-300 bg-rose-50/50':'border-slate-200 bg-white')+' p-4 shadow-sm"><div class="flex flex-wrap items-start justify-between gap-3"><div class="min-w-0 flex-1"><div class="mb-2 flex flex-wrap items-center gap-2"><span class="rounded-full px-2 py-1 text-[10px] font-black '+(r.category==='ACADEMICO'?'bg-blue-100 text-blue-800':'bg-violet-100 text-violet-800')+'">'+(r.category==='ACADEMICO'?'🎓 ACADÉMICO':'👕 T-SHIRTS')+'</span><span class="text-[10px] font-bold text-slate-400">'+esc(r.location)+'</span>'+(late?'<span class="rounded-full bg-rose-600 px-2 py-1 text-[10px] font-black text-white">ENTREGA ATRASADA</span>':'')+'</div><h3 class="break-words text-base font-black text-slate-800">'+esc(r.client)+'</h3><p class="mt-1 whitespace-pre-wrap break-words text-sm text-slate-600">'+esc(r.description)+'</p></div><strong class="whitespace-nowrap text-lg font-black text-slate-900">'+money(r.total)+'</strong></div><div class="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-3 text-xs sm:grid-cols-4"><div><span class="block text-[9px] font-bold uppercase text-slate-400">Contacto</span><b class="break-all text-slate-700">'+(r.phone?esc(r.phone):'Sem contacto')+'</b></div><div><span class="block text-[9px] font-bold uppercase text-slate-400">Entrega</span><b class="text-slate-700">'+esc(dateText(r.delivery))+'</b></div><div><span class="block text-[9px] font-bold uppercase text-slate-400">Pago registado</span><b class="text-emerald-700">'+money(r.paid)+'</b></div><div><span class="block text-[9px] font-bold uppercase text-slate-400">Em dívida</span><b class="'+(r.debt>0?'text-rose-700':'text-emerald-700')+'">'+money(r.debt)+'</b></div></div><div class="mt-3 flex flex-wrap items-center justify-between gap-2"><span class="rounded-full px-3 py-1.5 text-[10px] font-black '+badge+'">'+label+(r.debt>0?' · '+money(r.debt):'')+'</span><span class="text-[10px] text-slate-400">Registado: '+esc(dateText(r.created))+' · '+esc(r.seller)+'</span></div></article>';
+  const work=r.workTask;
+  const workLabel=!work?'SEM DISTRIBUIÇÃO':work.delivery_status==='delivered'?'ENTREGUE AO CLIENTE':work.status==='done'?'CONCLUÍDO · AGUARDA ENTREGA':'EM PRODUÇÃO';
+  const workClass=work?.delivery_status==='delivered'?'bg-emerald-100 text-emerald-800':work?.status==='done'?'bg-blue-100 text-blue-800':'bg-amber-100 text-amber-800';
+  const deliverButton=isAdmin()&&work?.status==='done'&&work?.delivery_status!=='delivered'?'<button type="button" data-mark-delivered="'+esc(work.id)+'" class="rounded-lg bg-emerald-700 px-3 py-2 text-[10px] font-black text-white">MARCAR COMO ENTREGUE</button>':'';
+  return '<article class="rounded-2xl border '+(late?'border-rose-300 bg-rose-50/50':'border-slate-200 bg-white')+' p-4 shadow-sm"><div class="flex flex-wrap items-start justify-between gap-3"><div class="min-w-0 flex-1"><div class="mb-2 flex flex-wrap items-center gap-2"><span class="rounded-full px-2 py-1 text-[10px] font-black '+(r.category==='ACADEMICO'?'bg-blue-100 text-blue-800':'bg-violet-100 text-violet-800')+'">'+(r.category==='ACADEMICO'?'🎓 ACADÉMICO':'👕 T-SHIRTS')+'</span><span class="text-[10px] font-bold text-slate-400">'+esc(r.location)+'</span>'+(late?'<span class="rounded-full bg-rose-600 px-2 py-1 text-[10px] font-black text-white">ENTREGA ATRASADA</span>':'')+'</div><h3 class="break-words text-base font-black text-slate-800">'+esc(r.client)+'</h3><p class="mt-1 whitespace-pre-wrap break-words text-sm text-slate-600">'+esc(r.description)+'</p></div><strong class="whitespace-nowrap text-lg font-black text-slate-900">'+money(r.total)+'</strong></div><div class="mt-3 grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-3 text-xs sm:grid-cols-4"><div><span class="block text-[9px] font-bold uppercase text-slate-400">Contacto</span><b class="break-all text-slate-700">'+(r.phone?esc(r.phone):'Sem contacto')+'</b></div><div><span class="block text-[9px] font-bold uppercase text-slate-400">Entrega</span><b class="text-slate-700">'+esc(dateText(r.delivery))+'</b></div><div><span class="block text-[9px] font-bold uppercase text-slate-400">Pago registado</span><b class="text-emerald-700">'+money(r.paid)+'</b></div><div><span class="block text-[9px] font-bold uppercase text-slate-400">Em dívida</span><b class="'+(r.debt>0?'text-rose-700':'text-emerald-700')+'">'+money(r.debt)+'</b></div></div><div class="mt-3 flex flex-wrap items-center justify-between gap-2"><span class="rounded-full px-3 py-1.5 text-[10px] font-black '+badge+'">'+label+(r.debt>0?' · '+money(r.debt):'')+'</span><span class="rounded-full px-2 py-1 text-[10px] font-black '+workClass+'">'+workLabel+'</span>'+deliverButton+'<span class="text-[10px] text-slate-400">Registado: '+esc(dateText(r.created))+' · '+esc(r.seller)+'</span></div></article>';
  }).join(''):'<div class="col-span-full rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center text-sm text-slate-500">Não foram encontradas encomendas com estes critérios.</div>';
+ target.querySelectorAll('[data-mark-delivered]').forEach(button=>button.addEventListener('click',()=>markDelivered(button.dataset.markDelivered,button)));
+}
+async function markDelivered(taskId,button){
+ if(!isAdmin())return;button.disabled=true;button.textContent='A guardar...';
+ const q=await window.heliSupabase.from('heli_daily_tasks').update({delivery_status:'delivered',delivered_at:new Date().toISOString(),delivered_by:window.HELI_USER.id}).eq('id',taskId).eq('status','done').select('id').single();
+ if(q.error){button.disabled=false;button.textContent='MARCAR COMO ENTREGUE';alert('Não foi possível registar a entrega: '+(q.error.message||q.error));return;}await load(false);
 }
 async function load(manual=false){
  if(loading)return;loading=true;
@@ -118,6 +131,7 @@ function subscribe(){
   const row=payload.new||payload.old||{};
   if(!row.category||['ACADEMICO','TSHIRTS'].includes(String(row.category).toUpperCase()))void load(false);
  }).subscribe();
+ taskChannel=db.channel('heli-orders-task-status-'+org).on('postgres_changes',{event:'*',schema:'public',table:'heli_daily_tasks',filter:'organization_id=eq.'+org},()=>void load(false)).subscribe();
 }
 window.openHeliOrdersList=()=>{
  if(!isAdmin()){alert('A Lista de Encomendas está disponível exclusivamente para o administrador.');return;}
