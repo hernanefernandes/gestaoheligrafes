@@ -155,7 +155,36 @@ function renderWeekOrders(){
  const mapped=new Map(taskRows.filter(t=>t.order_reference).map(t=>[String(t.order_reference),t]));
  const orders=getTodayOrders(),notAssigned=orders.filter(o=>!mapped.has(String(o.reference)));
  root.innerHTML='<section class="rounded-2xl border bg-white p-4"><div class="mb-3 flex justify-between"><h4 class="font-black">Encomendas de todos os locais</h4><b class="text-xs">'+orders.length+' encomendas · '+notAssigned.length+' por distribuir</b></div>'+
- (orders.length?orders.map(o=>{const t=mapped.get(String(o.reference));const label=t?(t.status==='done'?'CONCLUÍDA':'DISTRIBUÍDA'):'POR DISTRIBUIR';const cls=t?(t.status==='done'?'bg-emerald-100 text-emerald-800':'bg-blue-100 text-blue-800'):'bg-amber-100 text-amber-800';return '<div class="flex flex-wrap justify-between gap-2 border-t py-3"><div><b class="text-sm">'+esc(o.client)+' · '+esc(o.desc)+'</b><p class="text-xs text-slate-500">'+esc(o.location_name)+' · '+esc(o.category)+' · '+money(o.total)+'</p></div><div class="text-right"><span class="rounded-full px-2 py-1 text-[10px] font-black '+cls+'">'+label+'</span>'+(t?'<p class="text-xs text-slate-500">'+esc(t.assignee_name)+'</p>':'')+'</div></div>';}).join(''):'<p class="text-sm text-slate-500">Sem encomendas académicas ou T-Shirts nesta semana.</p>')+'</section>';
+ (orders.length?orders.map(o=>{
+  const task=mapped.get(String(o.reference));
+  const label=task?(task.status==='done'?'CONCLUÍDA':'DISTRIBUÍDA'):'POR DISTRIBUIR';
+  const cls=task?(task.status==='done'?'bg-emerald-100 text-emerald-800':'bg-blue-100 text-blue-800'):'bg-amber-100 text-amber-800';
+  const picker=!task?'<div class="mt-2 flex flex-wrap justify-end gap-2"><select class="big-input max-w-56" data-order-assignee="'+esc(o.reference)+'"><option value="">Escolher funcionário</option>'+staffRows.map(p=>'<option value="'+esc(p.user_id)+'">'+esc(p.full_name||p.email)+' · '+esc(p.location_name)+'</option>').join('')+'</select><button type="button" class="rounded-lg bg-blue-700 px-3 py-2 text-xs font-black text-white" data-order-distribute="'+esc(o.reference)+'">Distribuir trabalho</button></div>':'<p class="mt-1 text-xs text-slate-500">'+esc(task.assignee_name)+'</p>';
+  return '<div class="flex flex-wrap justify-between gap-3 border-t py-3"><div class="min-w-0 flex-1"><b class="text-sm">'+esc(o.client)+' · '+esc(o.desc)+'</b><p class="text-xs text-slate-500">'+esc(o.location_name)+' · '+esc(o.category)+' · '+money(o.total)+'</p></div><div class="min-w-0 text-right"><span class="rounded-full px-2 py-1 text-[10px] font-black '+cls+'">'+label+'</span>'+picker+'</div></div>';
+ }).join(''):'<p class="text-sm text-slate-500">Sem encomendas académicas ou T-Shirts nesta semana.</p>')+'</section>';
+ root.querySelectorAll('[data-order-distribute]').forEach(button=>button.addEventListener('click',()=>distributeOrder(button.dataset.orderDistribute,button)));
+}
+async function distributeOrder(reference,button){
+ if(!isAdmin())return;
+ const select=$('heli-task-week-orders')?.querySelector('[data-order-assignee="'+CSS.escape(reference)+'"]');
+ const staff=staffRows.find(p=>p.user_id===select?.value);
+ const order=getTodayOrders().find(o=>String(o.reference)===String(reference));
+ if(!staff||!order){showNotice('Distribuição não concluída','Seleccione um funcionário válido.');return;}
+ button.disabled=true;button.textContent='A distribuir...';
+ const stamp=order.occurred_at?new Date(order.occurred_at):new Date();
+ const taskDate=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Luanda'}).format(stamp);
+ const result=await db().from('heli_daily_tasks').insert({
+  organization_id:window.HELI_ORG.id,location_id:order.location_id||staff.location_id,
+  task_date:taskDate,order_reference:String(reference),
+  order_description:(order.location_name?order.location_name+' · ':'')+(order.client||'Cliente')+' · '+(order.desc||'Encomenda')+' · '+money(order.total),
+  department:order.category==='ACADEMICO'?'Académico':'T-Shirts',
+  title:order.desc||'Executar encomenda',description:'Encomenda de '+(order.client||'cliente')+'. Valor: '+money(order.total),
+  team_name:staff.team_name||'Geral',assigned_user_id:staff.user_id,
+  assignee_name:staff.full_name||staff.email,assigned_by:window.HELI_USER.id
+ }).select('id').single();
+ if(result.error){showNotice('Erro na distribuição',result.error.message||'Não foi possível distribuir.');button.disabled=false;button.textContent='Distribuir trabalho';return;}
+ await loadTasks();
+ showNotice('Trabalho distribuído', (staff.full_name||staff.email)+' recebeu a encomenda.');
 }
 function renderStaffCounts(){
  const root=$('heli-task-staff-counts');if(!root)return;
