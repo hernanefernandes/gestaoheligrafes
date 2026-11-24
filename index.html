@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="heli-build" content="20261125-02">
+    <meta name="heli-build" content="20261125-03">
     <script id="heli-service-worker-register">
     (function(){
       'use strict';
@@ -726,13 +726,12 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                             </div>
                         </div>
 
+                        <section id="vr-top20-wrap" class="vr-top20-wrap" aria-label="20 produtos mais vendidos">
+                            <div class="vr-top20-heading"><div><strong>⚡ MAIS VENDIDOS</strong><small>Top 20 deste local · toque para adicionar à factura</small></div><span id="vr-top20-updated">A carregar…</span></div>
+                            <div id="vr-top20-grid" class="vr-top20-grid"><div class="vr-top20-empty">A consultar o histórico de vendas…</div></div>
+                        </section>
                         <div class="pos-cart-panel flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                            <div class="bg-slate-100 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
-                                <h3 class="font-bold text-slate-600 text-sm uppercase tracking-wide">Itens na Fatura</h3>
-                                <div id="vr-top20-wrap" class="vr-top20-wrap" aria-label="20 produtos mais vendidos">
-                                    <div class="vr-top20-heading"><div><strong>⚡ MAIS VENDIDOS</strong><small>Top 20 deste local · toque para adicionar à factura</small></div><span id="vr-top20-updated">A carregar…</span></div>
-                                    <div id="vr-top20-grid" class="vr-top20-grid"><div class="vr-top20-empty">A consultar o histórico de vendas…</div></div>
-                                </div>
+                            <div class="vr-cart-toolbar px-4 py-3 border-b border-slate-200 flex justify-end items-center">
                                 <span id="vr-count-items" class="text-xs font-bold text-slate-400 bg-white px-2 py-1 rounded border">0 Itens</span>
                             </div>
                             <div class="pos-cart-scroll flex-1 p-0" aria-label="Lista rolável de itens da fatura">
@@ -4109,12 +4108,15 @@ async function printDailyReport(copies = 1) {
         printWindow.addEventListener('pagehide', requireLogout, { once: true });
     }
     printWindow.document.write(`<html><head><title>Relatório de Fecho - ${today}</title><style>body{margin:0}.report-copy{padding:12px;break-after:page;page-break-after:always}.report-copy:last-child{break-after:auto;page-break-after:auto}.copy-label{max-width:820px;margin:0 auto 8px;padding:6px 10px;color:#1d4ed8;font:800 11px Arial;text-align:right}@media print{@page{margin:12mm}.report-copy{break-after:page;page-break-after:always}.report-copy:last-child{break-after:auto;page-break-after:auto}}
-        /* Top 20 produtos mais vendidos no POS */
-        .vr-top20-wrap{padding:12px 14px 13px;background:linear-gradient(120deg,#f0f8ff,#fff8e8);border-bottom:1px solid #d8e8f7;position:relative;z-index:2}
-        .vr-top20-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.vr-top20-heading strong{display:block;color:#073b86;font-size:12px;font-weight:1000;letter-spacing:.06em}.vr-top20-heading small{display:block;color:#68809a;font-size:10px;margin-top:2px}.vr-top20-heading>span{font-size:9px;color:#6b829b;font-weight:800;white-space:nowrap}
-        .vr-top20-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;max-height:190px;overflow:auto;padding:2px 2px 5px}
-        .vr-top20-button{position:relative;display:flex;min-width:0;min-height:61px;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:5px;padding:8px;border:1px solid #b9d6f2;border-radius:11px;background:linear-gradient(145deg,#fff,#eaf5ff);color:#123d6b;text-align:left;box-shadow:0 3px 9px #174b7b12;cursor:pointer;transition:transform .16s,border-color .16s,box-shadow .16s}.vr-top20-button:nth-child(4n+2){background:linear-gradient(145deg,#fff,#fff4d9);border-color:#f0d18a}.vr-top20-button:nth-child(4n+3){background:linear-gradient(145deg,#fff,#e8fbf4);border-color:#a9dfc8}.vr-top20-button:nth-child(4n){background:linear-gradient(145deg,#fff,#f3edff);border-color:#d2c0f2}.vr-top20-button:hover{transform:translateY(-2px);border-color:#1474c8;box-shadow:0 7px 15px #174b7b22}.vr-top20-button:active{transform:scale(.97)}.vr-top20-button:focus-visible{outline:3px solid #f5b51b;outline-offset:2px}.vr-top20-rank{position:absolute;top:5px;right:6px;font-size:9px;font-weight:1000;color:#0b62a7}.vr-top20-name{display:-webkit-box;max-width:100%;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:10px;line-height:1.25;font-weight:900;overflow-wrap:anywhere;padding-right:12px}.vr-top20-meta{font-size:9px;font-weight:800;color:#47708f}.vr-top20-empty{grid-column:1/-1;padding:12px;border:1px dashed #b9cfe4;border-radius:10px;background:#ffffffaa;text-align:center;color:#6b829b;font-size:11px}.vr-top20-button:disabled{opacity:.55;cursor:not-allowed}
-        @media(max-width:900px){.vr-top20-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:520px){.vr-top20-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:210px}.vr-top20-button{min-height:55px}}
+        /* Top 20: painel flutuante com botões vermelho-claro e contorno branco */
+        .vr-top20-wrap{position:relative;z-index:3;margin:0 0 12px;padding:13px 15px 14px;border:1px solid #fff;border-radius:18px;background:linear-gradient(135deg,#fff7f7 0%,#ffe8e8 55%,#fff 100%);box-shadow:0 12px 28px rgba(190,35,50,.12),0 3px 9px rgba(25,55,90,.06)}
+        .vr-top20-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.vr-top20-heading strong{display:block;color:#a51f32;font-size:12px;font-weight:1000;letter-spacing:.07em}.vr-top20-heading small{display:block;color:#8b5860;font-size:10px;margin-top:3px}.vr-top20-heading>span{font-size:9px;color:#93666b;font-weight:800;white-space:nowrap}
+        .vr-top20-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;max-height:205px;overflow:auto;padding:3px 3px 7px}
+        .vr-top20-button{position:relative;display:flex;min-width:0;min-height:62px;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:5px;padding:9px 10px;border:2px solid #fff;border-radius:13px;background:linear-gradient(145deg,#ffdede,#ffeded 72%,#fff);color:#8f1d2e;text-align:left;box-shadow:0 5px 13px rgba(173,35,53,.13),inset 0 1px 0 #fff;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease}
+        .vr-top20-button:hover{transform:translateY(-3px);background:linear-gradient(145deg,#ffcaca,#ffe5e5 72%,#fff);box-shadow:0 10px 19px rgba(173,35,53,.2),0 0 0 1px #fff}.vr-top20-button:active{transform:translateY(-1px) scale(.98)}.vr-top20-button:focus-visible{outline:3px solid #a51f32;outline-offset:2px}
+        .vr-top20-rank{position:absolute;top:6px;right:7px;padding:2px 5px;border:1px solid #fff;border-radius:999px;background:#fff9;color:#a51f32;font-size:9px;font-weight:1000}.vr-top20-name{display:-webkit-box;max-width:100%;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:10px;line-height:1.25;font-weight:900;overflow-wrap:anywhere;padding-right:17px}.vr-top20-meta{font-size:9px;font-weight:900;color:#a04b57}
+        .vr-top20-empty{grid-column:1/-1;padding:13px;border:2px dashed #fff;border-radius:12px;background:#fff9;text-align:center;color:#8b5860;font-size:11px}.vr-top20-button:disabled{opacity:.55;cursor:not-allowed}
+        @media(max-width:900px){.vr-top20-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:520px){.vr-top20-wrap{padding:11px}.vr-top20-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:230px}.vr-top20-button{min-height:57px}}
 </style></head><body onload="window.print()">${copiesHtml}</body></html>`);
     printWindow.document.close();
 }
