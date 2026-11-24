@@ -7,14 +7,17 @@ const money = value => (Number(value)||0).toLocaleString('pt-AO',{maximumFractio
 const isAdmin = () => !!window.HELI_HAS_ROLE?.('owner','admin');
 const todayKey = () => new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Luanda'}).format(new Date());
 let taskChannel = null, staffRows = [], taskRows = [], todayOrders = [], selectedDate = todayKey();
+function weekBounds(value){const d=new Date(String(value||todayKey())+'T12:00:00Z');const n=(d.getUTCDay()+6)%7;const a=new Date(d);a.setUTCDate(d.getUTCDate()-n);const b=new Date(a);b.setUTCDate(a.getUTCDate()+6);return {start:a.toISOString().slice(0,10),end:b.toISOString().slice(0,10)};}
+function weekLabel(){const w=weekBounds(selectedDate);return w.start+' a '+w.end;}
 
 function isAllowedDepartment(value){ const s=String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toUpperCase(); return s.includes('ACADEM')||s.includes('TSHIRT')||s.includes('T-SHIRT'); }
 function getTodayOrders(){ return todayOrders.filter(x=>isAllowedDepartment(x.category)); }
 async function loadTodayOrders(){
   todayOrders=[];
   if(!isAdmin()||!db()||!window.HELI_ORG?.id)return;
-  const start=new Date(selectedDate+'T00:00:00+01:00');
-  const end=new Date(start.getTime()+24*60*60*1000);
+  const w=weekBounds(selectedDate);
+  const start=new Date(w.start+'T00:00:00+01:00');
+  const end=new Date(w.end+'T00:00:00+01:00');end.setDate(end.getDate()+1);
   const [salesQ,locationsQ]=await Promise.all([
     db().from('pos_sales_events').select('id,local_sale_id,sale_payload,total,paid,category,occurred_at,location_id,seller_name').eq('organization_id',window.HELI_ORG.id).gte('occurred_at',start.toISOString()).lt('occurred_at',end.toISOString()).order('occurred_at',{ascending:false}).limit(500),
     db().from('locations').select('id,name').eq('organization_id',window.HELI_ORG.id)
@@ -25,14 +28,14 @@ async function loadTodayOrders(){
       const p=x.sale_payload||{};
       const desc=String(p.desc||p.description||p.product||x.category||'Encomenda');
       const client=String(p.client||p.customer||'Cliente');
-      return {id:x.id,reference:x.local_sale_id,location_id:x.location_id,desc,client,category:x.category,total:Number(x.total||0),paid:Number(x.paid||0),location_name:locationMap.get(x.location_id)||'Local'};
+      return {id:x.id,reference:x.id,local_reference:x.local_sale_id,location_id:x.location_id,desc,client,category:x.category,total:Number(x.total||0),paid:Number(x.paid||0),location_name:locationMap.get(x.location_id)||'Local',occurred_at:x.occurred_at};
     });
   }
   if(!todayOrders.length){
     try{
       if(typeof sales!=='undefined'&&Array.isArray(sales)){
-        const today=new Date().toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'});
-        todayOrders=sales.filter(s=>s&&s.category!=='EXPENSE'&&(String(s.date||'')===today||(s.createdAt&&new Date(s.createdAt).toLocaleDateString('pt-PT',{timeZone:'Africa/Luanda'})===today))).slice().reverse();
+        const w=weekBounds(selectedDate);
+        todayOrders=sales.filter(s=>{const d=String(s.createdAt||s.date||'').slice(0,10);return s&&s.category!=='EXPENSE'&&d>=w.start&&d<=w.end;}).slice().reverse();
       }
     }catch(_){}
   }
@@ -52,7 +55,7 @@ function ensureUi(){
     if (!host) return false;
     const section=document.createElement('section');
     section.id='heli-task-tab'; section.className='tab-content hidden no-print';
-    section.innerHTML='<div class="mb-6 flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-2xl font-black text-slate-800">📋 Trabalhos do Dia</h2><p class="text-sm text-slate-500">Tarefas distribuídas por funcionário, equipa e encomenda.</p></div><button id="heli-task-refresh" class="rounded-xl border bg-white px-4 py-2 text-sm font-bold">↻ Actualizar</button></div><div id="heli-task-employee-view"></div><div id="heli-task-admin-view" class="hidden"></div>';
+    section.innerHTML='<div class="mb-6 flex flex-wrap items-center justify-between gap-3"><div><h2 class="text-2xl font-black text-slate-800">📋 Trabalhos da Semana</h2><p class="text-sm text-slate-500">Encomendas de todos os locais, distribuição e acompanhamento em tempo real.</p></div><button id="heli-task-refresh" class="rounded-xl border bg-white px-4 py-2 text-sm font-bold">↻ Actualizar</button></div><div id="heli-task-employee-view"></div><div id="heli-task-admin-view" class="hidden"></div>';
     host.appendChild(section);
     $('heli-task-refresh').onclick=()=>loadTasks();
   }
@@ -94,7 +97,7 @@ function renderAdminForm(){
   const orders=getTodayOrders();
   const orderOptions=orders.map((s,i)=>'<option value="'+esc(String(s.reference || s.id || i))+'" data-title="'+esc(s.desc||s.category||'Trabalho da encomenda')+'" data-description="'+esc((s.location_name?s.location_name+' · ':'')+(s.client||'Cliente')+' · '+(s.desc||s.category||'Encomenda')+' · '+money(s.total||s.paid))+'">'+esc((s.location_name?s.location_name+' — ':'')+(s.client||'Cliente')+' — '+(s.desc||s.category||'Encomenda')+' — '+money(s.total||s.paid))+'</option>').join('');
   const staffOptions=staffRows.map(p=>'<option value="'+esc(p.user_id)+'">'+esc(p.full_name||p.email)+' · '+esc(p.location_name)+'</option>').join('');
-  root.innerHTML='<div class="grid grid-cols-1 xl:grid-cols-5 gap-5"><div class="xl:col-span-2 glass-panel bg-white p-5"><h3 class="mb-4 text-lg font-black text-slate-800">Distribuir novo trabalho</h3><form id="heli-task-create-form" class="space-y-3"><label class="block text-xs font-bold text-slate-600">Encomenda de hoje (opcional)<select id="heli-task-order" class="big-input mt-1"><option value="">Trabalho geral / sem encomenda</option>'+orderOptions+'</select></label><label class="block text-xs font-bold text-slate-600">Título do trabalho<input id="heli-task-title" required maxlength="140" class="big-input mt-1" placeholder="Ex.: Imprimir e encadernar trabalho"></label><label class="block text-xs font-bold text-slate-600">Detalhes<textarea id="heli-task-description" rows="2" class="big-input mt-1" placeholder="Prazo, quantidade, acabamento..."></textarea></label><div class="grid grid-cols-2 gap-3"><label class="block text-xs font-bold text-slate-600">Departamento<select id="heli-task-department" class="big-input mt-1"><option>Académico</option><option>T-Shirts</option></select></label><label class="block text-xs font-bold text-slate-600">Equipa<input id="heli-task-team" class="big-input mt-1" maxlength="80" placeholder="Ex.: Equipa de impressão"></label></div><label class="block text-xs font-bold text-slate-600">Funcionário responsável<select id="heli-task-assignee" required class="big-input mt-1"><option value="">Seleccione o funcionário</option>'+staffOptions+'</select></label><button id="heli-task-submit" class="w-full rounded-xl bg-blue-700 px-4 py-3 font-black text-white">+ DISTRIBUIR TRABALHO</button></form><p id="heli-task-form-status" class="mt-3 text-xs text-slate-500"></p></div><div class="xl:col-span-3 glass-panel bg-white p-5"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 class="text-lg font-black text-slate-800">Trabalhos distribuídos por equipas</h3><input id="heli-task-date" type="date" value="'+esc(selectedDate)+'" class="big-input max-w-52"></div><div id="heli-task-admin-list"></div></div></div>';
+  root.innerHTML='<div class="grid grid-cols-1 xl:grid-cols-5 gap-5"><div class="xl:col-span-2 glass-panel bg-white p-5"><h3 class="mb-4 text-lg font-black text-slate-800">Distribuir novo trabalho</h3><form id="heli-task-create-form" class="space-y-3"><label class="block text-xs font-bold text-slate-600">Encomenda da semana (opcional)<select id="heli-task-order" class="big-input mt-1"><option value="">Trabalho geral / sem encomenda</option>'+orderOptions+'</select></label><label class="block text-xs font-bold text-slate-600">Título do trabalho<input id="heli-task-title" required maxlength="140" class="big-input mt-1" placeholder="Ex.: Imprimir e encadernar trabalho"></label><label class="block text-xs font-bold text-slate-600">Detalhes<textarea id="heli-task-description" rows="2" class="big-input mt-1" placeholder="Prazo, quantidade, acabamento..."></textarea></label><div class="grid grid-cols-2 gap-3"><label class="block text-xs font-bold text-slate-600">Departamento<select id="heli-task-department" class="big-input mt-1"><option>Académico</option><option>T-Shirts</option></select></label><label class="block text-xs font-bold text-slate-600">Equipa<input id="heli-task-team" class="big-input mt-1" maxlength="80" placeholder="Ex.: Equipa de impressão"></label></div><label class="block text-xs font-bold text-slate-600">Funcionário responsável<select id="heli-task-assignee" required class="big-input mt-1"><option value="">Seleccione o funcionário</option>'+staffOptions+'</select></label><button id="heli-task-submit" class="w-full rounded-xl bg-blue-700 px-4 py-3 font-black text-white">+ DISTRIBUIR TRABALHO</button></form><p id="heli-task-form-status" class="mt-3 text-xs text-slate-500"></p></div><div class="xl:col-span-3 glass-panel bg-white p-5"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><h3 class="text-lg font-black text-slate-800">Distribuição semanal · '+esc(weekLabel())+'</h3><label class="text-xs font-bold">Semana de <input id="heli-task-date" type="date" value="'+esc(selectedDate)+'" class="big-input max-w-52"></label></div><div id="heli-task-week-orders"></div><div id="heli-task-staff-counts" class="my-4"></div><div id="heli-task-admin-list"></div></div></div>';
   $('heli-task-order').addEventListener('change',()=>{
     const opt=$('heli-task-order').selectedOptions[0];
     const title=opt?.dataset.title||'';
@@ -137,14 +140,26 @@ function renderEmployee(){
   const root=$('heli-task-employee-view');if(!root)return;
   const mine=taskRows.filter(t=>t.assigned_user_id===window.HELI_USER?.id && isAllowedDepartment(t.department));
   const pending=mine.filter(t=>t.status!=='done'),done=mine.filter(t=>t.status==='done');
-  root.innerHTML='<div class="mb-4 grid grid-cols-2 gap-3"><div class="rounded-2xl border border-amber-200 bg-amber-50 p-4"><small class="font-bold text-amber-700">Por fazer</small><div class="text-3xl font-black text-amber-900">'+pending.length+'</div></div><div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><small class="font-bold text-emerald-700">Concluídos</small><div class="text-3xl font-black text-emerald-900">'+done.length+'</div></div></div><h3 class="mb-3 text-lg font-black text-slate-800">Os meus trabalhos de '+esc(selectedDate)+'</h3>'+(pending.length?pending.map(t=>taskCard(t)).join(''):'<p class="rounded-xl border border-dashed p-6 text-center text-sm text-slate-500">Não existem trabalhos pendentes para esta data.</p>')+'<h3 class="mb-3 mt-6 text-lg font-black text-slate-700">Trabalhos concluídos</h3>'+(done.length?done.map(t=>taskCard(t)).join(''):'<p class="text-sm text-slate-400">Ainda não concluiu tarefas nesta data.</p>');
+  root.innerHTML='<div class="mb-4 grid grid-cols-2 gap-3"><div class="rounded-2xl border border-amber-200 bg-amber-50 p-4"><small class="font-bold text-amber-700">Por fazer</small><div class="text-3xl font-black text-amber-900">'+pending.length+'</div></div><div class="rounded-2xl border border-emerald-200 bg-emerald-50 p-4"><small class="font-bold text-emerald-700">Concluídos</small><div class="text-3xl font-black text-emerald-900">'+done.length+'</div></div></div><h3 class="mb-3 text-lg font-black text-slate-800">Os meus trabalhos da semana · '+esc(weekLabel())+'</h3>'+(pending.length?pending.map(t=>taskCard(t)).join(''):'<p class="rounded-xl border border-dashed p-6 text-center text-sm text-slate-500">Não existem trabalhos pendentes para esta data.</p>')+'<h3 class="mb-3 mt-6 text-lg font-black text-slate-700">Trabalhos concluídos</h3>'+(done.length?done.map(t=>taskCard(t)).join(''):'<p class="text-sm text-slate-400">Ainda não concluiu tarefas nesta data.</p>');
   root.querySelectorAll('[data-complete]').forEach(btn=>btn.addEventListener('click',()=>completeTask(btn.dataset.complete,btn)));
 }
 function renderAdminList(){
   const root=$('heli-task-admin-list');if(!root)return;
   const groups=new Map();
-  taskRows.filter(t=>isAllowedDepartment(t.department)).sort((a,b)=>String(a.task_date).localeCompare(String(b.task_date))||String(a.title).localeCompare(String(b.title),'pt')).forEach(t=>{const key=t.team_name||'Geral';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(t);});
+  taskRows.filter(t=>isAllowedDepartment(t.department)).sort((a,b)=>String(a.task_date).localeCompare(String(b.task_date))||String(a.title).localeCompare(String(b.title),'pt')).forEach(t=>{const key=(t.location_name||staffRows.find(p=>p.user_id===t.assigned_user_id)?.location_name||'Local')+' · '+(t.team_name||'Geral');if(!groups.has(key))groups.set(key,[]);groups.get(key).push(t);});
   root.innerHTML=groups.size?[...groups.entries()].map(([team,rows])=>'<section class="mb-5"><div class="mb-2 flex items-center justify-between"><h4 class="font-black text-slate-800">'+esc(team)+'</h4><span class="text-xs text-slate-500">'+rows.filter(t=>t.status==='done').length+'/'+rows.length+' concluídos</span></div>'+rows.map(t=>taskCard(t,true)).join('')+'</section>').join(''):'<p class="rounded-xl border border-dashed p-6 text-center text-sm text-slate-500">Ainda não foram distribuídos trabalhos para esta data.</p>';
+}
+
+function renderWeekOrders(){
+ const root=$('heli-task-week-orders');if(!root)return;
+ const mapped=new Map(taskRows.filter(t=>t.order_reference).map(t=>[String(t.order_reference),t]));
+ const orders=getTodayOrders(),notAssigned=orders.filter(o=>!mapped.has(String(o.reference)));
+ root.innerHTML='<section class="rounded-2xl border bg-white p-4"><div class="mb-3 flex justify-between"><h4 class="font-black">Encomendas de todos os locais</h4><b class="text-xs">'+orders.length+' encomendas · '+notAssigned.length+' por distribuir</b></div>'+
+ (orders.length?orders.map(o=>{const t=mapped.get(String(o.reference));const label=t?(t.status==='done'?'CONCLUÍDA':'DISTRIBUÍDA'):'POR DISTRIBUIR';const cls=t?(t.status==='done'?'bg-emerald-100 text-emerald-800':'bg-blue-100 text-blue-800'):'bg-amber-100 text-amber-800';return '<div class="flex flex-wrap justify-between gap-2 border-t py-3"><div><b class="text-sm">'+esc(o.client)+' · '+esc(o.desc)+'</b><p class="text-xs text-slate-500">'+esc(o.location_name)+' · '+esc(o.category)+' · '+money(o.total)+'</p></div><div class="text-right"><span class="rounded-full px-2 py-1 text-[10px] font-black '+cls+'">'+label+'</span>'+(t?'<p class="text-xs text-slate-500">'+esc(t.assignee_name)+'</p>':'')+'</div></div>';}).join(''):'<p class="text-sm text-slate-500">Sem encomendas académicas ou T-Shirts nesta semana.</p>')+'</section>';
+}
+function renderStaffCounts(){
+ const root=$('heli-task-staff-counts');if(!root)return;
+ root.innerHTML='<section class="rounded-2xl border bg-white p-4"><h4 class="mb-3 font-black">Tarefas por funcionário</h4><div class="grid gap-2 md:grid-cols-2 xl:grid-cols-3">'+staffRows.map(p=>{const a=taskRows.filter(t=>t.assigned_user_id===p.user_id),done=a.filter(t=>t.status==='done').length,pending=a.length-done;return '<article class="rounded-xl border bg-slate-50 p-3"><b class="text-sm">'+esc(p.full_name||p.email)+'</b><p class="text-[10px] text-slate-500">'+esc(p.location_name)+'</p><p class="mt-2 text-xs"><b>'+a.length+'</b> atribuídas · <b class="text-amber-700">'+pending+'</b> pendentes · <b class="text-emerald-700">'+done+'</b> concluídas</p></article>';}).join('')+'</div></section>';
 }
 async function completeTask(id,button){
   button.disabled=true;button.textContent='A guardar...';
@@ -159,18 +174,20 @@ async function loadTasks(){
   const root=$('heli-task-employee-view');if(root)root.innerHTML='<p class="p-5 text-sm text-slate-500">A carregar os seus trabalhos...</p>';
   try{
     if(isAdmin()){await loadStaff();await loadTodayOrders();renderAdminForm();}else $('heli-task-admin-view')?.classList.add('hidden');
-    let query=db().from('heli_daily_tasks').select('*').eq('organization_id',window.HELI_ORG.id).eq('task_date',selectedDate).order('task_date',{ascending:true}).order('created_at',{ascending:true});
+    const w=weekBounds(selectedDate);let query=db().from('heli_daily_tasks').select('*').eq('organization_id',window.HELI_ORG.id).gte('task_date',w.start).lte('task_date',w.end).order('task_date',{ascending:true}).order('created_at',{ascending:true});
     const result=await query;
     if(result.error) throw result.error;
-    taskRows=(result.data||[]).filter(t=>isAllowedDepartment(t.department));
+    const names=new Map((window.HELI_LOCATIONS||[]).map(l=>[l.id,l.name]));
+    taskRows=(result.data||[]).filter(t=>isAllowedDepartment(t.department)).map(t=>({...t,location_name:names.get(t.location_id)||staffRows.find(p=>p.user_id===t.assigned_user_id)?.location_name||'Local'}));
     renderEmployee();
-    if(isAdmin()){ $('heli-task-admin-view').classList.remove('hidden');renderAdminList(); }
+    if(isAdmin()){ $('heli-task-admin-view').classList.remove('hidden');renderAdminList();renderWeekOrders();renderStaffCounts(); }
   }catch(error){if(root)root.innerHTML='<p class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">Falha ao carregar trabalhos. Confirme se a migração heli_daily_tasks foi executada no Supabase. '+esc(error.message||error)+'</p>';}
 }
 function subscribe(){
   if(taskChannel||!db()||!window.HELI_ORG?.id)return;
   taskChannel=db().channel('heli-daily-tasks-'+window.HELI_ORG.id)
     .on('postgres_changes',{event:'*',schema:'public',table:'heli_daily_tasks',filter:'organization_id=eq.'+window.HELI_ORG.id},payload=>{
+      if(payload.eventType==='INSERT'&&payload.new?.assigned_user_id===window.HELI_USER?.id&&!isAdmin())showNotice('Novo trabalho atribuído',payload.new.title+' · Consulte os detalhes em Trabalhos da Semana.');
       if(isAdmin()&&payload.eventType==='UPDATE'&&payload.new?.status==='done'){
         const who=payload.new.assignee_name||'Funcionário';
         showNotice('Tarefa concluída',who+' marcou "'+payload.new.title+'" como feita.');
