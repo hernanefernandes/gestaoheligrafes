@@ -2666,7 +2666,7 @@ window.onload = function() {
             }); 
             
             if(id === 'outros') updateStockSelect(); 
-            if(id === 'tabacaria') updateProductDatalist(); 
+            if(id === 'tabacaria') { updateProductDatalist(); void loadVRSalesTop20(); } 
             if(id === 'gestao-produtos') { renderProductSalesManagement(); renderHeliLocationTabs(); void renderProductSalesManagementCloud(); }
             if(id === 'stocks') { renderHeliLocationTabs(); renderStockList(); updateRestockSelect(); cancelEdit(); void syncHeliLocationViews(); if(heliLocationViews.selected!=='*') void syncCurrentLocationStocks().then(renderStockList); }
             if(id === 'relatorios') { renderReports(); renderHeliLocationTabs(); void renderLocationCloudReport(); } 
