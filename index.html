@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="heli-build" content="20261125-01">
+    <meta name="heli-build" content="20261125-02">
     <script id="heli-service-worker-register">
     (function(){
       'use strict';
@@ -729,6 +729,10 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                         <div class="pos-cart-panel flex-1 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
                             <div class="bg-slate-100 px-4 py-3 border-b border-slate-200 flex justify-between items-center">
                                 <h3 class="font-bold text-slate-600 text-sm uppercase tracking-wide">Itens na Fatura</h3>
+                                <div id="vr-top20-wrap" class="vr-top20-wrap" aria-label="20 produtos mais vendidos">
+                                    <div class="vr-top20-heading"><div><strong>⚡ MAIS VENDIDOS</strong><small>Top 20 deste local · toque para adicionar à factura</small></div><span id="vr-top20-updated">A carregar…</span></div>
+                                    <div id="vr-top20-grid" class="vr-top20-grid"><div class="vr-top20-empty">A consultar o histórico de vendas…</div></div>
+                                </div>
                                 <span id="vr-count-items" class="text-xs font-bold text-slate-400 bg-white px-2 py-1 rounded border">0 Itens</span>
                             </div>
                             <div class="pos-cart-scroll flex-1 p-0" aria-label="Lista rolável de itens da fatura">
@@ -1324,6 +1328,7 @@ window.onload = function() {
     initSalesSession();
     refreshProductStockScopeOptions();
     initDailyPaymentMethod();
+    setTimeout(()=>void loadVRSalesTop20(),900);
     migrateEmployeeMetadata();
     startRhMarkerClock();
     runAttendanceAutomation();
@@ -3385,6 +3390,86 @@ function toggleVRProductPicker(force) {
         if (search) { search.value = ''; setTimeout(() => search.focus(), 30); }
     }
 }
+const heliVRSalesTop20 = { channel:null, loading:false, lastLocation:'' };
+function renderVRSalesTop20Rows(rows, updatedLabel='Actualizado') {
+    const grid=document.getElementById('vr-top20-grid'),updated=document.getElementById('vr-top20-updated');
+    if(!grid)return;
+    const stats=new Map();
+    const add=(item)=>{
+        if(!item||!String(item.name||'').trim())return;
+        const id=String(item.productId??item.product_id??'').trim();
+        const name=String(item.name).trim();
+        const key=id?'id:'+id:'name:'+normalizeProductName(name);
+        const current=stats.get(key)||{id,name,units:0};
+        current.units+=Math.max(0,Number(item.qty)||1);
+        stats.set(key,current);
+    };
+    (rows||[]).forEach(row=>{
+        const sale=row.sale_payload&&typeof row.sale_payload==='object'?row.sale_payload:row;
+        if(String(row.category||sale.category||'').toUpperCase()==='EXPENSE')return;
+        const items=Array.isArray(sale.items)?sale.items:[];
+        if(items.length)items.forEach(add);
+        else if(sale.desc)add({name:sale.desc,qty:sale.qty||1,productId:sale.productId});
+    });
+    const catalogById=new Map(products.filter(p=>p?.id!=null).map(p=>[String(p.id),p]));
+    const catalogByName=new Map(products.filter(p=>p?.name).map(p=>[normalizeProductName(p.name),p]));
+    const ranked=[...stats.values()].map(stat=>{
+        const product=(stat.id?catalogById.get(stat.id):null)||catalogByName.get(normalizeProductName(stat.name));
+        return product?{...stat,product}:null;
+    }).filter(Boolean).sort((a,b)=>b.units-a.units||String(a.product.name).localeCompare(String(b.product.name),'pt')).slice(0,20);
+    grid.replaceChildren();
+    if(!ranked.length){
+        const empty=document.createElement('div');empty.className='vr-top20-empty';empty.textContent='Ainda não existem vendas de produtos suficientes para formar o Top 20.';grid.appendChild(empty);
+    }else ranked.forEach((entry,index)=>{
+        const button=document.createElement('button');button.type='button';button.className='vr-top20-button';
+        button.setAttribute('aria-label','Adicionar '+entry.product.name+' à factura. '+entry.units+' unidades vendidas.');
+        const rank=document.createElement('span');rank.className='vr-top20-rank';rank.textContent='#'+(index+1);
+        const name=document.createElement('span');name.className='vr-top20-name';name.textContent=entry.product.name;
+        const meta=document.createElement('span');meta.className='vr-top20-meta';meta.textContent=entry.units.toLocaleString('pt-AO')+' vend.';
+        button.append(rank,name,meta);
+        button.addEventListener('click',async()=>{
+            const input=document.getElementById('vr-product'),price=document.getElementById('vr-price'),qty=document.getElementById('vr-qty');
+            if(!input||!price||!qty)return;
+            input.value=entry.product.name;price.value=Number(entry.product.price)||0;qty.value='1';
+            renderVrSelectedProduct(entry.product);
+            await addToVRCart();
+        });
+        grid.appendChild(button);
+    });
+    if(updated)updated.textContent=updatedLabel;
+}
+async function loadVRSalesTop20() {
+    if(heliVRSalesTop20.loading)return;
+    const db=window.heliSupabase,org=window.HELI_ORG?.id;
+    const allowed=window.HELI_ALLOWED_LOCATIONS||[];
+    const current=typeof resolveCurrentStockLocation==='function'?resolveCurrentStockLocation():null;
+    const local=current||allowed.find(x=>String(x.name||'').toLowerCase()===String(getCurrentBusinessLocation()||'').toLowerCase());
+    if(!db||!org||!local?.id){
+        renderVRSalesTop20Rows(sales,'Ranking local indisponível');
+        return;
+    }
+    heliVRSalesTop20.loading=true;
+    try{
+        const all=[],page=1000;
+        for(let from=0;from<50000;from+=page){
+            const q=await db.from('pos_sales_events').select('location_id,category,sale_payload,occurred_at').eq('organization_id',org).eq('location_id',local.id).order('occurred_at',{ascending:false}).range(from,from+page-1);
+            if(q.error)throw q.error;
+            all.push(...(q.data||[]));
+            if(!q.data||q.data.length<page)break;
+        }
+        renderVRSalesTop20Rows(all,'Local: '+(local.name||'actual')+' · '+new Date().toLocaleTimeString('pt-AO',{hour:'2-digit',minute:'2-digit'}));
+        heliVRSalesTop20.lastLocation=local.id;
+        if(!heliVRSalesTop20.channel){
+            heliVRSalesTop20.channel=db.channel('heli-pos-top20-'+org+'-'+local.id).on('postgres_changes',{event:'*',schema:'public',table:'pos_sales_events',filter:'organization_id=eq.'+org},payload=>{
+                if(payload.new?.location_id===local.id||payload.old?.location_id===local.id)void loadVRSalesTop20();
+            }).subscribe();
+        }
+    }catch(error){
+        console.warn('[Heligrafes Top 20]',error);
+        const updated=document.getElementById('vr-top20-updated');if(updated)updated.textContent='Falha ao actualizar';
+    }finally{heliVRSalesTop20.loading=false;}
+}
+
 function renderVRProductPicker(query) {
     const grid = document.getElementById('vr-product-picker-grid');
     const count = document.getElementById('vr-product-picker-count');
@@ -4023,7 +4108,14 @@ async function printDailyReport(copies = 1) {
         printWindow.addEventListener('afterprint', requireLogout, { once: true });
         printWindow.addEventListener('pagehide', requireLogout, { once: true });
     }
-    printWindow.document.write(`<html><head><title>Relatório de Fecho - ${today}</title><style>body{margin:0}.report-copy{padding:12px;break-after:page;page-break-after:always}.report-copy:last-child{break-after:auto;page-break-after:auto}.copy-label{max-width:820px;margin:0 auto 8px;padding:6px 10px;color:#1d4ed8;font:800 11px Arial;text-align:right}@media print{@page{margin:12mm}.report-copy{break-after:page;page-break-after:always}.report-copy:last-child{break-after:auto;page-break-after:auto}}</style></head><body onload="window.print()">${copiesHtml}</body></html>`);
+    printWindow.document.write(`<html><head><title>Relatório de Fecho - ${today}</title><style>body{margin:0}.report-copy{padding:12px;break-after:page;page-break-after:always}.report-copy:last-child{break-after:auto;page-break-after:auto}.copy-label{max-width:820px;margin:0 auto 8px;padding:6px 10px;color:#1d4ed8;font:800 11px Arial;text-align:right}@media print{@page{margin:12mm}.report-copy{break-after:page;page-break-after:always}.report-copy:last-child{break-after:auto;page-break-after:auto}}
+        /* Top 20 produtos mais vendidos no POS */
+        .vr-top20-wrap{padding:12px 14px 13px;background:linear-gradient(120deg,#f0f8ff,#fff8e8);border-bottom:1px solid #d8e8f7;position:relative;z-index:2}
+        .vr-top20-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}.vr-top20-heading strong{display:block;color:#073b86;font-size:12px;font-weight:1000;letter-spacing:.06em}.vr-top20-heading small{display:block;color:#68809a;font-size:10px;margin-top:2px}.vr-top20-heading>span{font-size:9px;color:#6b829b;font-weight:800;white-space:nowrap}
+        .vr-top20-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;max-height:190px;overflow:auto;padding:2px 2px 5px}
+        .vr-top20-button{position:relative;display:flex;min-width:0;min-height:61px;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:5px;padding:8px;border:1px solid #b9d6f2;border-radius:11px;background:linear-gradient(145deg,#fff,#eaf5ff);color:#123d6b;text-align:left;box-shadow:0 3px 9px #174b7b12;cursor:pointer;transition:transform .16s,border-color .16s,box-shadow .16s}.vr-top20-button:nth-child(4n+2){background:linear-gradient(145deg,#fff,#fff4d9);border-color:#f0d18a}.vr-top20-button:nth-child(4n+3){background:linear-gradient(145deg,#fff,#e8fbf4);border-color:#a9dfc8}.vr-top20-button:nth-child(4n){background:linear-gradient(145deg,#fff,#f3edff);border-color:#d2c0f2}.vr-top20-button:hover{transform:translateY(-2px);border-color:#1474c8;box-shadow:0 7px 15px #174b7b22}.vr-top20-button:active{transform:scale(.97)}.vr-top20-button:focus-visible{outline:3px solid #f5b51b;outline-offset:2px}.vr-top20-rank{position:absolute;top:5px;right:6px;font-size:9px;font-weight:1000;color:#0b62a7}.vr-top20-name{display:-webkit-box;max-width:100%;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:10px;line-height:1.25;font-weight:900;overflow-wrap:anywhere;padding-right:12px}.vr-top20-meta{font-size:9px;font-weight:800;color:#47708f}.vr-top20-empty{grid-column:1/-1;padding:12px;border:1px dashed #b9cfe4;border-radius:10px;background:#ffffffaa;text-align:center;color:#6b829b;font-size:11px}.vr-top20-button:disabled{opacity:.55;cursor:not-allowed}
+        @media(max-width:900px){.vr-top20-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}@media(max-width:520px){.vr-top20-grid{grid-template-columns:repeat(2,minmax(0,1fr));max-height:210px}.vr-top20-button{min-height:55px}}
+</style></head><body onload="window.print()">${copiesHtml}</body></html>`);
     printWindow.document.close();
 }
         // --- RELATÓRIOS ---
@@ -5384,7 +5476,7 @@ function selectAcademicPage(value) {
 <script src="./js/heligrafes-sales-live.js?v=20261117-05"></script>
 <script src="./js/heligrafes-admin.js?v=20261117-05"></script>
 <script src="./js/heligrafes-sales-challenge.js?v=20261121-01"></script>
-<script src="./js/heligrafes-daily-tasks.js?v=20261125-01"></script>
+<script src="./js/heligrafes-daily-tasks.js?v=20261125-02"></script>
 <script id="heli-auto-update-checker">
 (function(){
   'use strict';
@@ -5489,6 +5581,6 @@ function selectAcademicPage(value) {
   })();
 })();
 </script>
-<script src="./js/heligrafes-orders-list.js?v=20261125-01"></script>
+<script src="./js/heligrafes-orders-list.js?v=20261125-02"></script>
 </body>
 </html>
