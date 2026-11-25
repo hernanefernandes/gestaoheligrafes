@@ -26,11 +26,11 @@ function ensurePanel(){
  const section=document.createElement('section');section.id='company-finance';section.className='tab-content hidden no-print';
  section.innerHTML=[
  '<div class="cf-header mb-6 flex flex-wrap items-center justify-between gap-4"><div><p class="text-[10px] font-black uppercase tracking-[.2em] text-blue-600">Controlo financeiro interno · Administração</p><h2 class="mt-1 text-2xl font-black text-slate-800">🧾 Compras & Despesas</h2><p class="mt-1 text-sm text-slate-500">Registo central de facturas, aquisições, pagamentos e comprovativos.</p></div><button id="cf-refresh" class="cf-btn cf-muted">↻ ACTUALIZAR DADOS</button></div>',
- '<div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">',
+ '<div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">',
  '<div class="cf-card"><span class="cf-label">Vendas registadas</span><strong id="cf-sales" class="cf-value">—</strong><p class="text-[10px] text-slate-400">Total mensal</p></div>',
  '<div class="cf-card"><span class="cf-label">Compras registadas</span><strong id="cf-purchases" class="cf-value">—</strong></div>',
  '<div class="cf-card"><span class="cf-label">Despesas operacionais</span><strong id="cf-expenses" class="cf-value">—</strong></div>',
- '<div class="cf-card"><span class="cf-label">Saldo de caixa registado</span><strong id="cf-cash-result" class="cf-value">—</strong><p class="text-[10px] text-slate-400">Recebido − pago</p></div></div>',
+ '<div class="cf-card"><span class="cf-label">Resultado simplificado</span><strong id="cf-cash-result" class="cf-value">—</strong><p class="text-[10px] text-slate-400">Vendas − compras − despesas</p></div><div class="cf-card"><span class="cf-label">Fluxo de caixa</span><strong id="cf-cash-flow" class="cf-value">—</strong><p class="text-[10px] text-slate-400">Recebimentos − pagamentos efectuados</p></div></div>',
  '<div class="mb-5 grid grid-cols-1 gap-3 lg:grid-cols-3"><div class="cf-card"><span class="cf-label">Pagamentos por banco</span><strong id="cf-bank" class="cf-value">—</strong></div><div class="cf-card"><span class="cf-label">Pagamentos em numerário</span><strong id="cf-cash" class="cf-value">—</strong></div><div class="cf-card"><span class="cf-label">Valores por pagar</span><strong id="cf-pending" class="cf-value">—</strong></div></div>',
  '<div class="grid grid-cols-1 gap-5 xl:grid-cols-5"><div class="cf-card xl:col-span-2"><h3 class="text-base font-black text-slate-800">Novo registo</h3><p class="mb-4 text-[11px] text-slate-400">Factura, compra ou saída da empresa</p>',
  '<form id="cf-form" class="space-y-3"><div class="grid cf-form-grid grid-cols-2 gap-3">',
@@ -73,7 +73,7 @@ async function loadData(){
 function render(){
  const a=rows.filter(x=>!x.is_void),sales=salesRows.reduce((n,x)=>n+Number(x.total||0),0),purchases=a.filter(x=>x.entry_type==='purchase').reduce((n,x)=>n+Number(x.total_amount||0),0),expenses=a.filter(x=>x.cost_class==='operational').reduce((n,x)=>n+Number(x.total_amount||0),0),paid=a.reduce((n,x)=>n+Number(x.paid_amount||0),0);
  const bank=a.filter(x=>['bank_transfer','deposit'].includes(x.payment_method)).reduce((n,x)=>n+Number(x.paid_amount||0),0),cash=a.filter(x=>x.payment_method==='cash').reduce((n,x)=>n+Number(x.paid_amount||0),0),pending=a.reduce((n,x)=>n+Math.max(0,Number(x.total_amount)-Number(x.paid_amount)),0),received=salesRows.reduce((n,x)=>n+Number(x.paid||0),0);
- $('cf-sales').textContent=money(sales);$('cf-purchases').textContent=money(purchases);$('cf-expenses').textContent=money(expenses);$('cf-cash-result').textContent=money(received-paid);$('cf-bank').textContent=money(bank);$('cf-cash').textContent=money(cash);$('cf-pending').textContent=money(pending);
+ $('cf-sales').textContent=money(sales);$('cf-purchases').textContent=money(purchases);$('cf-expenses').textContent=money(expenses);$('cf-cash-result').textContent=money(sales-purchases-expenses);$('cf-cash-flow').textContent=money(received-paid);$('cf-bank').textContent=money(bank);$('cf-cash').textContent=money(cash);$('cf-pending').textContent=money(pending);
  const f=$('cf-filter').value,shown=a.filter(x=>f==='all'||(f==='pending'?Number(x.paid_amount)<Number(x.total_amount):x.entry_type===f));$('cf-count').textContent=shown.length+' registos';
  $('cf-rows').innerHTML=shown.length?shown.map(x=>{
  const st=Number(x.paid_amount)>=Number(x.total_amount)?'Pago':Number(x.paid_amount)>0?'Parcial':'Pendente',date=new Date(x.incurred_at).toLocaleDateString('pt-AO',{timeZone:'Africa/Luanda'});
@@ -91,8 +91,9 @@ async function saveEntry(e){
 }
 async function addPayment(id){
  const x=rows.find(v=>v.id===id);if(!x||!admin())return;const rest=Number(x.total_amount)-Number(x.paid_amount),raw=prompt('Valor do pagamento (saldo: '+money(rest)+')');if(raw===null)return;const amount=Number(raw);if(!(amount>0)||amount>rest)return alert('Valor inválido.');
- const m=prompt('Método: banco, depósito, dinheiro ou outro','banco');if(m===null)return;const method=({'banco':'bank_transfer','transferência':'bank_transfer','transferencia':'bank_transfer','depósito':'deposit','deposito':'deposit','dinheiro':'cash','numerário':'cash','numerario':'cash','outro':'other'})[m.trim().toLowerCase()];if(!method)return alert('Método não reconhecido.');
- const sum=Number(x.paid_amount)+amount,r=await db().from('company_financial_entries').update({paid_amount:sum,payment_method:method,payment_status:sum>=Number(x.total_amount)?'paid':'partial',updated_at:new Date().toISOString()}).eq('id',id).eq('organization_id',window.HELI_ORG.id);if(r.error)return alert(r.error.message);await loadData();
+ const m=prompt('Como foi pago? Escreva: banco, depósito, dinheiro ou outro','banco');if(m===null)return;const method=({'banco':'bank_transfer','transferência':'bank_transfer','transferencia':'bank_transfer','depósito':'deposit','deposito':'deposit','dinheiro':'cash','em mão':'cash','em mao':'cash','numerário':'cash','numerario':'cash','outro':'other'})[m.trim().toLowerCase()];if(!method)return alert('Método não reconhecido.');
+ const account=(method==='bank_transfer'||method==='deposit')?prompt('Qual foi o banco/conta? (ex.: BAI, BFA, Multicaixa Express)'):prompt('Identificação do caixa/beneficiário (opcional):','Caixa');if(account===null)return;const reference=prompt('Referência ou observação do pagamento (opcional):','')??'';
+ const sum=Number(x.paid_amount)+amount,r=await db().from('company_financial_entries').update({paid_amount:sum,payment_method:method,payment_account:account.trim()||null,payment_reference:reference.trim()||null,payment_status:sum>=Number(x.total_amount)?'paid':'partial',updated_at:new Date().toISOString()}).eq('id',id).eq('organization_id',window.HELI_ORG.id);if(r.error)return alert(r.error.message);await loadData();
 }
 async function voidEntry(id){
  const reason=prompt('Motivo da anulação (o registo será mantido no histórico):');if(!reason?.trim()||!confirm('Confirmar anulação?'))return;
