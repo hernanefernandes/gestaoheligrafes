@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id), db=()=>window.heliSupabase;
 const admin=()=>!!window.HELI_USER&&!!window.HELI_HAS_ROLE?.('owner','admin');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=v=>(Number(v)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz';
-let rows=[],salesRows=[],ready=false,financeChannel=null;
+let rows=[],salesRows=[],employeeNames={},ready=false,financeChannel=null;
 function inject(){
  if(!$('heli-company-finance-style')){const s=document.createElement('style');s.id='heli-company-finance-style';s.textContent=
  '#company-finance .cf-card{background:#fff;border:1px solid #dce8f5;border-radius:17px;padding:17px;box-shadow:0 8px 22px #1c47710b}'+
@@ -58,7 +58,7 @@ function ensurePanel(){
  $('cf-form').addEventListener('submit',saveEntry);$('cf-refresh').addEventListener('click',loadData);$('cf-month').addEventListener('change',loadData);$('cf-filter').addEventListener('change',render);$('cf-location-filter').addEventListener('change',render);$('cf-export').addEventListener('click',exportCsv);
  $('cf-type').addEventListener('change',()=>{if($('cf-type').value==='expense')$('cf-class').value='operational';else if($('cf-class').value==='operational')$('cf-class').value='stock';});
  (window.HELI_LOCATIONS||window.HELI_ALLOWED_LOCATIONS||[]).forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.name;$('cf-location').appendChild(o);const f=document.createElement('option');f.value=l.id;f.textContent=l.name;$('cf-location-filter').appendChild(f);});
- if(!admin()){const loc=window.HELI_DEFAULT_LOCATION_ID||'';$('cf-location').value=loc;$('cf-location').disabled=true;$('cf-location-wrap').style.display='none';$('cf-admin-metrics').style.display='none';$('cf-location-filter').style.display='none';$('cf-export').style.display='none';$('cf-history-caption').textContent='Movimentos do seu local';$('cf-refresh').style.display='none';}
+ if(!admin()){const loc=window.HELI_DEFAULT_LOCATION_ID||'';$('cf-location').value=loc;$('cf-location').disabled=true;$('cf-location-wrap').style.display='none';$('cf-admin-metrics').style.display='none';$('cf-location-filter').style.display='none';$('cf-export').style.display='none';$('cf-history-caption').textContent='Movimentos do seu local';$('cf-refresh').style.display='none';const own=(window.HELI_LOCATIONS||[]).find(l=>l.id===loc);if(own)$('company-finance').querySelector('h2').textContent='🧾 Compras & Despesas · '+own.name;}
 }
 function canUsePanel(){return !!window.HELI_USER&&!!window.HELI_ORG?.id&&(admin()||!!window.HELI_DEFAULT_LOCATION_ID);}
 function connectRealtime(){if(financeChannel||!db()||!window.HELI_ORG?.id)return;financeChannel=db().channel('company-finance-'+window.HELI_ORG.id).on('postgres_changes',{event:'*',schema:'public',table:'company_financial_entries',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{void loadData();}).subscribe();}
@@ -71,7 +71,7 @@ async function loadData(){
  db().from('pos_sales_events').select('total,paid,occurred_at,category,location_id').eq('organization_id',window.HELI_ORG.id).gte('occurred_at',from+'T00:00:00+01:00').lt('occurred_at',to).neq('category','EXPENSE').limit(2000)
  ]);
  if(results[0].error){$('cf-status').textContent='Erro ao carregar: '+results[0].error.message;return;}
- rows=results[0].data||[];salesRows=admin()?(results[1].data||[]):[];$('cf-status').textContent='Dados sincronizados com a base central.';render();
+ rows=results[0].data||[];salesRows=admin()?(results[1].data||[]):[];if(admin()){const people=await db().from('user_profiles').select('user_id,full_name').eq('organization_id',window.HELI_ORG.id);employeeNames=Object.fromEntries((people.data||[]).map(p=>[p.user_id,p.full_name]));}$('cf-status').textContent='Dados sincronizados com a base central.';render();
 }
 function render(){
  const selectedLocation=admin()?($('cf-location-filter')?.value||''):window.HELI_DEFAULT_LOCATION_ID;
