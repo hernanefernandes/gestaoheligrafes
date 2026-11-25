@@ -57,8 +57,29 @@ function ensurePanel(){
  $('cf-month').value=start.getFullYear()+'-'+String(start.getMonth()+1).padStart(2,'0');
  $('cf-form').addEventListener('submit',saveEntry);$('cf-refresh').addEventListener('click',loadData);$('cf-month').addEventListener('change',loadData);$('cf-filter').addEventListener('change',render);$('cf-location-filter').addEventListener('change',render);$('cf-export').addEventListener('click',exportCsv);
  $('cf-type').addEventListener('change',()=>{if($('cf-type').value==='expense')$('cf-class').value='operational';else if($('cf-class').value==='operational')$('cf-class').value='stock';});
- (window.HELI_LOCATIONS||window.HELI_ALLOWED_LOCATIONS||[]).forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.name;$('cf-location').appendChild(o);const f=document.createElement('option');f.value=l.id;f.textContent=l.name;$('cf-location-filter').appendChild(f);});
- if(!admin()){const loc=window.HELI_DEFAULT_LOCATION_ID||'';$('cf-location').value=loc;$('cf-location').disabled=true;$('cf-location-wrap').style.display='none';$('cf-admin-metrics').style.display='none';$('cf-location-filter').style.display='none';$('cf-export').style.display='none';$('cf-history-caption').textContent='Movimentos do seu local';$('cf-refresh').style.display='none';const own=(window.HELI_LOCATIONS||[]).find(l=>l.id===loc);if(own)$('company-finance').querySelector('h2').textContent='🧾 Compras & Despesas · '+own.name;}
+}
+function populateLocations(){
+ const locations=admin()?(window.HELI_LOCATIONS||[]):(window.HELI_ALLOWED_LOCATIONS||[]);
+ const select=$('cf-location'),filter=$('cf-location-filter');if(!select||!filter)return;
+ const oldSelect=select.value,oldFilter=filter.value;
+ select.innerHTML='<option value="">Empresa / Geral</option>';
+ filter.innerHTML='<option value="">Todos os locais</option>';
+ locations.forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.name;select.appendChild(o);const f=document.createElement('option');f.value=l.id;f.textContent=l.name;filter.appendChild(f);});
+ if(admin())select.value=locations.some(l=>l.id===oldSelect)?oldSelect:'';
+ else select.value=window.HELI_DEFAULT_LOCATION_ID||'';
+ filter.value=locations.some(l=>l.id===oldFilter)?oldFilter:'';
+}
+function applyRoleView(){
+ const staff=!admin();
+ if($('cf-admin-metrics'))$('cf-admin-metrics').style.display=staff?'none':'';
+ if($('cf-location-wrap'))$('cf-location-wrap').style.display=staff?'none':'';
+ if($('cf-location-filter'))$('cf-location-filter').style.display=staff?'none':'';
+ if($('cf-export'))$('cf-export').style.display=staff?'none':'';
+ if($('cf-refresh'))$('cf-refresh').style.display=staff?'none':'';
+ if($('cf-location'))$('cf-location').disabled=staff;
+ if($('cf-history-caption'))$('cf-history-caption').textContent=staff?'Movimentos do seu local':'Histórico central da organização';
+ const title=$('company-finance')?.querySelector('h2');
+ if(title){const own=(window.HELI_ALLOWED_LOCATIONS||[]).find(l=>l.id===window.HELI_DEFAULT_LOCATION_ID);title.textContent=staff?'🧾 Compras & Despesas · '+(own?.name||'Meu local'):'🧾 Compras & Despesas';}
 }
 function canUsePanel(){return !!window.HELI_USER&&!!window.HELI_ORG?.id&&(admin()||!!window.HELI_DEFAULT_LOCATION_ID);}
 function connectRealtime(){if(financeChannel||!db()||!window.HELI_ORG?.id)return;financeChannel=db().channel('company-finance-'+window.HELI_ORG.id).on('postgres_changes',{event:'*',schema:'public',table:'company_financial_entries',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{void loadData();}).subscribe();}
@@ -112,7 +133,7 @@ function exportCsv(){
  const csv='\uFEFF'+all.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n'),url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'})),a=document.createElement('a');a.href=url;a.download='heligrafes-compras-despesas.csv';a.click();URL.revokeObjectURL(url);
 }
 function boot(){
- inject();ensurePanel();const nav=$('btn-company-finance');if(nav)nav.style.display=canUsePanel()?'flex':'none';
+ inject();ensurePanel();populateLocations();applyRoleView();const nav=$('btn-company-finance');if(nav)nav.style.display=canUsePanel()?'flex':'none';
  if(canUsePanel()&&db()){connectRealtime();if(!ready){ready=true;loadData();}}
  if(!ready)setTimeout(boot,1200);
 }
