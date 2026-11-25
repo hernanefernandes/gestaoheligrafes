@@ -51,7 +51,7 @@ function ensurePanel(){
  ].join('');
  host.appendChild(section);
  const nav=$('btn-daily-tasks');
- if(nav&&!$('btn-company-finance')){const item=document.createElement('div');item.id='btn-company-finance';item.className='sidebar-link';item.innerHTML='<span class="mr-3 text-xl">🧾</span><span>Compras & Despesas</span>';item.addEventListener('click',()=>{if(!admin())return alert('Acesso exclusivo à administração.');showTab('company-finance');});nav.insertAdjacentElement('afterend',item);}
+ if(nav&&!$('btn-company-finance')){const item=document.createElement('div');item.id='btn-company-finance';item.className='sidebar-link';item.innerHTML='<span class="mr-3 text-xl">🧾</span><span>Compras & Despesas</span>';item.addEventListener('click',()=>{if(!admin())return alert('Acesso exclusivo à administração.');showTab('company-finance');void loadData();});nav.insertAdjacentElement('afterend',item);}
  const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),1);
  $('cf-date').value=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Luanda'}).format(now);
  $('cf-month').value=start.getFullYear()+'-'+String(start.getMonth()+1).padStart(2,'0');
@@ -105,7 +105,7 @@ function exportCsv(){
 }
 function boot(){
  inject();ensurePanel();const nav=$('btn-company-finance');if(nav)nav.style.display=admin()?'flex':'none';
- if(admin()&&!ready){ready=true;loadData();}
+ if(admin()&&window.HELI_ORG?.id&&db()&&!ready){ready=true;loadData();}
  if(!ready||!admin())setTimeout(boot,1200);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
