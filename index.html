@@ -914,7 +914,7 @@ html.heli-auth-lock body > *:not(#heli-auth-root){visibility:hidden!important}
                         <div class="glass-panel p-6 shadow-lg h-full flex flex-col bg-slate-50 border-2 border-slate-200">
                             <h3 class="text-2xl font-black text-slate-700 mb-1 flex items-center gap-3">🖨️ Reimprimir Faturas</h3>
                             <p class="mb-4 text-xs font-bold text-slate-400">Disponíveis apenas durante 7 dias. As vendas continuam nos relatórios.</p>
-                            <div class="mb-4"><label class="block text-xs font-bold text-slate-400 uppercase mb-2">Filtrar por Cliente ou Código</label><input type="text" id="print-search" oninput="renderPrintTab()" class="big-input w-full" placeholder="Escreva para pesquisar..."></div>
+                            <div class="mb-4"><label class="block text-xs font-bold text-slate-400 uppercase mb-2">Pesquisar por Cliente ou Código GH</label><input type="text" id="print-search" oninput="renderPrintTab()" class="big-input w-full" placeholder="Ex.: GH-856349 ou nome do cliente"></div>
                             <div class="flex-1 overflow-y-auto bg-white rounded-xl border border-slate-200">
                                 <table class="w-full text-left text-sm"><thead class="bg-slate-100 text-slate-500 uppercase font-bold text-xs sticky top-0"><tr><th class="p-3">Data</th><th class="p-3">Cliente</th><th class="p-3 text-right">Total</th><th class="p-3 text-center">Ação</th></tr></thead><tbody id="print-list-body" class="divide-y divide-slate-100"></tbody></table>
                             </div>
@@ -3134,10 +3134,17 @@ window.onload = function() {
         }
 
         function renderPrintTab() {
-            const query = document.getElementById('print-search').value.toLowerCase();
+            const rawQuery = document.getElementById('print-search').value.trim().toLowerCase();
+            const query = rawQuery.replace(/^gh[-\\s]*/, '');
             const list = document.getElementById('print-list-body');
             list.innerHTML = '';
-            const filteredSales = sales.filter(s => s.category !== 'EXPENSE' && isInvoiceAvailableForReprint(s) && ((s.client && s.client.toLowerCase().includes(query)) || s.id.toString().includes(query))).slice().reverse().slice(0, 50);
+            const filteredSales = sales.filter(s => {
+                if (s.category === 'EXPENSE' || !isInvoiceAvailableForReprint(s)) return false;
+                const invoiceCode = `gh-${String(s.id).slice(-6)}`;
+                const idText = String(s.id).toLowerCase();
+                const client = String(s.client || '').toLowerCase();
+                return !rawQuery || invoiceCode.includes(rawQuery) || invoiceCode.replace(/^gh-/, '').includes(query) || idText.includes(query) || client.includes(rawQuery);
+            }).slice().reverse().slice(0, 50);
 
             filteredSales.forEach(s => {
                 list.innerHTML += `<tr class="hover:bg-slate-50 border-b border-slate-100"><td class="p-3 text-slate-500 text-xs">${s.date}</td><td class="p-3 font-bold text-slate-700">${s.client} <span class="text-xs font-normal text-slate-400">(${s.category})</span></td><td class="p-3 text-right font-bold text-blue-600">${s.total.toLocaleString()} Kz</td><td class="p-3 text-center"><button onclick="printInvoiceDouble(${s.id})" class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold hover:bg-blue-200">IMPRIMIR</button></td></tr>`;
