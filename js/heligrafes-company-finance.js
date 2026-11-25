@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id), db=()=>window.heliSupabase;
 const admin=()=>!!window.HELI_USER&&!!window.HELI_HAS_ROLE?.('owner','admin');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const money=v=>(Number(v)||0).toLocaleString('pt-AO',{maximumFractionDigits:2})+' Kz';
-let rows=[],salesRows=[],ready=false;
+let rows=[],salesRows=[],ready=false,financeChannel=null;
 function inject(){
  if(!$('heli-company-finance-style')){const s=document.createElement('style');s.id='heli-company-finance-style';s.textContent=
  '#company-finance .cf-card{background:#fff;border:1px solid #dce8f5;border-radius:17px;padding:17px;box-shadow:0 8px 22px #1c47710b}'+
@@ -26,7 +26,7 @@ function ensurePanel(){
  const section=document.createElement('section');section.id='company-finance';section.className='tab-content hidden no-print';
  section.innerHTML=[
  '<div class="cf-header mb-6 flex flex-wrap items-center justify-between gap-4"><div><p class="text-[10px] font-black uppercase tracking-[.2em] text-blue-600">Controlo financeiro interno · Administração</p><h2 class="mt-1 text-2xl font-black text-slate-800">🧾 Compras & Despesas</h2><p class="mt-1 text-sm text-slate-500">Registo central de facturas, aquisições, pagamentos e comprovativos.</p></div><button id="cf-refresh" class="cf-btn cf-muted">↻ ACTUALIZAR DADOS</button></div>',
- '<div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">',
+ '<div id="cf-admin-metrics" class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">',
  '<div class="cf-card"><span class="cf-label">Vendas registadas</span><strong id="cf-sales" class="cf-value">—</strong><p class="text-[10px] text-slate-400">Total mensal</p></div>',
  '<div class="cf-card"><span class="cf-label">Compras registadas</span><strong id="cf-purchases" class="cf-value">—</strong></div>',
  '<div class="cf-card"><span class="cf-label">Despesas operacionais</span><strong id="cf-expenses" class="cf-value">—</strong></div>',
@@ -43,49 +43,56 @@ function ensurePanel(){
  '<div><label>Produtos / itens (produto | quantidade | custo unitário, um por linha)</label><textarea id="cf-items" rows="3" class="cf-input" placeholder="Papel A4 | 10 | 4500"></textarea></div>',
  '<div class="grid cf-form-grid grid-cols-2 gap-3"><div><label>Valor total (Kz)</label><input id="cf-total" type="number" min=".01" step=".01" required class="cf-input"></div><div><label>Valor já pago (Kz)</label><input id="cf-paid" type="number" min="0" step=".01" value="0" class="cf-input"></div>',
  '<div><label>Método de pagamento</label><select id="cf-method" class="cf-input"><option value="">Não pago / por definir</option><option value="bank_transfer">Transferência bancária</option><option value="deposit">Depósito bancário</option><option value="cash">Dinheiro em mão</option><option value="other">Outro</option></select></div><div><label>Banco / conta / carteira</label><input id="cf-account" class="cf-input" placeholder="Ex.: BAI, BFA, caixa"></div></div>',
- '<div><label>Referência do pagamento</label><input id="cf-reference" class="cf-input"></div><div><label>Link do comprovativo (opcional)</label><input id="cf-receipt" type="url" class="cf-input" placeholder="https://..."></div><div><label>Local / departamento</label><select id="cf-location" class="cf-input"><option value="">Empresa / Geral</option></select></div>',
+ '<div><label>Referência do pagamento</label><input id="cf-reference" class="cf-input"></div><div><label>Link do comprovativo (opcional)</label><input id="cf-receipt" type="url" class="cf-input" placeholder="https://..."></div><div id="cf-location-wrap"><label>Local / departamento</label><select id="cf-location" class="cf-input"><option value="">Empresa / Geral</option></select></div>',
  '<button class="cf-btn cf-primary w-full" type="submit">＋ REGISTAR FACTURA / DESPESA</button><p id="cf-status" class="min-h-4 text-[11px] text-slate-500" aria-live="polite"></p></form></div>',
- '<div class="cf-card xl:col-span-3"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-base font-black text-slate-800">Movimentos financeiros</h3><p class="text-[11px] text-slate-400">Histórico central da organização</p></div><div class="flex flex-wrap gap-2"><input id="cf-month" type="month" class="cf-input" style="width:auto"><select id="cf-filter" class="cf-input" style="width:auto"><option value="all">Todos</option><option value="purchase">Compras</option><option value="expense">Despesas</option><option value="pending">Por pagar</option></select></div></div>',
- '<div class="mb-3 flex flex-wrap gap-2"><button id="cf-export" class="cf-btn cf-muted">⇩ EXPORTAR CSV</button><span id="cf-count" class="cf-chip">0 registos</span></div><div class="overflow-x-auto rounded-xl border border-slate-100"><table class="cf-table"><thead><tr><th>Data / Factura</th><th>Descrição / Fornecedor</th><th>Tipo</th><th>Total</th><th>Pago</th><th>Estado</th><th>Acções</th></tr></thead><tbody id="cf-rows"></tbody></table></div>',
+ '<div class="cf-card xl:col-span-3"><div class="mb-4 flex flex-wrap items-center justify-between gap-3"><div><h3 class="text-base font-black text-slate-800">Movimentos financeiros</h3><p id="cf-history-caption" class="text-[11px] text-slate-400">Histórico central da organização</p></div><div class="flex flex-wrap gap-2"><select id="cf-location-filter" class="cf-input" style="width:auto"><option value="">Todos os locais</option></select><input id="cf-month" type="month" class="cf-input" style="width:auto"><select id="cf-filter" class="cf-input" style="width:auto"><option value="all">Todos</option><option value="purchase">Compras</option><option value="expense">Despesas</option><option value="pending">Por pagar</option></select></div></div>',
+ '<div class="mb-3 flex flex-wrap gap-2"><button id="cf-export" class="cf-btn cf-muted">⇩ EXPORTAR CSV</button><span id="cf-count" class="cf-chip">0 registos</span></div><div class="overflow-x-auto rounded-xl border border-slate-100"><table class="cf-table"><thead><tr><th>Local</th><th>Data / Factura</th><th>Descrição / Fornecedor</th><th>Tipo</th><th>Total</th><th>Pago</th><th>Estado</th><th>Acções</th></tr></thead><tbody id="cf-rows"></tbody></table></div>',
  '<p class="mt-3 text-[10px] leading-5 text-slate-400">Compras de stock e despesas operacionais são separadas. O saldo de caixa considera valores efectivamente recebidos e pagos. Este painel é um controlo de gestão e não substitui a contabilidade oficial.</p></div></div>'
  ].join('');
  host.appendChild(section);
  const nav=$('btn-daily-tasks');
- if(nav&&!$('btn-company-finance')){const item=document.createElement('div');item.id='btn-company-finance';item.className='sidebar-link';item.innerHTML='<span class="mr-3 text-xl">🧾</span><span>Compras & Despesas</span>';item.addEventListener('click',()=>{if(!admin())return alert('Acesso exclusivo à administração.');showTab('company-finance');void loadData();});nav.insertAdjacentElement('afterend',item);}
+ if(nav&&!$('btn-company-finance')){const item=document.createElement('div');item.id='btn-company-finance';item.className='sidebar-link';item.innerHTML='<span class="mr-3 text-xl">🧾</span><span>Compras & Despesas</span>';item.addEventListener('click',()=>{if(!canUsePanel())return alert('A sua conta não tem local atribuído. Contacte a administração.');showTab('company-finance');void loadData();});nav.insertAdjacentElement('afterend',item);}
  const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),1);
  $('cf-date').value=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Luanda'}).format(now);
  $('cf-month').value=start.getFullYear()+'-'+String(start.getMonth()+1).padStart(2,'0');
- $('cf-form').addEventListener('submit',saveEntry);$('cf-refresh').addEventListener('click',loadData);$('cf-month').addEventListener('change',loadData);$('cf-filter').addEventListener('change',render);$('cf-export').addEventListener('click',exportCsv);
+ $('cf-form').addEventListener('submit',saveEntry);$('cf-refresh').addEventListener('click',loadData);$('cf-month').addEventListener('change',loadData);$('cf-filter').addEventListener('change',render);$('cf-location-filter').addEventListener('change',render);$('cf-export').addEventListener('click',exportCsv);
  $('cf-type').addEventListener('change',()=>{if($('cf-type').value==='expense')$('cf-class').value='operational';else if($('cf-class').value==='operational')$('cf-class').value='stock';});
- (window.HELI_LOCATIONS||window.HELI_ALLOWED_LOCATIONS||[]).forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.name;$('cf-location').appendChild(o);});
+ (window.HELI_LOCATIONS||window.HELI_ALLOWED_LOCATIONS||[]).forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.name;$('cf-location').appendChild(o);const f=document.createElement('option');f.value=l.id;f.textContent=l.name;$('cf-location-filter').appendChild(f);});
+ if(!admin()){const loc=window.HELI_DEFAULT_LOCATION_ID||'';$('cf-location').value=loc;$('cf-location').disabled=true;$('cf-location-wrap').style.display='none';$('cf-admin-metrics').style.display='none';$('cf-location-filter').style.display='none';$('cf-export').style.display='none';$('cf-history-caption').textContent='Movimentos do seu local';$('cf-refresh').style.display='none';}
 }
+function canUsePanel(){return !!window.HELI_USER&&!!window.HELI_ORG?.id&&(admin()||!!window.HELI_DEFAULT_LOCATION_ID);}
+function connectRealtime(){if(financeChannel||!db()||!window.HELI_ORG?.id)return;financeChannel=db().channel('company-finance-'+window.HELI_ORG.id).on('postgres_changes',{event:'*',schema:'public',table:'company_financial_entries',filter:'organization_id=eq.'+window.HELI_ORG.id},()=>{void loadData();}).subscribe();}
 async function loadData(){
- if(!admin()||!db()||!window.HELI_ORG?.id)return;
+ if(!canUsePanel()||!db())return;
  $('cf-status').textContent='A actualizar dados...';
  const month=$('cf-month').value;const from=month+'-01';const d=new Date(from+'T12:00:00+01:00');d.setMonth(d.getMonth()+1);const to=d.toISOString();
  const results=await Promise.all([
  db().from('company_financial_entries').select('*').eq('organization_id',window.HELI_ORG.id).gte('incurred_at',from+'T00:00:00+01:00').lt('incurred_at',to).order('incurred_at',{ascending:false}).limit(1000),
- db().from('pos_sales_events').select('total,paid,occurred_at,category').eq('organization_id',window.HELI_ORG.id).gte('occurred_at',from+'T00:00:00+01:00').lt('occurred_at',to).neq('category','EXPENSE').limit(2000)
+ db().from('pos_sales_events').select('total,paid,occurred_at,category,location_id').eq('organization_id',window.HELI_ORG.id).gte('occurred_at',from+'T00:00:00+01:00').lt('occurred_at',to).neq('category','EXPENSE').limit(2000)
  ]);
  if(results[0].error){$('cf-status').textContent='Erro ao carregar: '+results[0].error.message;return;}
- rows=results[0].data||[];salesRows=results[1].data||[];$('cf-status').textContent='Dados sincronizados com a base central.';render();
+ rows=results[0].data||[];salesRows=admin()?(results[1].data||[]):[];$('cf-status').textContent='Dados sincronizados com a base central.';render();
 }
 function render(){
- const a=rows.filter(x=>!x.is_void),sales=salesRows.reduce((n,x)=>n+Number(x.total||0),0),purchases=a.filter(x=>x.entry_type==='purchase').reduce((n,x)=>n+Number(x.total_amount||0),0),expenses=a.filter(x=>x.cost_class==='operational').reduce((n,x)=>n+Number(x.total_amount||0),0),paid=a.reduce((n,x)=>n+Number(x.paid_amount||0),0);
- const bank=a.filter(x=>['bank_transfer','deposit'].includes(x.payment_method)).reduce((n,x)=>n+Number(x.paid_amount||0),0),cash=a.filter(x=>x.payment_method==='cash').reduce((n,x)=>n+Number(x.paid_amount||0),0),pending=a.reduce((n,x)=>n+Math.max(0,Number(x.total_amount)-Number(x.paid_amount)),0),received=salesRows.reduce((n,x)=>n+Number(x.paid||0),0);
+ const selectedLocation=admin()?($('cf-location-filter')?.value||''):window.HELI_DEFAULT_LOCATION_ID;
+ const a=rows.filter(x=>!x.is_void&&(!selectedLocation||x.location_id===selectedLocation)),salesRowsVisible=salesRows.filter(x=>!selectedLocation||x.location_id===selectedLocation),sales=salesRowsVisible.reduce((n,x)=>n+Number(x.total||0),0),purchases=a.filter(x=>x.entry_type==='purchase').reduce((n,x)=>n+Number(x.total_amount||0),0),expenses=a.filter(x=>x.cost_class==='operational').reduce((n,x)=>n+Number(x.total_amount||0),0),paid=a.reduce((n,x)=>n+Number(x.paid_amount||0),0);
+ const bank=a.filter(x=>['bank_transfer','deposit'].includes(x.payment_method)).reduce((n,x)=>n+Number(x.paid_amount||0),0),cash=a.filter(x=>x.payment_method==='cash').reduce((n,x)=>n+Number(x.paid_amount||0),0),pending=a.reduce((n,x)=>n+Math.max(0,Number(x.total_amount)-Number(x.paid_amount)),0),received=salesRowsVisible.reduce((n,x)=>n+Number(x.paid||0),0);
  $('cf-sales').textContent=money(sales);$('cf-purchases').textContent=money(purchases);$('cf-expenses').textContent=money(expenses);$('cf-cash-result').textContent=money(sales-purchases-expenses);$('cf-cash-flow').textContent=money(received-paid);$('cf-bank').textContent=money(bank);$('cf-cash').textContent=money(cash);$('cf-pending').textContent=money(pending);
  const f=$('cf-filter').value,shown=a.filter(x=>f==='all'||(f==='pending'?Number(x.paid_amount)<Number(x.total_amount):x.entry_type===f));$('cf-count').textContent=shown.length+' registos';
  $('cf-rows').innerHTML=shown.length?shown.map(x=>{
  const st=Number(x.paid_amount)>=Number(x.total_amount)?'Pago':Number(x.paid_amount)>0?'Parcial':'Pendente',date=new Date(x.incurred_at).toLocaleDateString('pt-AO',{timeZone:'Africa/Luanda'});
- return '<tr><td><strong>'+esc(date)+'</strong><br><span class="text-[10px] text-slate-400">'+esc(x.invoice_number||'Sem n.º')+'</span></td><td><strong>'+esc(x.description)+'</strong><br><span class="text-[10px] text-slate-400">'+esc(x.supplier_name||'Fornecedor não indicado')+'</span>'+(x.receipt_url?'<br><a href="'+esc(x.receipt_url)+'" target="_blank" rel="noopener" class="font-bold text-blue-600">Ver comprovativo ↗</a>':'')+'</td><td>'+esc(x.entry_type==='purchase'?'Compra':'Despesa')+'<br><span class="text-[10px] text-slate-400">'+esc(x.cost_class)+'</span></td><td class="font-black">'+money(x.total_amount)+'</td><td>'+money(x.paid_amount)+'<br><span class="text-[10px] text-slate-400">'+esc(({bank_transfer:'Banco',deposit:'Depósito',cash:'Em mão',other:'Outro'})[x.payment_method]||'Método não indicado')+(x.payment_account?' · '+esc(x.payment_account):'')+'</span></td><td><span class="cf-chip '+(st==='Pago'?'paid':'pending')+'">'+st+'</span></td><td><button class="cf-btn cf-muted" data-pay="'+x.id+'">Pagamento</button> <button class="cf-btn cf-muted" data-void="'+x.id+'">Anular</button></td></tr>';
+ const loc=(window.HELI_LOCATIONS||[]).find(l=>l.id===x.location_id)?.name||'Local não identificado';
+ return '<tr><td><strong>'+esc(loc)+'</strong></td><td><strong>'+esc(date)+'</strong><br><span class="text-[10px] text-slate-400">'+esc(x.invoice_number||'Sem n.º')+'</span></td><td><strong>'+esc(x.description)+'</strong><br><span class="text-[10px] text-slate-400">'+esc(x.supplier_name||'Fornecedor não indicado')+'</span>'+(x.receipt_url?'<br><a href="'+esc(x.receipt_url)+'" target="_blank" rel="noopener" class="font-bold text-blue-600">Ver comprovativo ↗</a>':'')+'</td><td>'+esc(x.entry_type==='purchase'?'Compra':'Despesa')+'<br><span class="text-[10px] text-slate-400">'+esc(x.cost_class)+'</span></td><td class="font-black">'+money(x.total_amount)+'</td><td>'+money(x.paid_amount)+'<br><span class="text-[10px] text-slate-400">'+esc(({bank_transfer:'Banco',deposit:'Depósito',cash:'Em mão',other:'Outro'})[x.payment_method]||'Método não indicado')+(x.payment_account?' · '+esc(x.payment_account):'')+'</span></td><td><span class="cf-chip '+(st==='Pago'?'paid':'pending')+'">'+st+'</span></td><td>'+(admin()?'<button class="cf-btn cf-muted" data-pay="'+x.id+'">Pagamento</button> <button class="cf-btn cf-muted" data-void="'+x.id+'">Anular</button>':'<span class="text-[10px] text-slate-400">Registado por '+esc(x.created_by===window.HELI_USER.id?'si':'equipa do local')+'</span>')+'</td></tr>';
  }).join(''):'<tr><td colspan="7" class="py-8 text-center text-slate-400">Sem movimentos para este filtro.</td></tr>';
  $('cf-rows').querySelectorAll('[data-pay]').forEach(b=>b.addEventListener('click',()=>addPayment(b.dataset.pay)));$('cf-rows').querySelectorAll('[data-void]').forEach(b=>b.addEventListener('click',()=>voidEntry(b.dataset.void)));
 }
 async function saveEntry(e){
- e.preventDefault();if(!admin())return;
+ e.preventDefault();if(!canUsePanel())return;
  const total=Number($('cf-total').value),paid=Number($('cf-paid').value||0),method=$('cf-method').value,account=$('cf-account').value.trim();if(!(total>0)||paid<0||paid>total)return alert('O valor pago deve estar entre zero e o total.');if(paid>0&&!method)return alert('Indique se o pagamento foi por banco, depósito, dinheiro em mão ou outro método.');if(paid>0&&['bank_transfer','deposit'].includes(method)&&!account)return alert('Indique o nome do banco ou da conta utilizada.');
  const items=$('cf-items').value.split('\n').map(x=>x.trim()).filter(Boolean).map(x=>{const p=x.split('|').map(y=>y.trim());return {name:p[0]||'',quantity:Number(p[1]||0),unit_cost:Number(p[2]||0)};});
- const payload={organization_id:window.HELI_ORG.id,location_id:$('cf-location').value||null,entry_type:$('cf-type').value,cost_class:$('cf-class').value,category:$('cf-category').value,supplier_name:$('cf-supplier').value.trim()||null,invoice_number:$('cf-invoice').value.trim()||null,description:$('cf-description').value.trim(),total_amount:total,paid_amount:paid,payment_method:paid?(method||null):null,payment_account:account||null,payment_reference:$('cf-reference').value.trim()||null,payment_status:paid>=total?'paid':paid>0?'partial':'pending',receipt_url:$('cf-receipt').value.trim()||null,items,incurred_at:$('cf-date').value+'T12:00:00+01:00',created_by:window.HELI_USER.id};
+ const assignedLocation=admin()?($('cf-location').value||null):window.HELI_DEFAULT_LOCATION_ID;
+ if(!assignedLocation)return alert('A sua conta não tem um local atribuído. Contacte a administração.');
+ const payload={organization_id:window.HELI_ORG.id,location_id:assignedLocation,entry_type:$('cf-type').value,cost_class:$('cf-class').value,category:$('cf-category').value,supplier_name:$('cf-supplier').value.trim()||null,invoice_number:$('cf-invoice').value.trim()||null,description:$('cf-description').value.trim(),total_amount:total,paid_amount:paid,payment_method:paid?(method||null):null,payment_account:account||null,payment_reference:$('cf-reference').value.trim()||null,payment_status:paid>=total?'paid':paid>0?'partial':'pending',receipt_url:$('cf-receipt').value.trim()||null,items,incurred_at:$('cf-date').value+'T12:00:00+01:00',created_by:window.HELI_USER.id};
  $('cf-status').textContent='A guardar...';const r=await db().from('company_financial_entries').insert(payload);if(r.error){$('cf-status').textContent='Erro: '+r.error.message;return;}
  $('cf-form').reset();$('cf-date').value=new Intl.DateTimeFormat('en-CA',{timeZone:'Africa/Luanda'}).format(new Date());$('cf-paid').value='0';$('cf-status').textContent='Registo guardado.';await loadData();
 }
@@ -105,9 +112,9 @@ function exportCsv(){
  const csv='\uFEFF'+all.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\r\n'),url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'})),a=document.createElement('a');a.href=url;a.download='heligrafes-compras-despesas.csv';a.click();URL.revokeObjectURL(url);
 }
 function boot(){
- inject();ensurePanel();const nav=$('btn-company-finance');if(nav)nav.style.display=admin()?'flex':'none';
- if(admin()&&window.HELI_ORG?.id&&db()&&!ready){ready=true;loadData();}
- if(!ready||!admin())setTimeout(boot,1200);
+ inject();ensurePanel();const nav=$('btn-company-finance');if(nav)nav.style.display=canUsePanel()?'flex':'none';
+ if(canUsePanel()&&db()){connectRealtime();if(!ready){ready=true;loadData();}}
+ if(!ready)setTimeout(boot,1200);
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 })();
