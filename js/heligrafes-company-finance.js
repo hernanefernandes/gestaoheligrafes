@@ -63,7 +63,7 @@ function populateLocations(){
  const select=$('cf-location'),filter=$('cf-location-filter');if(!select||!filter)return;
  const oldSelect=select.value,oldFilter=filter.value;
  select.innerHTML='<option value="">Empresa / Geral</option>';
- filter.innerHTML='<option value="">Todos os locais</option>';
+ filter.innerHTML='<option value="">Geral — todos os locais</option>';
  locations.forEach(l=>{const o=document.createElement('option');o.value=l.id;o.textContent=l.name;select.appendChild(o);const f=document.createElement('option');f.value=l.id;f.textContent=l.name;filter.appendChild(f);});
  if(admin())select.value=locations.some(l=>l.id===oldSelect)?oldSelect:'';
  else select.value=window.HELI_DEFAULT_LOCATION_ID||'';
