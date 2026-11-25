@@ -61,6 +61,27 @@ function ensureUi(){
   }
   return true;
 }
+function ensureTaskAlertUi(){
+  const link=$('btn-daily-tasks');
+  if(!link)return;
+  if(!$('heli-task-alert-style')){
+    const style=document.createElement('style');style.id='heli-task-alert-style';
+    style.textContent='@keyframes heliTaskAlertPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(1.06)}}#heli-task-alert{display:none;margin-left:auto;padding:3px 7px;border-radius:999px;background:#dc2626;color:#fff;font-size:9px;font-weight:900;letter-spacing:.04em;white-space:nowrap;animation:heliTaskAlertPulse 1s infinite;box-shadow:0 0 0 2px #fee2e2}#heli-task-alert.is-visible{display:inline-flex;align-items:center}';
+    document.head.appendChild(style);
+  }
+  if(!$('heli-task-alert')){
+    const badge=document.createElement('span');badge.id='heli-task-alert';badge.setAttribute('role','status');badge.setAttribute('aria-live','polite');link.appendChild(badge);
+  }
+}
+function updateTaskAlert(){
+  ensureTaskAlertUi();
+  const badge=$('heli-task-alert');if(!badge)return;
+  const pending=taskRows.filter(t=>t.status!=='done'&&isAllowedDepartment(t.department)&&
+    (isAdmin()||t.assigned_user_id===window.HELI_USER?.id));
+  badge.textContent=pending.length>1?'NOVO TRABALHO · '+pending.length:'NOVO TRABALHO';
+  badge.classList.toggle('is-visible',pending.length>0);
+  badge.title=pending.length+' trabalho(s) por fazer';
+}
 function openDailyTasks(){
   if(!ensureUi()) return;
   if(typeof showTab==='function') showTab('heli-task-tab');
@@ -209,6 +230,7 @@ async function loadTasks(){
     const names=new Map((window.HELI_LOCATIONS||[]).map(l=>[l.id,l.name]));
     taskRows=(result.data||[]).filter(t=>isAllowedDepartment(t.department)).map(t=>({...t,location_name:names.get(t.location_id)||staffRows.find(p=>p.user_id===t.assigned_user_id)?.location_name||'Local'}));
     renderEmployee();
+    updateTaskAlert();
     if(isAdmin()){ $('heli-task-admin-view').classList.remove('hidden');renderAdminList();renderWeekOrders();renderStaffCounts(); }
   }catch(error){if(root)root.innerHTML='<p class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">Falha ao carregar trabalhos. Confirme se a migração heli_daily_tasks foi executada no Supabase. '+esc(error.message||error)+'</p>';}
 }
@@ -221,7 +243,7 @@ function subscribe(){
         const who=payload.new.assignee_name||'Funcionário';
         showNotice('Tarefa concluída',who+' marcou "'+payload.new.title+'" como feita.');
       }
-      if($('heli-task-tab')&&!$('heli-task-tab').classList.contains('hidden'))loadTasks();
+      void loadTasks();
     }).subscribe();
 }
 function showNotice(title,message){
@@ -232,7 +254,7 @@ function showNotice(title,message){
 }
 function boot(){
   if(!window.HELI_USER?.id||!window.HELI_ORG?.id){return false;}
-  ensureUi();subscribe();return true;
+  ensureUi();subscribe();void loadTasks();return true;
 }
 const bootTimer=setInterval(()=>{if(boot()){clearInterval(bootTimer);}},700);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&$('heli-task-tab')&&!$('heli-task-tab').classList.contains('hidden'))loadTasks();});
