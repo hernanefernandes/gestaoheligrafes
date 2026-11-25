@@ -21,7 +21,7 @@ function ensurePanel(){
  root.className='tab-content hidden no-print';
  root.innerHTML=`
  <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
-  <div><p class="text-[10px] font-black uppercase tracking-[.18em] text-blue-600">Gestão centralizada</p><h2 class="text-2xl font-black text-slate-800">🧾 Lista Geral de Encomendas</h2><p class="mt-1 text-sm text-slate-500">Encomendas académicas e T-Shirts de todos os locais a que a sua conta tem acesso.</p></div>
+  <div><p class="text-[10px] font-black uppercase tracking-[.18em] text-blue-600">Gestão centralizada</p><h2 class="text-2xl font-black text-slate-800">🧾 Encomendas, vendas e dívidas</h2><p class="mt-1 text-sm text-slate-500">Registo geral de todos os tipos de venda e encomenda dos locais a que a sua conta tem acesso.</p></div>
   <button type="button" id="heli-orders-refresh" class="rounded-xl bg-blue-700 px-4 py-3 text-xs font-black text-white">↻ ACTUALIZAR</button>
  </div>
  <div class="mb-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
@@ -29,6 +29,11 @@ function ensurePanel(){
   <div class="rounded-2xl border border-amber-100 bg-amber-50 p-4"><p class="text-[10px] font-black uppercase text-amber-600">Por pagar</p><strong id="heli-orders-debt" class="mt-1 block text-xl font-black text-amber-800">—</strong></div>
   <div class="rounded-2xl border border-emerald-100 bg-emerald-50 p-4"><p class="text-[10px] font-black uppercase text-emerald-600">Valor recebido inicialmente</p><strong id="heli-orders-paid" class="mt-1 block text-xl font-black text-emerald-800">—</strong></div>
  </div>
+ <section class="mb-5 rounded-2xl border border-rose-100 bg-white p-4">
+  <div class="mb-3 flex flex-wrap items-center justify-between gap-2"><div><h3 class="font-black text-slate-800">Dívidas pendentes por cliente e local</h3><p class="text-xs text-slate-500">Agrupamento das encomendas com saldo por regularizar.</p></div><strong id="heli-orders-debt-groups-total" class="text-rose-700">—</strong></div>
+  <div id="heli-orders-debt-groups" class="overflow-x-auto"><p class="text-sm text-slate-500">A calcular dívidas...</p></div>
+ </section>
+ <h3 class="mb-3 text-lg font-black text-slate-800">Registo de encomendas e vendas</h3>
  <div class="mb-4 grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white p-4 md:grid-cols-2 xl:grid-cols-4">
   <input id="heli-orders-search" type="search" class="big-input" placeholder="Pesquisar cliente, telefone ou descrição...">
   <select id="heli-orders-location" class="big-input"><option value="">Todos os locais disponíveis</option></select>
@@ -70,7 +75,7 @@ async function fetchRows(){
  if(!db||!org)throw new Error('A sessão segura ainda não está pronta. Entre novamente e tente actualizar.');
  const all=[];let from=0,step=1000;
  while(true){
-  const q=await db.from('pos_sales_events').select('id,location_id,total,paid,category,seller_name,occurred_at,sale_payload').eq('organization_id',org).in('category',['ACADEMICO','TSHIRTS']).order('occurred_at',{ascending:false}).range(from,from+step-1);
+  const q=await db.from('pos_sales_events').select('id,location_id,total,paid,category,seller_name,occurred_at,sale_payload').eq('organization_id',org).order('occurred_at',{ascending:false}).range(from,from+step-1);
   if(q.error)throw q.error;
   const batch=q.data||[];all.push(...batch);
   if(batch.length<step)break;
@@ -99,10 +104,15 @@ function render(){
   return ad.localeCompare(bd)||new Date(b.created||0)-new Date(a.created||0);
  });
  const totalDebt=rows.reduce((s,r)=>s+r.debt,0),totalPaid=rows.reduce((s,r)=>s+r.paid,0);
+ const debtGroups=new Map();
+ rows.filter(r=>r.debt>0).forEach(r=>{const key=String(r.client).trim().toLocaleLowerCase('pt-AO')+'|'+String(r.locationId);const g=debtGroups.get(key)||{client:r.client,location:r.location,debt:0,count:0,phone:r.phone};g.debt+=r.debt;g.count++;if(!g.phone)g.phone=r.phone;debtGroups.set(key,g);});
+ const debtRoot=$('heli-orders-debt-groups');
+ if(debtRoot)debtRoot.innerHTML=debtGroups.size?'<table class="min-w-full text-left text-xs"><thead><tr class="border-b text-[10px] uppercase text-slate-400"><th class="px-3 py-2">Cliente</th><th class="px-3 py-2">Local</th><th class="px-3 py-2">Encomendas</th><th class="px-3 py-2">Contacto</th><th class="px-3 py-2 text-right">Dívida</th></tr></thead><tbody>'+[...debtGroups.values()].sort((a,b)=>b.debt-a.debt).map(g=>'<tr class="border-b border-slate-100"><td class="px-3 py-2 font-bold">'+esc(g.client)+'</td><td class="px-3 py-2">'+esc(g.location)+'</td><td class="px-3 py-2">'+g.count+'</td><td class="px-3 py-2">'+esc(g.phone||'—')+'</td><td class="px-3 py-2 text-right font-black text-rose-700">'+money(g.debt)+'</td></tr>').join('')+'</tbody></table>':'<p class="rounded-lg bg-emerald-50 p-3 text-sm font-semibold text-emerald-700">Não existem dívidas pendentes nos registos carregados.</p>';
+ const debtTotalEl=$('heli-orders-debt-groups-total');if(debtTotalEl)debtTotalEl.textContent=money(totalDebt);
  $('heli-orders-count').textContent=String(rows.length);
  $('heli-orders-debt').textContent=money(totalDebt);
  $('heli-orders-paid').textContent=money(totalPaid);
- $('heli-orders-status').textContent=filtered.length+' de '+rows.length+' encomenda(s) • Actualização em '+new Date().toLocaleTimeString('pt-AO',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'});
+ $('heli-orders-status').textContent=filtered.length+' de '+rows.length+' registo(s) • Actualização em '+new Date().toLocaleTimeString('pt-AO',{timeZone:'Africa/Luanda',hour:'2-digit',minute:'2-digit'});
  target.innerHTML=filtered.length?filtered.map(r=>{
   const st=statusOf(r),label=st==='PAGO'?'PAGO':st==='PARCIAL'?'PAGAMENTO PARCIAL':st==='PENDENTE'?'PAGAR':'POR CONFIRMAR';
   const badge=st==='PAGO'?'bg-emerald-100 text-emerald-800':st==='PARCIAL'?'bg-amber-100 text-amber-800':st==='PENDENTE'?'bg-rose-100 text-rose-800':'bg-slate-100 text-slate-700';
