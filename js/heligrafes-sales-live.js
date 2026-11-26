@@ -136,14 +136,14 @@ function subscribe(){
 async function loadPresenceRoster(){
  if(!db()||!window.HELI_HAS_ROLE?.('owner','admin'))return;
  const [profiles,assignments,roles,locations]=await Promise.all([
-  db().from('user_profiles').select('user_id,full_name,email,avatar_path,is_active').eq('organization_id',window.HELI_ORG.id).order('full_name'),
+  db().from('user_profiles').select('user_id,full_name,email,is_active').eq('organization_id',window.HELI_ORG.id).order('full_name'),
   db().from('user_role_assignments').select('user_id,location_id,role_id').eq('organization_id',window.HELI_ORG.id),
   db().from('roles').select('id,code,name'),
   db().from('locations').select('id,name').eq('organization_id',window.HELI_ORG.id)
  ]);
  for(const q of [profiles,assignments,roles,locations])if(q.error)throw q.error;
  const rm=new Map((roles.data||[]).map(x=>[x.id,x])),lm=new Map((locations.data||[]).map(x=>[x.id,x.name]));
- presenceRoster=await Promise.all((profiles.data||[]).filter(p=>p.is_active).map(async p=>{const a=(assignments.data||[]).find(x=>x.user_id===p.user_id);let avatar_url='';if(p.avatar_path){try{const signed=await db().storage.from('heligrafes-private').createSignedUrl(p.avatar_path,3600);if(!signed.error)avatar_url=signed.data?.signedUrl||'';}catch(_){}}return {...p,avatar_url,role:rm.get(a?.role_id)?.name||'Funcionário',location:lm.get(a?.location_id)||'Sem local'};}));
+ presenceRoster=(profiles.data||[]).filter(p=>p.is_active).map(p=>{const a=(assignments.data||[]).find(x=>x.user_id===p.user_id);return {...p,role:rm.get(a?.role_id)?.name||'Funcionário',location:lm.get(a?.location_id)||'Sem local'};});
  renderPresence();
 }
 function currentPresenceUsers(){
@@ -159,7 +159,7 @@ function renderPresence(){
  const root=$('heli-live-presence');if(!root)return;
  root.innerHTML=presenceRoster.map(p=>{
   const on=online.has(p.user_id),loc=online.get(p.user_id)?.location_name||p.location,name=p.full_name||p.email||'Funcionário',initials=name.trim().split(/\\s+/).slice(0,2).map(x=>x[0]||'').join('').toUpperCase()||'F';
-  const avatar=p.avatar_url?'<img src="'+esc(p.avatar_url)+'" alt="" class="heli-live-avatar">':'<span class="heli-live-avatar-fallback">'+esc(initials)+'</span>';
+  const avatar='<span class="heli-live-avatar-fallback">'+esc(initials)+'</span>';
   return '<div class="heli-live-presence-row">'+avatar+'<span class="heli-live-dot '+(on?'online':'offline')+'"></span><div><b>'+esc(name)+'</b><small>'+esc(p.email||'')+' · '+esc(loc)+' · '+esc(p.role)+'</small></div><strong class="'+(on?'online-text':'offline-text')+'">'+(on?'ONLINE':'OFFLINE')+'</strong></div>';
  }).join('')||'<p class="heli-muted">Não existem funcionários activos.</p>';
 }
