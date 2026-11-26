@@ -259,7 +259,7 @@ function startEmployeeAbsenceCounter(initialValue){
    if(result.error)throw result.error;
    renderEmployeeAbsenceCounter(result.data?.absence_count);
   }catch(error){console.warn('[Heligrafes] Não foi possível actualizar a contagem pessoal de faltas:',error.message||error);}
- },30000);
+ },300000);
 }
 function attendanceGateMarkup(message,showMark,showContinue,showRefresh=false){
  const root=el('heli-auth-root');if(!root)return;
