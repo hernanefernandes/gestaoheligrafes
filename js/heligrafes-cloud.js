@@ -337,15 +337,13 @@ async function addSessionBar(){
  const topbar=document.querySelector('.app-topbar');
  (topbar||document.body).appendChild(bar);
  const avatar=el('heli-session-avatar'),fallback=bar.querySelector('.heli-session-avatar-fallback');
- if(identity.profile.avatar_path&&avatar){
-  try{const signed=await client.storage.from('heligrafes-private').createSignedUrl(identity.profile.avatar_path,3600);if(!signed.error&&signed.data?.signedUrl){avatar.src=signed.data.signedUrl;avatar.hidden=false;if(fallback)fallback.hidden=true;}}catch(err){console.warn('[Heligrafes] Foto de perfil indisponível:',err.message);}
- }
+ // Imagens de perfil desactivadas para reduzir tráfego e consumo de armazenamento.
  el('heli-signout').addEventListener('click',async()=>{if(!confirm('Pretende terminar a sessão?'))return;if(window.HELI_ATTENDANCE_REQUIRED&&!window.HELI_ATTENDANCE_EXITED){try{await window.HeligrafesMarkAttendanceExit();}catch(err){alert(err.message||'Não foi possível registar a saída.');return;}}const result=await client.auth.signOut();if(result.error){alert(result.error.message);return;}window.location.reload();});
 }
 let productChannel=null;
 async function syncProductCatalog(){
  if(!window.heliSupabase||!window.HELI_ORG)return;
- const q=await client.from('products').select('id,sku,name,sale_price,cost_price,min_stock,unit,category_id,is_active,track_stock,image_path').eq('organization_id',window.HELI_ORG.id).eq('is_active',true);
+ const q=await client.from('products').select('id,sku,name,sale_price,cost_price,min_stock,unit,category_id,is_active,track_stock').eq('organization_id',window.HELI_ORG.id).eq('is_active',true);
  if(q.error){console.warn('[Heligrafes] Catálogo cloud:',q.error.message);return;}
  (q.data||[]).forEach(p=>window.HeligrafesApplyCloudProduct?.(p));
 }
