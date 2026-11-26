@@ -201,7 +201,7 @@ async function start(){
  installStyles();
  if(window.HELI_HAS_ROLE?.('owner','admin')){buildPanel();subscribe();await loadPresenceRoster().catch(e=>console.warn('[Heligrafes] Presenças:',e.message));}
  await startPresence();
- if(window.HELI_HAS_ROLE?.('owner','admin'))setInterval(()=>loadPresenceRoster().catch(e=>console.warn('[Heligrafes] Actualização de presenças:',e.message)),30000);
+ if(window.HELI_HAS_ROLE?.('owner','admin'))setInterval(()=>loadPresenceRoster().catch(e=>console.warn('[Heligrafes] Actualização de presenças:',e.message)),120000);
  window.addEventListener('online',flushQueue);
  await flushQueue();
 
